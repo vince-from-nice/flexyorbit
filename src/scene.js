@@ -7,17 +7,17 @@ export const EARTH_RADIUS = 6371; // the unit is the kilometer
 export let cannonParams = {
   lat: 43.53,
   lon: 6.89,
-  altitude: 100,     // km
+  altitude: 100,
   azimuth: 0,
   elevation: 45,
-  speed: 7.9         // km/s
+  speed: 7.9
 };
 
 export function createScene(container) {
   scene = new THREE.Scene();
   
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, EARTH_RADIUS * 30);
-  camera.position.set(EARTH_RADIUS * 1, EARTH_RADIUS * 1, EARTH_RADIUS * 1);
+  camera.position.set(EARTH_RADIUS * 2, EARTH_RADIUS * 2, EARTH_RADIUS * 2);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -39,28 +39,34 @@ export function createScene(container) {
 }
 
 function logRendererInfos() {
+  console.log('Viewport informations:');
+  console.log('  window.innerWidth  :', window.innerWidth);
+  console.log('  window.innerHeight :', window.innerHeight);
+  console.log('  screen.width     :', screen.width);
+  console.log('  screen.height     :', screen.height);
+  console.log('  devicePixelRatio  :', window.devicePixelRatio);
   console.log("Renderer informations:")
   const gl = renderer.getContext();
   const debugInfo = gl.getExtension('RENDERER');
   if (debugInfo) {
       const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
       const gpuRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-      console.log('\tGPU Vendor:', vendor);
-      console.log('\tGPU Renderer (driver):', gpuRenderer);
+      console.log('  GPU Vendor:', vendor);
+      console.log('  GPU Renderer (driver):', gpuRenderer);
   } else {
-      console.log('\tGPU Vendor (masked):', gl.getParameter(gl.VENDOR));
-      console.log('\tGPU Renderer (masked):', gl.getParameter(gl.RENDERER));
+      console.log('  GPU Vendor (masked):', gl.getParameter(gl.VENDOR));
+      console.log('  GPU Renderer (masked):', gl.getParameter(gl.RENDERER));
   }
-  console.log('\tWebGL Version:', gl.getParameter(gl.VERSION));
-  console.log('\tShading Language Version:', gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
-  console.log('\tMax Anisotropy:', renderer.capabilities.getMaxAnisotropy());
-  console.log('\tPrecision (highp float support in fragment shaders):', renderer.capabilities.precision);
-  console.log('\tMax Vertex Uniform Vectors:', gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS));
-  console.log('\tMax Fragment Uniform Vectors:', gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS));
-  console.log('\tMax Varying Vectors:', gl.getParameter(gl.MAX_VARYING_VECTORS));
-  // console.log('\tRenderer capabilities:', renderer.capabilities);
+  console.log('  WebGL Version:', gl.getParameter(gl.VERSION));
+  console.log('  Shading Language Version:', gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
+  console.log('  Max Anisotropy:', renderer.capabilities.getMaxAnisotropy());
+  console.log('  Precision (highp float support in fragment shaders):', renderer.capabilities.precision);
+  console.log('  Max Vertex Uniform Vectors:', gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS));
+  console.log('  Max Fragment Uniform Vectors:', gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS));
+  console.log('  Max Varying Vectors:', gl.getParameter(gl.MAX_VARYING_VECTORS));
+  // console.log('  Renderer capabilities:', renderer.capabilities);
   // That info is very relevant because of the big size of the Earth texture
-  console.log('\tMax texture size:', renderer.capabilities.maxTextureSize);  
+  console.log('  Max texture size:', renderer.capabilities.maxTextureSize);  
 }
 
 function createAxis() {
@@ -221,6 +227,6 @@ export function updateCannonWithParams() {
 
   // Logs the new values
   console.log('Cannon has been updated with: lat=' + lat.toFixed(2) + '° lon=' + lon.toFixed(2) + '° altitude=' + altitude.toFixed(0) + 'km azimuth=' + azimuth + '° elevation=' + elevation + '°');
-  console.log("\tCannonGroup position: x=" + cannonGroup.position.x.toFixed(0) + " y=" + cannonGroup.position.y.toFixed(0) + " z=" + cannonGroup.position.z.toFixed(0));
-  console.log("\tCannonGroup orientation: up=<" + cannonGroup.up.x.toFixed(3) + " " + cannonGroup.up.y.toFixed(3) + " " + cannonGroup.up.z.toFixed(3) + "> horizon=<" + horizontalDir.x.toFixed(3) + " " + horizontalDir.y.toFixed(3) + " " + horizontalDir.z.toFixed(3) + ">");
+  console.log("   CannonGroup position: x=" + cannonGroup.position.x.toFixed(0) + " y=" + cannonGroup.position.y.toFixed(0) + " z=" + cannonGroup.position.z.toFixed(0));
+  console.log("   CannonGroup orientation: up=<" + cannonGroup.up.x.toFixed(3) + " " + cannonGroup.up.y.toFixed(3) + " " + cannonGroup.up.z.toFixed(3) + "> horizon=<" + horizontalDir.x.toFixed(3) + " " + horizontalDir.y.toFixed(3) + " " + horizontalDir.z.toFixed(3) + ">");
 }

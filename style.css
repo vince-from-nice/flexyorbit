@@ -1,210 +1,356 @@
-body { margin: 0; overflow: hidden; }
-canvas { display: block; }
+/* ==========================================================================
+   GENERAL & RESET
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #eee;
+}
+
+/* ==========================================================================
+   #CONTROLS - Main controls panel
+   ========================================================================== */
 #controls {
     position: absolute;
     top: 20px;
     left: 20px;
-    width: 320px;
-    padding: 16px 20px;
-    background: rgba(20, 25, 35, 0.75);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 12px;
-    border: 1px solid rgba(100, 150, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    color: #ffffff;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    z-index: 10;
-    max-height: 90vh;
+    width: 340px;
+    max-height: 92vh;
     overflow-y: auto;
+    padding: 0;
+    background: rgba(20, 30, 60, 0.65);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(100, 150, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    transition: all 0.3s ease;
 }
 
-#controls label {
-    color: #ffffff !important;
-    font-weight: 500;
-    font-size: 14px;
+#main-controls-toggle {
+    background: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
 }
 
+#main-controls-toggle summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    outline: none;
+}
+
+#main-controls-toggle summary h1 {
+    margin: 0;
+    padding: 18px 24px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #00dfffff;
+    text-shadow: 0 0 12px #00dfff99;
+    background: rgba(30, 40, 80, 0.6);
+    border-radius: 12px 12px 0 0;
+    transition: background 0.2s ease;
+    text-align: center;
+}
+
+#main-controls-toggle summary:hover h1 {
+    background: rgba(50, 70, 110, 0.7);
+}
+
+/* Custom chevron for main title */
+#main-controls-toggle summary h1::after {
+    content: '▾';
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #88ccff;
+    transition: transform 0.3s ease;
+}
+
+#main-controls-toggle[open] summary h1::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Hide native marker for main details */
+#main-controls-toggle summary::-webkit-details-marker,
+#main-controls-toggle summary::marker {
+    display: none;
+}
+
+/* ==========================================================================
+   SUB-GROUPS
+   ========================================================================== */
 .control-group {
-    margin-bottom: 20px;
+    margin: 0;
+    background: rgba(30, 40, 60, 0.4);
+    border-radius: 0;
+    overflow: hidden;
 }
 
 .control-group summary {
+    list-style: none;
+    padding: 12px 48px 12px 24px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #99ddff;
+    background: rgba(40, 60, 90, 0.5);
     cursor: pointer;
-    font-weight: bold;
-    font-size: 16px;
-    color: #eee;
-    padding: 10px 0;
+    position: relative;
+    transition: background 0.2s ease;
+}
+
+.control-group summary:hover {
+    background: rgba(60, 90, 130, 0.6);
+}
+
+/* Custom chevron for sub-groups */
+.control-group summary::after {
+    content: '▾';
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #88ccffcc;
+    transition: transform 0.3s ease;
+}
+
+.control-group[open] summary::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Hide native marker for sub-groups */
+.control-group summary::-webkit-details-marker,
+.control-group summary::marker {
+    display: none;
 }
 
 .group-content {
-    padding: 12px;
-    background-color: rgba(34, 34, 34, 0.8);
-    border-radius: 8px;
+    padding: 16px 24px;
+    background: rgba(20, 30, 50, 0.4);
 }
 
-/* Sliders */
-.slider-wrapper {
-    margin-bottom: 18px;
+/* ==========================================================================
+   LABELS, SLIDERS, INPUTS
+   ========================================================================== */
+label {
+    display: block;
+    margin: 10px 0 6px;
+    font-size: 15px;
+    color: #aaccff;
 }
 
+/* Top row: label + editable value on same line */
 .slider-top-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    flex-wrap: nowrap;
 }
 
-.number-input {
-    width: 80px;
-    padding: 6px 8px;
-    font-size: 14px;
-    background-color: rgba(40, 50, 70, 0.8);
+.slider-top-row label {
+    flex: 1;
+    margin-right: 16px;
+    white-space: nowrap;
+    font-weight: 500;
+    color: #ddd;
+}
+
+.slider-top-row input[type="number"] {
+    width: 100px;                      /* un peu plus large pour respirer */
+    text-align: right;
+    background: rgba(40, 60, 90, 0.7);
+    border: 1px solid #00aaff88;
     color: #fff;
-    border: 1px solid rgba(100, 150, 255, 0.5);
+    padding: 6px 20px 6px 12px;        /* ← Padding droit augmenté → espace flèches */
     border-radius: 4px;
-    text-align: center;
 }
 
-.custom-slider {
+/* WebKit (Chrome, Edge, etc.) : espace supplémentaire autour des flèches */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    margin-left: 8px !important;       /* ← Espace à gauche des flèches (vers le texte) */
+    opacity: 1;
+}
+
+/* Firefox : push le texte à gauche pour créer un espace visuel */
+input[type="number"] {
+    text-indent: 4px;                  /* ← Petit décalage du texte pour Firefox */
+    padding-right: 20px !important;    /* Force le padding droit */
+}
+
+/* Range slider full width */
+.slider-wrapper input[type="range"] {
     width: 100%;
-    height: 8px;
-    border-radius: 4px;
-    background: #444;
-    outline: none;
-    cursor: pointer;
+    margin: 0;
+    accent-color: #00dfff;
 }
 
-.custom-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    background: #00aaff;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0, 170, 255, 0.6);
-    cursor: pointer;
+input[type="range"]::-webkit-slider-thumb,
+input[type="range"]::-moz-range-thumb {
+    background: #00dfff;
 }
 
-.custom-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background: #00aaff;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0, 170, 255, 0.6);
-    cursor: pointer;
+input[type="checkbox"] {
+    accent-color: #00dfff;
 }
 
-/* Buttons */
-.time-button {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    font-size: 15px;
-    background-color: #00b7ffff;
-    color: white;
-    border: none;
-    border-radius: 8px;
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+button {
+    padding: 10px 20px;
+    margin: 12px 0;
+    background: rgba(0, 200, 255, 0.3);
+    border: 1px solid #00dfff;
+    color: #00dfff;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+button:hover {
+    background: rgba(0, 220, 255, 0.5);
+}
+
+/* Time control Stop/Resume button */
+.time-button {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 12px 0;
+    background: rgba(100, 180, 255, 0.4);
+    border: 1px solid #88ccff;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
 }
 
 .time-button:hover {
-    background-color: #00dfffff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 183, 255, 0.4);
+    background: rgba(100, 180, 255, 0.6);
 }
 
+/* FIRE button - 90% width, centered */
 .fire-button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 20px;
-    font-size: 16px;
-    background: linear-gradient(to bottom, #ff5555, #cc2222);
-    color: white;
+    display: block;
+    width: 90%;
+    margin: 20px auto;
+    padding: 18px;
+    font-size: 22px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #ff4444, #ff8800);
     border: none;
+    color: white;
     border-radius: 8px;
+    box-shadow: 0 0 15px #ff4444aa;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(255, 60, 60, 0.4);
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .fire-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(255, 60, 60, 0.6);
+    transform: scale(1.04);
+    box-shadow: 0 0 30px #ff4444ff;
 }
 
-/* Checkboxes */
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+   
 .checkbox-wrapper {
-    margin-bottom: 18px;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    align-items: center;           /* centre verticalement checkbox et texte */
+    gap: 12px;                     /* espace entre la case et le texte */
+    margin: 12px 0;                /* espace au-dessus/en-dessous du groupe */
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    flex-shrink: 0;                /* empêche que la case rétrécisse */
+    width: 18px;
+    height: 18px;
+    margin: 0;                     /* reset marge par défaut */
+    accent-color: #00dfff;
+}
+
+.checkbox-wrapper label {
+    margin: 0;                     /* reset la marge block par défaut */
+    font-size: 15px;
+    color: #aaccff;
     cursor: pointer;
-    user-select: none;
+    flex: 1;                       /* prend le reste de l'espace */
+    white-space: nowrap;           /* évite retour à la ligne */
 }
 
-.checkbox-label {
-    font-size: 14px;
-    color: #eee;
-    flex: 1;
+/* ==========================================================================
+   RESPONSIVE - Mobile & small screens
+   ========================================================================== */
+@media (max-width: 768px) {
+    #controls {
+        width: calc(100% - 24px);
+        left: 12px;
+        right: 12px;
+        top: 12px;
+        padding: 0;
+        max-height: 85vh;
+    }
+
+    #main-controls-toggle summary h1 {
+        padding: 16px 48px 16px 20px;
+        font-size: 24px;
+    }
+
+    .control-group summary {
+        padding: 12px 48px 12px 20px;
+        font-size: 16px;
+    }
+
+    .group-content {
+        padding: 16px 20px;
+    }
+
+    .slider-top-row input[type="number"] {
+        width: 90px;
+        padding: 6px 18px 6px 10px;
+    }
 }
 
-.styled-checkbox {
-    width: 20px;
-    height: 20px;
-    appearance: none;
-    -webkit-appearance: none;
-    background-color: #333;
-    border: 2px solid #555;
-    border-radius: 6px;
-    position: relative;
-    transition: all 0.2s;
-    cursor: pointer;
+/* ==========================================================================
+   SPACING & TRANSITIONS
+   ========================================================================== */
+.main-content-wrapper {
+    padding: 0;
+    transition: max-height 0.4s ease-out;
+    overflow: hidden;
 }
 
-.styled-checkbox:checked {
-    background-color: #00b7ffff;
-    border-color: #00dfffff;
-    box-shadow: 0 0 10px rgba(0, 183, 255, 0.4);
+/* Intro text spacing */
+.main-content-wrapper > :first-child {
+    margin-top: 24px !important;
+    padding: 0 24px;
 }
 
-.styled-checkbox:checked::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.checkbox-wrapper:hover .styled-checkbox {
-    border-color: #00aaff;
-}
-
-/* Selects */
-.texture-select {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    background-color: rgba(40, 50, 70, 0.8);
-    color: #fff;
-    border: 1px solid rgba(100, 150, 255, 0.5);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.texture-select:hover {
-    border-color: #00b7ffff;
-    box-shadow: 0 0 10px rgba(0, 183, 255, 0.3);
-}
-
-.texture-select option {
-    background-color: #222;
-    color: #eee;
+.main-content-wrapper h4 {
+    margin: 0 0 32px 0;
+    font-style: italic;
+    font-weight: normal;
+    color: #88ccffcc;
+    text-align: center;
+    opacity: 0.9;
 }

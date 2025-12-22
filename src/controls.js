@@ -83,7 +83,20 @@ function initSpecialKeyForOrbitControls() {
 }
 
 function createHTMLControls(container) {
+    const contentWrapper = container.querySelector('.main-content-wrapper');
+    if (!contentWrapper) {
+        console.error('main-content-wrapper non trouvé dans #controls');
+        return;
+    }
 
+    const mainDetails = container.querySelector('#main-controls-toggle');    
+    // Closed by default on mobile
+    if (window.innerWidth <= 768) {
+        mainDetails.open = false;
+    } else {
+        mainDetails.open = true;
+    }
+    
     function addGroup(parent, name) {
         const details = document.createElement('details');
         details.open = false;
@@ -102,7 +115,7 @@ function createHTMLControls(container) {
     }
 
     // Time
-    const timeGroup = addGroup(container, 'Time control');
+    const timeGroup = addGroup(contentWrapper, 'Time control');
 
     const timeButton = document.createElement('button');
     timeButton.textContent = 'Stop';
@@ -119,7 +132,7 @@ function createHTMLControls(container) {
     }, 0.1);
 
     // Cannon
-    const cannonGroupDiv = addGroup(container, 'Cannon');
+    const cannonGroupDiv = addGroup(contentWrapper, 'Cannon');
 
     [latDisplay] = addSlider(cannonGroupDiv, 'Latitude (°)', -90, 90, cannonParams.lat, value => {
         cannonParams.lat = value;
@@ -151,22 +164,22 @@ function createHTMLControls(container) {
     }, 0.1);
 
     // Atmosphere
-    addGroup(container, 'Atmosphere');
+    addGroup(contentWrapper, 'Atmosphere');
 
     // Camera
-    addGroup(container, 'Camera');
+    addGroup(contentWrapper, 'Camera');
 
     // Display settings
 
     // Axis diplay
-    const displayGroup = addGroup(container, 'Display settings');
+    const displayGroup = addGroup(contentWrapper, 'Display settings');
 
     const checkboxWrapper = document.createElement('div');
     checkboxWrapper.classList.add('checkbox-wrapper');
 
     const checkboxLabel = document.createElement('label');
     checkboxLabel.classList.add('checkbox-label');
-    checkboxLabel.textContent = 'Afficher les axes du référentiel';
+    checkboxLabel.textContent = 'Display referential axes';
 
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -193,7 +206,7 @@ function createHTMLControls(container) {
     textureWrapper.style.marginBottom = '18px';
 
     const textureLabel = document.createElement('label');
-    textureLabel.textContent = 'Earth texture';
+    textureLabel.textContent = 'Change Earth texture ';
     textureLabel.style.display = 'block';
     textureLabel.style.marginBottom = '8px';
     textureLabel.style.fontSize = '14px';
@@ -234,7 +247,7 @@ function createHTMLControls(container) {
     fireButton.addEventListener('click', () => {
         console.log('Fire !', cannonParams);
     });
-    container.appendChild(fireButton);
+    contentWrapper.appendChild(fireButton);
 }
 
 function addSlider(container, labelText, min, max, initial, onChange, step = 1) {
