@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yet Another Newton's Cannon</title>
+    <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'">
+    <!-- Importmap pour permettre les bare imports comme "three" et "three/addons/" -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="controls">
+        <h1 style="margin-top: 1px; text-align: center;">FlexyOrbit</h1>
+        <h3>Yet Another Newton's Cannon in 3D</h3>
+        <br>
+    </div>
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
