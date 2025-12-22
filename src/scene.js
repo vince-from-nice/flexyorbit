@@ -24,6 +24,7 @@ export function createScene(container) {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.logarithmicDepthBuffer = true; // always usefull even the unit is km ?
   container.appendChild(renderer.domElement);
+  logRendererInfos();
 
   createAxis();
   createLighting();
@@ -35,6 +36,31 @@ export function createScene(container) {
   scene.add(axesGroup);
 
   updateCannonWithParams();
+}
+
+function logRendererInfos() {
+  console.log("Renderer informations:")
+  const gl = renderer.getContext();
+  const debugInfo = gl.getExtension('RENDERER');
+  if (debugInfo) {
+      const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+      const gpuRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      console.log('\tGPU Vendor:', vendor);
+      console.log('\tGPU Renderer (driver):', gpuRenderer);
+  } else {
+      console.log('\tGPU Vendor (masked):', gl.getParameter(gl.VENDOR));
+      console.log('\tGPU Renderer (masked):', gl.getParameter(gl.RENDERER));
+  }
+  console.log('\tWebGL Version:', gl.getParameter(gl.VERSION));
+  console.log('\tShading Language Version:', gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
+  console.log('\tMax Anisotropy:', renderer.capabilities.getMaxAnisotropy());
+  console.log('\tPrecision (highp float support in fragment shaders):', renderer.capabilities.precision);
+  console.log('\tMax Vertex Uniform Vectors:', gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS));
+  console.log('\tMax Fragment Uniform Vectors:', gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS));
+  console.log('\tMax Varying Vectors:', gl.getParameter(gl.MAX_VARYING_VECTORS));
+  // console.log('\tRenderer capabilities:', renderer.capabilities);
+  // That info is very relevant because of the big size of the Earth texture
+  console.log('\tMax texture size:', renderer.capabilities.maxTextureSize);  
 }
 
 function createAxis() {
@@ -61,7 +87,6 @@ function createLighting() {
 function createEarth() {
   const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
 
-  console.log('Render max texture size:', renderer.capabilities.maxTextureSize);
   const textureLoader = new THREE.TextureLoader();
   const bumpTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png')  
   const specularTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png');
@@ -196,6 +221,6 @@ export function updateCannonWithParams() {
 
   // Logs the new values
   console.log('Cannon has been updated with: lat=' + lat.toFixed(2) + '° lon=' + lon.toFixed(2) + '° altitude=' + altitude.toFixed(0) + 'km azimuth=' + azimuth + '° elevation=' + elevation + '°');
-  console.log("CannonGroup position: x=" + cannonGroup.position.x.toFixed(0) + " y=" + cannonGroup.position.y.toFixed(0) + " z=" + cannonGroup.position.z.toFixed(0));
-  console.log("CannonGroup orientation: up=<" + cannonGroup.up.x.toFixed(3) + " " + cannonGroup.up.y.toFixed(3) + " " + cannonGroup.up.z.toFixed(3) + "> horizon=<" + horizontalDir.x.toFixed(3) + " " + horizontalDir.y.toFixed(3) + " " + horizontalDir.z.toFixed(3) + ">");
+  console.log("\tCannonGroup position: x=" + cannonGroup.position.x.toFixed(0) + " y=" + cannonGroup.position.y.toFixed(0) + " z=" + cannonGroup.position.z.toFixed(0));
+  console.log("\tCannonGroup orientation: up=<" + cannonGroup.up.x.toFixed(3) + " " + cannonGroup.up.y.toFixed(3) + " " + cannonGroup.up.z.toFixed(3) + "> horizon=<" + horizontalDir.x.toFixed(3) + " " + horizontalDir.y.toFixed(3) + " " + horizontalDir.z.toFixed(3) + ">");
 }
