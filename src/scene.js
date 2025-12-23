@@ -30,6 +30,9 @@ export function createScene(container) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.logarithmicDepthBuffer = true; // always usefull even the unit is km ?
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  //renderer.shadowMap.type = THREE.PCFShadowMap;
   container.appendChild(renderer.domElement);
   logRendererInfos();
 
@@ -94,7 +97,22 @@ function createLighting() {
 
   const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
   sunLight.position.set(EARTH_RADIUS * 50, EARTH_RADIUS * 20, EARTH_RADIUS * 30);
+  // Sun light - Shadow settings
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.width = 4096;
+  sunLight.shadow.mapSize.height = 4096;
+  sunLight.shadow.bias = -0.0001;
+  sunLight.shadow.normalBias = 0.5;  
+  const shadowSize = EARTH_RADIUS * 3;
+  sunLight.shadow.camera.left   = -shadowSize;
+  sunLight.shadow.camera.right  =  shadowSize;
+  sunLight.shadow.camera.top    =  shadowSize;
+  sunLight.shadow.camera.bottom = -shadowSize;
+  sunLight.shadow.camera.near = EARTH_RADIUS * 0.1;
+  sunLight.shadow.camera.far  = EARTH_RADIUS * 100;
   scene.add(sunLight);
+  // Debug : display shadow camera
+  //scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
 }
 
 function createEarth() {
@@ -121,9 +139,8 @@ function createEarth() {
   });
 
   earth = new THREE.Mesh(geometry, material);
-
+  earth.receiveShadow = true;
   setEarthTexture('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
-  
   scene.add(earth);
 }
 
@@ -149,6 +166,7 @@ function createCannon() {
     roughness: 0.3,
   });
   const base = new THREE.Mesh(baseGeometry, baseMaterial);
+  base.castShadow = true;
   base.position.y = 1 * scaleFactor;
   cannonGroup.add(base);
 
@@ -163,6 +181,7 @@ function createCannon() {
     emissiveIntensity: 0.15
   });
   const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+  tube.castShadow = true;
   tube.rotation.x = Math.PI / 2; // Point along +Z (instead of Y)
   tube.position.set(0, 0, tubeLength / 2); // Centered on the pivot, rear at 0, front at tubeLength
 
@@ -187,6 +206,7 @@ function createCannon() {
     roughness: 0.2
   });
   cannonball = new THREE.Mesh(ballGeometry, ballMaterial);
+  cannonball.castShadow = true;
   // Position at the exact end of the tube (front + a small offset)
   cannonball.position.set(0, 0, tubeLength + 3 * scaleFactor); // + radius so that it is centered at the exit
   elevationGroup.add(cannonball);
@@ -196,10 +216,6 @@ function createCannon() {
   cannonGroup.userData.tube = tube;
 
   scene.add(cannonGroup);
-}
-
-function createCannonball() {
-
 }
 
 export function updateCannonWithParams() {
@@ -251,7 +267,7 @@ export function updateCannonWithParams() {
   elevationGroup.rotateX(-elevationRad);
 
   // Logs the new values
-  console.log('Cannon has been updated with: lat=' + lat.toFixed(2) + '° lon=' + lon.toFixed(2) + '° altitude=' + altitude.toFixed(0) + 'km azimuth=' + azimuth + '° elevation=' + elevation + '°');
+  console.log('Cannon has been updated with: lat=' + lat.toFixed(2) + '° lon=' + lon.toFixed(2) + '° altitude=' + altitude.toFixed(0) + 'km azimuth=' + azimuth.toFixed(0) + '° elevation=' + elevation.toFixed(0) + '°');
   console.log("   CannonGroup position: x=" + cannonGroup.position.x.toFixed(0) + " y=" + cannonGroup.position.y.toFixed(0) + " z=" + cannonGroup.position.z.toFixed(0));
   console.log("   CannonGroup orientation: up=<" + cannonGroup.up.x.toFixed(3) + " " + cannonGroup.up.y.toFixed(3) + " " + cannonGroup.up.z.toFixed(3) + "> horizon=<" + horizontalDir.x.toFixed(3) + " " + horizontalDir.y.toFixed(3) + " " + horizontalDir.z.toFixed(3) + ">");
 }
