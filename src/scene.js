@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export let scene, camera, renderer, earth, cannonGroup, axesGroup;
+export let scene, camera, renderer, earth, cannonGroup, axesGroup, cannonball;
 
 export const EARTH_RADIUS = 6371; // the unit is the kilometer
 
@@ -163,25 +163,43 @@ function createCannon() {
     emissiveIntensity: 0.15
   });
   const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
-  tube.rotation.x = Math.PI / 2; // Pointe le long de +Z (au lieu de Y)
-  tube.position.set(0, 0, tubeLength / 2); // Centré sur le pivot, arrière à 0, avant à tubeLength
+  tube.rotation.x = Math.PI / 2; // Point along +Z (instead of Y)
+  tube.position.set(0, 0, tubeLength / 2); // Centered on the pivot, rear at 0, front at tubeLength
 
   // Group for the elevation
   const elevationGroup = new THREE.Group();
   elevationGroup.add(tube);
-  elevationGroup.position.set(0, 4 * scaleFactor, 0); // Hauteur au-dessus de la base
+  elevationGroup.position.set(0, 4 * scaleFactor, 0);
   cannonGroup.add(elevationGroup);
 
   // Light on the tube
   const muzzleLight = new THREE.PointLight(0x00aaff, 3, 40 * scaleFactor);
-  muzzleLight.position.set(0, 0, tubeLength); // À l'extrémité avant
+  muzzleLight.position.set(0, 0, tubeLength);
   elevationGroup.add(muzzleLight);
+
+  // Cannonball
+  const ballGeometry = new THREE.SphereGeometry(3 * scaleFactor, 32, 32); // Rayon un peu plus grand que le tube (radius ~2-2.5)
+  const ballMaterial = new THREE.MeshStandardMaterial({
+    color: 0xff0000,
+    emissive: 0xff0000,
+    emissiveIntensity: 0.5,
+    metalness: 0.8,
+    roughness: 0.2
+  });
+  cannonball = new THREE.Mesh(ballGeometry, ballMaterial);
+  // Position at the exact end of the tube (front + a small offset)
+  cannonball.position.set(0, 0, tubeLength + 3 * scaleFactor); // + radius so that it is centered at the exit
+  elevationGroup.add(cannonball);
 
   // References
   cannonGroup.userData.elevationGroup = elevationGroup;
   cannonGroup.userData.tube = tube;
 
   scene.add(cannonGroup);
+}
+
+function createCannonball() {
+
 }
 
 export function updateCannonWithParams() {
