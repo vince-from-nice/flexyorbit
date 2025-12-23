@@ -13,6 +13,13 @@ export let cannonParams = {
   speed: 7.9
 };
 
+export const earthTextures = [
+    { value: 'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg', label: 'BlueMarble (4K)' },
+    { value: 'assets/earth/BlueMarble-5k.jpg', label: 'BlueMarble (5K)' },
+    { value: 'assets/earth/BlueMarble-16k.jpg', label: 'BlueMarble (16K)' },
+    { value: 'assets/earth/SolarSystemScope-8k.jpg', label: 'SolarSystemScope (8K)' },
+];
+
 export function createScene(container) {
   scene = new THREE.Scene();
   

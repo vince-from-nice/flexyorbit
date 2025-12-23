@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { camera, renderer, cannonGroup, earth, EARTH_RADIUS, cannonParams, updateCannonWithParams } from './scene.js';
+import { camera, renderer, cannonGroup, earth, EARTH_RADIUS, cannonParams, earthTextures, updateCannonWithParams } from './scene.js';
 
 export let orbitControls;
 
@@ -344,18 +344,11 @@ function createHTMLControls(container) {
     const textureSelect = document.createElement('select');
     textureSelect.classList.add('texture-select'); 
 
-    const textures = [
-        { value: 'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg', label: 'BlueMarble (4K)' },
-        { value: 'assets/earth/BlueMarble-5k.jpg', label: 'BlueMarble (5K)' },
-        { value: 'assets/earth/SolarSystemScope-8k.jpg', label: 'SolarSystemScope (8K)' },
-        { value: 'assets/earth/ArtStation-21k.jpg', label: 'ArtStation (21K but downscaled to 8K or 16K)' },
-    ];
-
-    textures.forEach(tex => {
+    earthTextures.forEach(tex => {
         const option = document.createElement('option');
         option.value = tex.value;
         option.textContent = tex.label;
-        if (tex.value.includes('unpkg.com')) option.selected = true;
+        if (tex.value.includes('BlueMarble-5k')) option.selected = true;
         textureSelect.appendChild(option);
     });
 
