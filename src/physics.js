@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS } from './constants.js';
-import { scene, earth, updateTrail } from './scene.js';
+import { scene } from './scene/scene.js';
+import { updateTrail } from './scene/trails.js';
+import { earth } from './scene/earth.js';
 
 const G_SURFACE = 9.81e-3; // km/s²
 const COLLISION_THRESHOLD = 1; // km
@@ -18,10 +20,10 @@ export function animatePhysics(delta) {
     if (obj?.userData?.isInFlight) {
 
       const accel = getGravitationalAcceleration(obj.position);
-      
+
       // v += a * dt
       obj.userData.velocity.addScaledVector(accel, delta);
-      
+
       // pos += v * dt
       obj.position.addScaledVector(obj.userData.velocity, delta);
 
@@ -29,7 +31,7 @@ export function animatePhysics(delta) {
         updateTrail(obj);
       }
 
-      checkCollisionAndHandle(obj); 
+      checkCollisionAndHandle(obj);
     }
   });
 }
@@ -76,7 +78,7 @@ function checkCollisionAndHandle(obj) {
 
     obj.position.copy(surfaceWorldPos);
 
-    obj.material.color.set(0x1a1a1a); 
+    obj.material.color.set(0x1a1a1a);
     obj.material.emissive.set(0x000000);
 
     console.log("Impact !");
