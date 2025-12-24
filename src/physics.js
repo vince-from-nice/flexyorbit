@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS } from './constants.js';
-import { scene, earth } from './scene.js';
+import { scene, earth, updateTrail } from './scene.js';
 
 const G_SURFACE = 9.81e-3; // km/s²
 const COLLISION_THRESHOLD = 1; // km
@@ -25,12 +25,16 @@ export function animatePhysics(delta) {
       // pos += v * dt
       obj.position.addScaledVector(obj.userData.velocity, delta);
 
-      checkCollisionAndHandle(obj);
+      if (obj.userData.trail) {
+        updateTrail(obj);
+      }
+
+      checkCollisionAndHandle(obj); 
     }
   });
 }
 
-export function getGravitationalAcceleration(position) {
+function getGravitationalAcceleration(position) {
   const r = position.length();
   if (r < 0.1) return new THREE.Vector3();
 
@@ -42,7 +46,7 @@ export function getGravitationalAcceleration(position) {
   return direction.multiplyScalar(accelMagnitude);
 }
 
-export function checkCollisionAndHandle(obj) {
+function checkCollisionAndHandle(obj) {
   if (!obj?.userData?.isInFlight) return false;
 
   const worldPos = new THREE.Vector3();
@@ -67,10 +71,13 @@ export function checkCollisionAndHandle(obj) {
       earth.add(obj);
     }
 
-    // Conversion explicite monde → local à earth
+    // Explicit conversion from world to earth
     earth.worldToLocal(surfaceWorldPos);
 
     obj.position.copy(surfaceWorldPos);
+
+    obj.material.color.set(0x1a1a1a); 
+    obj.material.emissive.set(0x000000);
 
     console.log("Impact !");
 

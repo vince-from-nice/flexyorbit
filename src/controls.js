@@ -6,7 +6,7 @@ import { camera, renderer, scene, cannonGroup, earth, cannonParams, earthTexture
 export let orbitControls;
 
 export let timePaused = false;
-export let timeAcceleration = 200;
+export let timeAcceleration = 100;
 
 const baseRotateSpeed = 1.0;
 const basePanSpeed = 1.0;
@@ -368,14 +368,14 @@ function createHTMLControls(container) {
     fireButton.textContent = 'Fire the cannonball !';
     fireButton.classList.add('fire-button');
     fireButton.addEventListener('click', () => {
-        console.log('Fire !', cannonParams);
+        console.log('Fire cannon with :', cannonParams);
+        cannonball.material.color.set(0xff0000);
         const elevationGroup = cannonGroup.userData.elevationGroup;
         // Reattach to elevationGroup and reset local position
         if (cannonball.parent !== elevationGroup) {
             scene.remove(cannonball);
             elevationGroup.add(cannonball);
         }
-        console.log("cannonball reset: ", cannonball)
         cannonball.position.copy(cannonball.userData.initialLocalPosition);
         // Compute world position
         const worldPos = new THREE.Vector3();
@@ -389,7 +389,7 @@ function createHTMLControls(container) {
         scene.add(cannonball);
         cannonball.position.copy(worldPos);
         cannonball.userData.isInFlight = true;
-        console.log("cannonball fired: ", cannonball)
+        //console.log("Cannonball fired !", cannonball)
     });
     contentWrapper.appendChild(fireButton);
 }

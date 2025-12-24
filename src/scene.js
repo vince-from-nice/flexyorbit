@@ -20,6 +20,9 @@ export const earthTextures = [
     { value: 'assets/earth/SolarSystemScope-8k.jpg', label: 'SolarSystemScope (8K)' },
 ];
 
+const trailMaxPoints = 1000;
+const trailLifetime = 30;
+
 export function createScene(container) {
   scene = new THREE.Scene();
   
@@ -215,6 +218,17 @@ function createCannon() {
   registerAnimable(cannonball);
   elevationGroup.add(cannonball);
 
+  // Cannonball trail
+  const trailGeometry = new THREE.BufferGeometry();
+  const trailPositions = new Float32Array(trailMaxPoints * 3);
+  trailGeometry.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
+  const trailMaterial = new THREE.LineBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.8 });
+  const trail = new THREE.Line(trailGeometry, trailMaterial);
+  trail.userData.points = []; // Array of {pos: Vector3, time: number}
+  trail.userData.currentIndex = 0;
+  scene.add(trail);
+  cannonball.userData.trail = trail;
+
   // References
   cannonGroup.userData.elevationGroup = elevationGroup;
   cannonGroup.userData.tube = tube;
@@ -274,4 +288,30 @@ export function updateCannonWithParams() {
   console.log('Cannon has been updated with: lat=' + lat.toFixed(2) + '° lon=' + lon.toFixed(2) + '° altitude=' + altitude.toFixed(0) + 'km azimuth=' + azimuth.toFixed(0) + '° elevation=' + elevation.toFixed(0) + '°');
   console.log("   CannonGroup position: x=" + cannonGroup.position.x.toFixed(0) + " y=" + cannonGroup.position.y.toFixed(0) + " z=" + cannonGroup.position.z.toFixed(0));
   console.log("   CannonGroup orientation: up=<" + cannonGroup.up.x.toFixed(3) + " " + cannonGroup.up.y.toFixed(3) + " " + cannonGroup.up.z.toFixed(3) + "> horizon=<" + horizontalDir.x.toFixed(3) + " " + horizontalDir.y.toFixed(3) + " " + horizontalDir.z.toFixed(3) + ">");
+}
+
+export function updateTrail(obj) {  
+  const trail = obj.userData.trail;
+  const now = Date.now() / 1000; // Real time for fading
+
+  // Add new point
+  trail.userData.points.push({ pos: obj.position.clone(), time: now });
+  if (trail.userData.points.length > trailMaxPoints) {
+    trail.userData.points.shift(); // Remove oldest if full
+  }
+
+  // Remove old points
+  while (trail.userData.points.length > 0 && now - trail.userData.points[0].time > trailLifetime) {
+    trail.userData.points.shift();
+  }
+
+  // Update geometry
+  const positions = trail.geometry.attributes.position.array;
+  trail.userData.points.forEach((p, i) => {
+    positions[i * 3] = p.pos.x;
+    positions[i * 3 + 1] = p.pos.y;
+    positions[i * 3 + 2] = p.pos.z;
+  });
+  trail.geometry.setDrawRange(0, trail.userData.points.length);
+  trail.geometry.attributes.position.needsUpdate = true;
 }
