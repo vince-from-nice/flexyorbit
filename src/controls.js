@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import { EARTH_RADIUS } from './constants.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { camera, renderer, cannonGroup, earth, EARTH_RADIUS, cannonParams, earthTextures, updateCannonWithParams } from './scene.js';
+import { camera, renderer, scene, cannonGroup, earth, cannonParams, earthTextures, updateCannonWithParams, cannonball } from './scene.js';
 
 export let orbitControls;
 
@@ -256,7 +257,7 @@ function createHTMLControls(container) {
     timeGroup.parentElement.open = true;
     timeGroup.appendChild(timeButton);
 
-    addSlider(timeGroup, 'Time acceleration', 1, 10000, timeAcceleration, value => {
+    addSlider(timeGroup, 'Time acceleration', 1, 1000, timeAcceleration, value => {
         timeAcceleration = value;
     }, 0.1);
 
@@ -312,7 +313,7 @@ function createHTMLControls(container) {
 
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.checked = true; 
+    checkbox.checked = false; 
     checkbox.classList.add('styled-checkbox');
 
     checkbox.addEventListener('change', async () => {
@@ -368,6 +369,27 @@ function createHTMLControls(container) {
     fireButton.classList.add('fire-button');
     fireButton.addEventListener('click', () => {
         console.log('Fire !', cannonParams);
+        const elevationGroup = cannonGroup.userData.elevationGroup;
+        // Reattach to elevationGroup and reset local position
+        if (cannonball.parent !== elevationGroup) {
+            scene.remove(cannonball);
+            elevationGroup.add(cannonball);
+        }
+        console.log("cannonball reset: ", cannonball)
+        cannonball.position.copy(cannonball.userData.initialLocalPosition);
+        // Compute world position
+        const worldPos = new THREE.Vector3();
+        cannonball.getWorldPosition(worldPos);
+        // Compute world direction (local Z of tube)
+        const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(elevationGroup.getWorldQuaternion(new THREE.Quaternion())).normalize();
+        // Set initial velocity (direction * speed in km/s)
+        cannonball.userData.velocity.copy(direction).multiplyScalar(cannonParams.speed);
+        // Detach from cannon and add to scene (for inertial frame)
+        elevationGroup.remove(cannonball);
+        scene.add(cannonball);
+        cannonball.position.copy(worldPos);
+        cannonball.userData.isInFlight = true;
+        console.log("cannonball fired: ", cannonball)
     });
     contentWrapper.appendChild(fireButton);
 }

@@ -1,8 +1,8 @@
 import * as THREE from 'three';
+import { EARTH_RADIUS } from './constants.js';
+import { registerAnimable } from './physics.js';
 
 export let scene, camera, renderer, earth, cannonGroup, axesGroup, cannonball;
-
-export const EARTH_RADIUS = 6371; // the unit is the kilometer
 
 export let cannonParams = {
   lat: 43.53,
@@ -10,7 +10,7 @@ export let cannonParams = {
   altitude: 100,
   azimuth: 0,
   elevation: 45,
-  speed: 7.9
+  speed: 1.5
 };
 
 export const earthTextures = [
@@ -43,7 +43,7 @@ export function createScene(container) {
 
   earth.add(cannonGroup);
 
-  scene.add(axesGroup);
+  //scene.add(axesGroup);
 
   updateCannonWithParams();
 }
@@ -197,7 +197,8 @@ function createCannon() {
   elevationGroup.add(muzzleLight);
 
   // Cannonball
-  const ballGeometry = new THREE.SphereGeometry(3 * scaleFactor, 32, 32); // Rayon un peu plus grand que le tube (radius ~2-2.5)
+  const cannonballRadius = 3 * scaleFactor;
+  const ballGeometry = new THREE.SphereGeometry(cannonballRadius, 32, 32); // Rayon un peu plus grand que le tube (radius ~2-2.5)
   const ballMaterial = new THREE.MeshStandardMaterial({
     color: 0xff0000,
     emissive: 0xff0000,
@@ -207,8 +208,11 @@ function createCannon() {
   });
   cannonball = new THREE.Mesh(ballGeometry, ballMaterial);
   cannonball.castShadow = true;
-  // Position at the exact end of the tube (front + a small offset)
-  cannonball.position.set(0, 0, tubeLength + 3 * scaleFactor); // + radius so that it is centered at the exit
+  // Set the initial position at the exact end of the tube and save it
+  const initialPosition = new THREE.Vector3(0, 0, tubeLength + cannonballRadius);
+  cannonball.userData.initialLocalPosition = initialPosition;
+  cannonball.position.copy(initialPosition);
+  registerAnimable(cannonball);
   elevationGroup.add(cannonball);
 
   // References

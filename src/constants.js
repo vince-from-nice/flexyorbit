@@ -1,0 +1,1 @@
+export const EARTH_RADIUS = 6371; // the unit is the kilometer
