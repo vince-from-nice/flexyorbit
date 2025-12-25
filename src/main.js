@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { createScene, camera, renderer, scene } from './scene/scene.js';
 import { earth } from './scene/earth.js';
+import { updateThickLineResolution } from './scene/trails.js';
 import { initControls, timePaused, timeAcceleration } from './controls/interface.js';
 import { orbitControls } from './controls/camera.js';
 import { animatePhysics } from './physics.js';
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    updateThickLineResolution();
   });
 });
 

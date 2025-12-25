@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { EARTH_RADIUS } from '../constants.js';
 import { createEarth } from './earth.js';
 import { createCannon } from './cannon.js';
-import { createCannonballTrail } from './trails.js';
+import { createOrResetCannonballTrail } from './trails.js';
 
 export let scene, camera, renderer, axesGroup;
 
@@ -14,7 +14,7 @@ export function createScene(container) {
   createLighting();
   createEarth();
   createCannon();
-  createCannonballTrail();
+  createOrResetCannonballTrail();
 }
 
 function createCamera() {

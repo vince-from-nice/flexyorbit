@@ -1,10 +1,13 @@
 import * as THREE from 'three';
 
 import { scene } from '../scene/scene.js';
-import { cannonGroup, cannonParams, cannonball } from '../scene/cannon.js';
+import { cannonGroup, cannonParams, cannonball, updateCannonWithParams } from '../scene/cannon.js';
+import { trailConfig, createOrResetCannonballTrail } from '../scene/trails.js';
 import { earthTextures } from '../scene/earth.js';
+import { trailStyles } from '../scene/trails.js';
 import { initDraggings } from './dragging.js'
 import { initCameraControls } from './camera.js'
+
 
 export let timePaused = false;
 export let timeAcceleration = 100;
@@ -139,33 +142,39 @@ function createHTMLControls() {
     // Display settings
     ///////////////////////////////////////////////////////////////////////////
 
-    // Axis diplay
     const displayGroup = addGroup(contentWrapper, 'Display settings');
 
-    const checkboxWrapper = document.createElement('div');
-    checkboxWrapper.classList.add('checkbox-wrapper');
+    // Trail style
+    const trailStyleWrapper = document.createElement('div');
+    trailStyleWrapper.style.marginTop = '20px';
+    trailStyleWrapper.style.marginBottom = '18px';
 
-    const checkboxLabel = document.createElement('label');
-    checkboxLabel.classList.add('checkbox-label');
-    checkboxLabel.textContent = 'Display referential axes';
+    const trailStyleLabel = document.createElement('label');
+    trailStyleLabel.textContent = 'Change trail style of the cannonball';
+    trailStyleLabel.className = 'control-label';
 
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = false;
-    checkbox.classList.add('styled-checkbox');
+    const trailStyleSelect = document.createElement('select');
+    trailStyleSelect.className = 'trail-style-select';
 
-    checkbox.addEventListener('change', async () => {
-        const { scene, axesGroup } = await import('../scene/scene.js');
-        if (checkbox.checked) {
-            scene.add(axesGroup);
-        } else {
-            scene.remove(axesGroup);
+    trailStyles.forEach(style => {
+        const option = document.createElement('option');
+        option.value = style.code;
+        option.textContent = style.label;
+        if (style.code === trailConfig.currentStyle) {
+            option.selected = true;
         }
+        trailStyleSelect.appendChild(option);
     });
 
-    checkboxWrapper.appendChild(checkbox);
-    checkboxWrapper.appendChild(checkboxLabel);
-    displayGroup.appendChild(checkboxWrapper);
+    trailStyleSelect.addEventListener('change', async (event) => {
+        const newStyle = event.target.value;
+        trailConfig.currentStyle = newStyle;
+        createOrResetCannonballTrail();
+    });
+
+    trailStyleWrapper.appendChild(trailStyleLabel);
+    trailStyleWrapper.appendChild(trailStyleSelect);
+    displayGroup.appendChild(trailStyleWrapper);
 
     // Earth texture
     const textureWrapper = document.createElement('div');
@@ -199,6 +208,32 @@ function createHTMLControls() {
     textureWrapper.appendChild(textureLabel);
     textureWrapper.appendChild(textureSelect);
     displayGroup.appendChild(textureWrapper);
+
+    // Axis diplay
+    const checkboxWrapper = document.createElement('div');
+    checkboxWrapper.classList.add('checkbox-wrapper');
+
+    const checkboxLabel = document.createElement('label');
+    checkboxLabel.classList.add('checkbox-label');
+    checkboxLabel.textContent = 'Display referential axes';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = false;
+    checkbox.classList.add('styled-checkbox');
+
+    checkbox.addEventListener('change', async () => {
+        const { scene, axesGroup } = await import('../scene/scene.js');
+        if (checkbox.checked) {
+            scene.add(axesGroup);
+        } else {
+            scene.remove(axesGroup);
+        }
+    });
+
+    checkboxWrapper.appendChild(checkbox);
+    checkboxWrapper.appendChild(checkboxLabel);
+    displayGroup.appendChild(checkboxWrapper);
 
     ///////////////////////////////////////////////////////////////////////////
     // Fire button
