@@ -21,7 +21,7 @@ function initOrbitControls() {
     orbitControls.rotateSpeed = baseRotateSpeed;
     orbitControls.panSpeed = basePanSpeed;
     orbitControls.minDistance = EARTH_RADIUS + 300;
-    orbitControls.maxDistance = EARTH_RADIUS * 10;
+    orbitControls.maxDistance = EARTH_RADIUS * 20;
     orbitControls.enablePan = true;
 
     orbitControls.addEventListener('change', adjustOrbitControlsSpeed);

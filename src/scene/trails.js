@@ -13,16 +13,29 @@ export const trailStyles = [
     { code: 'TRAIL_STYLE_WITH_VERTICAL_BARS', label: 'Vertical bars (TODO)' },
 ];
 
+export let currentTrailStyle = 'TRAIL_STYLE_WITH_THICK_LINES';
+
 const MAX_POINTS = 1200;
 const LIFETIME = 30; // seconds
 const MAX_PAST_TRAILS = 10;
 
+// Initialise trails data on cannonball
+function initTrailsData() {
+    if (!cannonball.userData.trails) {
+        cannonball.userData.trails = {
+            current: null,
+            past: []
+        };
+    }
+}
+
+// Create new trail for a new shot
 export function createNewCannonballTrail() {
     initTrailsData();
 
     const trails = cannonball.userData.trails;
 
-    // Déplacer l'ancienne courante vers les passées
+    // Move current to past if meaningful
     if (trails.current) {
         if (trails.current.userData.history?.length > 1) {
             trails.past.push(trails.current);
@@ -41,15 +54,13 @@ export function createNewCannonballTrail() {
 
     trails.current = null;
 
-    const style = trails.style;
-
-    if (style === 'TRAIL_STYLE_WITH_SINGLE_LINES') {
+    if (currentTrailStyle === 'TRAIL_STYLE_WITH_SINGLE_LINES') {
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MAX_POINTS * 3), 3));
         const material = new THREE.LineBasicMaterial({ color: 0xff4444, transparent: true, opacity: 0.75 });
         trails.current = new THREE.Line(geometry, material);
     }
-    else if (style === 'TRAIL_STYLE_WITH_THICK_LINES') {
+    else if (currentTrailStyle === 'TRAIL_STYLE_WITH_THICK_LINES') {
         const geometry = new LineGeometry();
         const material = new LineMaterial({
             color: 0xff4444,
@@ -65,89 +76,16 @@ export function createNewCannonballTrail() {
     if (trails.current) {
         scene.add(trails.current);
         trails.current.userData.history = [];
+        trails.current.userData.style = currentTrailStyle;
     }
 }
 
-export function updateTrail(obj) {
-    if (!obj.userData.trails) return;
-
-    const trails = obj.userData.trails;
-    const now = Date.now() / 1000;
-
-    // Update current trail (si en vol)
-    if (obj.userData.isInFlight && trails.current && trails.current.userData.history) {
-        trails.current.userData.history.push({
-            position: obj.position.clone(),
-            time: now
-        });
-
-        // Cleanup old points
-        while (trails.current.userData.history.length > 0 && now - trails.current.userData.history[0].time > LIFETIME) {
-            trails.current.userData.history.shift();
-        }
-
-        if (trails.current.userData.history.length > MAX_POINTS) {
-            trails.current.userData.history.splice(0, trails.current.userData.history.length - MAX_POINTS);
-        }
-
-        updateTrailGeometry(trails.current, trails.current.userData.history, trails.style);
-    }
-
-    // Update past trails (fade only)
-    trails.past = trails.past.filter(trail => {
-        if (trail.userData.history) {
-            // Cleanup old points
-            while (trail.userData.history.length > 0 && now - trail.userData.history[0].time > LIFETIME) {
-                trail.userData.history.shift();
-            }
-
-            const count = trail.userData.history.length;
-            if (count < 2) {
-                scene.remove(trail);
-                trail.geometry?.dispose();
-                trail.material?.dispose();
-                return false;
-            }
-
-            updateTrailGeometry(trail, trail.userData.history, trails.style);
-            return true;
-        }
-        return false;
-    });
-}
-
-export function updateThickLineResolution() {
-    if (!cannonball.userData.trails) return;
-
-    const trails = cannonball.userData.trails;
-    if (trails.style === 'TRAIL_STYLE_WITH_THICK_LINES') {
-        if (trails.current?.material) {
-            trails.current.material.resolution.set(window.innerWidth, window.innerHeight);
-        }
-        trails.past.forEach(t => {
-            if (t.material) t.material.resolution.set(window.innerWidth, window.innerHeight);
-        });
-    }
-}
-
-export function updateTrailStyle(newStyle) {
-    initTrailsData();
-    cannonball.userData.trails.style = newStyle;
-    createNewCannonballTrail();
-}
-
-function initTrailsData() {
-    if (!cannonball.userData.trails) {
-        cannonball.userData.trails = {
-            current: null,
-            past: [],
-            style: 'TRAIL_STYLE_WITH_THICK_LINES'
-        };
-    }
-}
-
-function updateTrailGeometry(trail, history, style) {
+// Update trail geometry from history (reused for current and past)
+function updateTrailGeometry(trail) {
+    const style = trail.userData.style;
+    const history = trail.userData.history;
     const count = history.length;
+
     if (count < 2) return;
 
     const flat = new Float32Array(count * 3);
@@ -163,15 +101,10 @@ function updateTrailGeometry(trail, history, style) {
         trail.geometry.attributes.position.needsUpdate = true;
     }
     else if (style === 'TRAIL_STYLE_WITH_THICK_LINES') {
-        // Old trail could have another style (and then geometry) than the current style !!
-        if (typeof trail.geometry.setPositions !== 'function') {
-            return;
-        }
         trail.geometry.setPositions(flat);
         trail.geometry._maxInstanceCount = undefined;
         trail.geometry.instanceCount = count - 1;
         trail.computeLineDistances();
-
         trail.geometry.attributes.position.needsUpdate = true;
         ['instanceStart', 'instanceEnd', 'instanceDistanceStart', 'instanceDistanceEnd'].forEach(attr => {
             if (trail.geometry.attributes[attr]) {
@@ -179,6 +112,79 @@ function updateTrailGeometry(trail, history, style) {
             }
         });
     }
-    
-    //console.log("TrailGeometry has been updated with " + count + " points and style is " + style);
+
+    console.log("TrailGeometry has been updated with " + count + " points and style is " + style);
+}
+
+// Update trails every frame
+export function updateTrail(obj) {
+    if (!obj.userData.trails) return;
+
+    const trails = obj.userData.trails;
+    const now = Date.now() / 1000;
+
+    console.log("Trail is updating...");
+
+    // Update current trail
+    if (obj.userData.isInFlight && trails.current && trails.current.userData.history) {
+        trails.current.userData.history.push({
+            position: obj.position.clone(),
+            time: now
+        });
+
+        while (trails.current.userData.history.length > 0 && now - trails.current.userData.history[0].time > LIFETIME) {
+            trails.current.userData.history.shift();
+        }
+
+        if (trails.current.userData.history.length > MAX_POINTS) {
+            trails.current.userData.history.splice(0, trails.current.userData.history.length - MAX_POINTS);
+        }
+
+        updateTrailGeometry(trails.current);
+    }
+
+    // Update past trails (fade only)
+    trails.past = trails.past.filter(trail => {
+        if (trail.userData.history) {
+            while (trail.userData.history.length > 0 && now - trail.userData.history[0].time > LIFETIME) {
+                trail.userData.history.shift();
+            }
+
+            const count = trail.userData.history.length;
+            if (count < 2) {
+                scene.remove(trail);
+                trail.geometry?.dispose();
+                trail.material?.dispose();
+                return false;
+            }
+
+            updateTrailGeometry(trail);
+            return true;
+        }
+        return false;
+    });
+}
+
+// Update resolution on resize
+export function updateThickLineResolution() {
+    if (!cannonball.userData.trails) return;
+
+    const trails = cannonball.userData.trails;
+
+    if (trails.current && trails.current.userData.style === 'TRAIL_STYLE_WITH_THICK_LINES' && trails.current.material) {
+        trails.current.material.resolution.set(window.innerWidth, window.innerHeight);
+    }
+
+    trails.past.forEach(trail => {
+        if (trail.userData.style === 'TRAIL_STYLE_WITH_THICK_LINES' && trail.material) {
+            trail.material.resolution.set(window.innerWidth, window.innerHeight);
+        }
+    });
+}
+
+// Change current style and create new trail
+export function updateTrailStyle(newStyle) {
+    currentTrailStyle = newStyle;
+    initTrailsData();
+    createNewCannonballTrail();
 }
