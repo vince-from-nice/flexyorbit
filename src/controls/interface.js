@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { scene } from '../scene/scene.js';
 import { cannonGroup, cannonParams, cannonball, updateCannonWithParams } from '../scene/cannon.js';
-import { trailConfig, createOrResetCannonballTrail } from '../scene/trails.js';
+import { updateTrailStyle, createNewCannonballTrail } from '../scene/trails.js';
 import { earthTextures } from '../scene/earth.js';
 import { trailStyles } from '../scene/trails.js';
 import { initDraggings } from './dragging.js'
@@ -160,16 +160,14 @@ function createHTMLControls() {
         const option = document.createElement('option');
         option.value = style.code;
         option.textContent = style.label;
-        if (style.code === trailConfig.currentStyle) {
+        if (style.code === cannonball.userData.trails.style) {
             option.selected = true;
         }
         trailStyleSelect.appendChild(option);
     });
 
     trailStyleSelect.addEventListener('change', async (event) => {
-        const newStyle = event.target.value;
-        trailConfig.currentStyle = newStyle;
-        createOrResetCannonballTrail();
+        updateTrailStyle(event.target.value);
     });
 
     trailStyleWrapper.appendChild(trailStyleLabel);
@@ -264,7 +262,8 @@ function createHTMLControls() {
         scene.add(cannonball);
         cannonball.position.copy(worldPos);
         cannonball.userData.isInFlight = true;
-        //console.log("Cannonball fired !", cannonball)
+        createNewCannonballTrail();
+        console.log("Cannonball fired !", cannonball)
     });
     contentWrapper.appendChild(fireButton);
 }

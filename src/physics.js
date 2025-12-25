@@ -27,7 +27,7 @@ export function animatePhysics(delta) {
       // pos += v * dt
       obj.position.addScaledVector(obj.userData.velocity, delta);
 
-      if (obj.userData.trail) {
+      if (obj.userData.trails) {
         updateTrail(obj);
       }
 
