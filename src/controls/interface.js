@@ -177,8 +177,10 @@ function createHTMLControls() {
         const option = document.createElement('option');
         option.value = style.code;
         option.textContent = style.label;
-        if (style.code === cannonball.userData.trails.style) {
+        if (style.code === cannonball.userData.trails.current.userData.style) {
             option.selected = true;
+        } else {
+            option.selected = false;
         }
         trailStyleSelect.appendChild(option);
     });
