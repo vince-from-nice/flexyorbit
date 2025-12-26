@@ -15,7 +15,7 @@ export const trailStyles = [
 
 export let currentTrailStyle = 'TRAIL_STYLE_WITH_THICK_LINES';
 
-const MAX_POINTS = 2000;
+const MAX_POINTS = 5000;
 const LIFETIME = 60; // seconds
 const MAX_PAST_TRAILS = 10;
 

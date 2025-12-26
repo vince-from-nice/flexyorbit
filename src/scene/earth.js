@@ -39,7 +39,7 @@ export function createEarth() {
 
     earth.receiveShadow = true;
 
-    setEarthTexture('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+    setEarthTexture('assets/earth/bluemarble-5k.jpg');
 
     scene.add(earth);
 }

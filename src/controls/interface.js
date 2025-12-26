@@ -198,12 +198,16 @@ function createHTMLControls() {
         const option = document.createElement('option');
         option.value = tex.value;
         option.textContent = tex.label;
-        if (tex.value.includes('BlueMarble-5k')) option.selected = true;
+        if (tex.value.includes('bluemarble-5k')) {
+            option.selected = true;
+        } else {
+            option.selected = false;
+        }
         textureSelect.appendChild(option);
     });
     textureSelect.addEventListener('change', async () => {
         const selectedUrl = textureSelect.value;
-        const { setEarthTexture } = await import('../scene/scene.js');
+        const { setEarthTexture } = await import('../scene/earth.js');
         setEarthTexture(selectedUrl);
     });
     textureWrapper.appendChild(textureLabel);
