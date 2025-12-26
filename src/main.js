@@ -3,7 +3,7 @@ import { createScene, camera, renderer, scene } from './scene/scene.js';
 import { earth } from './scene/earth.js';
 import { updateThickLineResolution } from './scene/trails.js';
 import { initControls, timePaused, timeAcceleration } from './controls/interface.js';
-import { orbitControls } from './controls/camera.js';
+import { updateCameraControls } from './controls/camera.js';
 import { animatePhysics } from './physics.js';
 
 const EARTH_ANGULAR_VELOCITY = 2 * Math.PI / 86164;  // rad/s (période sidérale ~23h56m4s)
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
       earth.rotation.y += EARTH_ANGULAR_VELOCITY * delta * timeAcceleration;
       animatePhysics(delta * timeAcceleration);
     }
-    orbitControls.update();
+    updateCameraControls(delta);
     renderer.render(scene, camera);
   }
   renderer.setAnimationLoop(animate);

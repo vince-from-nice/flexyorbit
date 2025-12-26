@@ -15,8 +15,8 @@ export const trailStyles = [
 
 export let currentTrailStyle = 'TRAIL_STYLE_WITH_THICK_LINES';
 
-const MAX_POINTS = 1200;
-const LIFETIME = 30; // seconds
+const MAX_POINTS = 2000;
+const LIFETIME = 60; // seconds
 const MAX_PAST_TRAILS = 10;
 
 // Initialise trails data on cannonball
@@ -64,7 +64,7 @@ export function createNewCannonballTrail() {
         const geometry = new LineGeometry();
         const material = new LineMaterial({
             color: 0xff4444,
-            linewidth: 6.0,
+            linewidth: 4.0,
             transparent: true,
             opacity: 0.8,
             resolution: new THREE.Vector2(window.innerWidth, window.innerHeight)
@@ -113,7 +113,7 @@ function updateTrailGeometry(trail) {
         });
     }
 
-    console.log("TrailGeometry has been updated with " + count + " points and style is " + style);
+    //console.log("TrailGeometry has been updated with " + count + " points and style is " + style);
 }
 
 // Update trails every frame
@@ -122,8 +122,6 @@ export function updateTrail(obj) {
 
     const trails = obj.userData.trails;
     const now = Date.now() / 1000;
-
-    console.log("Trail is updating...");
 
     // Update current trail
     if (obj.userData.isInFlight && trails.current && trails.current.userData.history) {

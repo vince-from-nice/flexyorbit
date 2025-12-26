@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EARTH_RADIUS } from '../constants.js';
+import { EARTH_RADIUS_SCALED, GLOBAL_SCALE, scaleFromKm } from '../constants.js';
 import { earth } from './earth.js';
 import { registerAnimable } from '../physics.js';
 
@@ -16,7 +16,7 @@ export let cannonParams = {
 
 export function createCannon() {
     cannonGroup = new THREE.Group();
-    const scaleFactor = 10;
+    const scaleFactor = 10 / GLOBAL_SCALE;
 
     // Base
     const baseGeometry = new THREE.BoxGeometry(20 * scaleFactor, 2 * scaleFactor, 20 * scaleFactor);
@@ -29,6 +29,36 @@ export function createCannon() {
     base.castShadow = true;
     base.position.y = 1 * scaleFactor;
     cannonGroup.add(base);
+
+    // Base corner lights
+    const boxSize = 2.5 * scaleFactor; 
+    const halfBase = 10 * scaleFactor;
+    const baseThickness = 2 * scaleFactor;
+    const emissiveColor = 0xffaa55;
+    const emissiveIntensity = 2.2;
+    const glowBoxes = [];
+    const cornerOffsets = [
+        new THREE.Vector3(halfBase, 0, halfBase),
+        new THREE.Vector3(halfBase, 0, -halfBase),
+        new THREE.Vector3(-halfBase, 0, halfBase),
+        new THREE.Vector3(-halfBase, 0, -halfBase),
+    ];
+    cornerOffsets.forEach(offset => {
+        const geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+        const material = new THREE.MeshStandardMaterial({
+            color: emissiveColor,
+            emissive: emissiveColor,
+            emissiveIntensity: emissiveIntensity,
+            metalness: 0.95,
+            roughness: 0.25,
+            toneMapped: false
+        });
+        const box = new THREE.Mesh(geometry, material);
+        box.position.copy(offset);
+        box.position.y = baseThickness / 2 + boxSize / 2; 
+        cannonGroup.add(box);
+        glowBoxes.push(box);
+    });
 
     // Tube
     const tubeLength = 30 * scaleFactor;
@@ -52,9 +82,9 @@ export function createCannon() {
     cannonGroup.add(elevationGroup);
 
     // Light on the tube
-    const muzzleLight = new THREE.PointLight(0x00aaff, 3, 40 * scaleFactor);
-    muzzleLight.position.set(0, 0, tubeLength);
-    elevationGroup.add(muzzleLight);
+    // const muzzleLight = new THREE.PointLight(0x00aaff, 10, 40 * scaleFactor);
+    // muzzleLight.position.set(0, 0, tubeLength);
+    // elevationGroup.add(muzzleLight);
 
     // Cannonball
     const cannonballRadius = 3 * scaleFactor;
@@ -98,7 +128,7 @@ export function updateCannonWithParams() {
     const azimuthRad = azimuth * Math.PI / 180;
     const elevationRad = elevation * Math.PI / 180;
 
-    const r = EARTH_RADIUS + altitude;
+    const r = EARTH_RADIUS_SCALED + scaleFromKm(altitude);
 
     // Compute and set the new position of the cannon group
     const phi = Math.PI / 2 - latRad;

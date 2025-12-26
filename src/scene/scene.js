@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EARTH_RADIUS } from '../constants.js';
+import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
 import { createEarth } from './earth.js';
 import { createCannon } from './cannon.js';
 import { createNewCannonballTrail } from './trails.js';
@@ -18,8 +18,8 @@ export function createScene(container) {
 }
 
 function createCamera() {
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, EARTH_RADIUS * 30);
-  camera.position.set(EARTH_RADIUS * 2, EARTH_RADIUS * 2, EARTH_RADIUS * 2);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, scaleFromKm(10), EARTH_RADIUS_SCALED * 30);
+  camera.position.set(EARTH_RADIUS_SCALED * 2, EARTH_RADIUS_SCALED * 2, EARTH_RADIUS_SCALED * 2);
 }
 
 function createRenderer(container) {
@@ -40,7 +40,7 @@ function createRenderer(container) {
 }
 
 function createAxis() {
-  const AXIS_LENGTH = 10000;
+  const AXIS_LENGTH = EARTH_RADIUS_SCALED * 2 ;
   const origin = new THREE.Vector3(0, 0, 0);
   const headLength = AXIS_LENGTH * 0.1;
   const headWidth = headLength * 0.5;
@@ -59,20 +59,20 @@ function createLighting() {
   scene.add(new THREE.AmbientLight(0x404040, 0.6));
 
   const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
-  sunLight.position.set(EARTH_RADIUS * 50, EARTH_RADIUS * 20, EARTH_RADIUS * 30);
+  sunLight.position.set(EARTH_RADIUS_SCALED * 50, EARTH_RADIUS_SCALED * 20, EARTH_RADIUS_SCALED * 30);
   // Sun light - Shadow settings
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.width = 4096;
   sunLight.shadow.mapSize.height = 4096;
   sunLight.shadow.bias = -0.0001;
   sunLight.shadow.normalBias = 0.5;
-  const shadowSize = EARTH_RADIUS * 3;
+  const shadowSize = EARTH_RADIUS_SCALED * 3;
   sunLight.shadow.camera.left = -shadowSize;
   sunLight.shadow.camera.right = shadowSize;
   sunLight.shadow.camera.top = shadowSize;
   sunLight.shadow.camera.bottom = -shadowSize;
-  sunLight.shadow.camera.near = EARTH_RADIUS * 0.1;
-  sunLight.shadow.camera.far = EARTH_RADIUS * 100;
+  sunLight.shadow.camera.near = EARTH_RADIUS_SCALED * 0.1;
+  sunLight.shadow.camera.far = EARTH_RADIUS_SCALED * 100;
   scene.add(sunLight);
   // Debug : display shadow camera
   //scene.add(new THREE.CameraHelper(sunLight.shadow.camera));

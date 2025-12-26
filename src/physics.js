@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { EARTH_RADIUS } from './constants.js';
+import { EARTH_RADIUS_SCALED, GLOBAL_SCALE } from './constants.js';
 import { scene } from './scene/scene.js';
 import { updateTrail } from './scene/trails.js';
 import { earth } from './scene/earth.js';
 
-const G_SURFACE = 9.81e-3; // km/s²
-const COLLISION_THRESHOLD = 1; // km
+export const G_SURFACE = 9.81e-3 / GLOBAL_SCALE; // km/s² scaled
+export const COLLISION_THRESHOLD = 1 / GLOBAL_SCALE; // km scaled
 
 const animables = new Set();
 
@@ -41,7 +41,7 @@ function getGravitationalAcceleration(position) {
   if (r < 0.1) return new THREE.Vector3();
 
   // 1/r² law
-  const accelMagnitude = G_SURFACE * (EARTH_RADIUS * EARTH_RADIUS) / (r * r);
+  const accelMagnitude = G_SURFACE * (EARTH_RADIUS_SCALED * EARTH_RADIUS_SCALED) / (r * r);
 
   const direction = position.clone().normalize().negate();
 
@@ -56,7 +56,7 @@ function checkCollisionAndHandle(obj) {
 
   const distanceToCenter = worldPos.length();
 
-  if (distanceToCenter <= EARTH_RADIUS + COLLISION_THRESHOLD) {
+  if (distanceToCenter <= EARTH_RADIUS_SCALED + COLLISION_THRESHOLD) {
 
     obj.userData.isInFlight = false;
     obj.userData.velocity.set(0, 0, 0);
@@ -65,7 +65,7 @@ function checkCollisionAndHandle(obj) {
     const surfaceWorldPos = new THREE.Vector3()
       .copy(obj.getWorldPosition(new THREE.Vector3()))
       .normalize()
-      .multiplyScalar(EARTH_RADIUS + COLLISION_THRESHOLD);
+      .multiplyScalar(EARTH_RADIUS_SCALED + COLLISION_THRESHOLD);
 
     // Changing parent after world position fetching
     if (obj.parent !== earth) {

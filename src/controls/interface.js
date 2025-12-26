@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-
 import { scene } from '../scene/scene.js';
+import { scaleFromKm } from '../constants.js';
 import { cannonGroup, cannonParams, cannonball, updateCannonWithParams } from '../scene/cannon.js';
 import { updateTrailStyle, createNewCannonballTrail } from '../scene/trails.js';
 import { earthTextures } from '../scene/earth.js';
 import { trailStyles } from '../scene/trails.js';
 import { initDraggings } from './dragging.js'
-import { initCameraControls } from './camera.js'
+import { initCameraControls, switchCameraControl, registerCameraModeSelect } from './camera.js'
 
 
 export let timePaused = false;
@@ -136,7 +136,31 @@ function createHTMLControls() {
     // Camera
     ///////////////////////////////////////////////////////////////////////////
 
-    addGroup(contentWrapper, 'Camera');
+    const cameraGroup = addGroup(contentWrapper, 'Camera');
+
+    const cameraModeWrapper = document.createElement('div');
+    const cameraModeLabel = document.createElement('label');
+    cameraModeLabel.textContent = 'Change camera control';
+    const cameraModeSelect = document.createElement('select');
+    cameraModeSelect.classList.add('camera-mode-select');
+    cameraModeSelect.innerHTML = `
+        <option value="orbit">Orbit controls</option>
+        <option value="map">Map controls</option>
+        <option value="fly">Fly controls</option>
+        <option value="fps">First Person Shooter</option>
+        <option value="pointerLock">Pointer Lock</option>
+        `;
+    cameraModeSelect.addEventListener('change', (e) => {
+        switchCameraControl(e.target.value);
+    });
+    registerCameraModeSelect(cameraModeSelect);
+    const cameraModeLabel2 = document.createElement('label');
+    cameraModeLabel2.textContent = '(or press "c" to switch mode)';
+    cameraModeLabel2.style.fontSize = 'small';
+    cameraModeWrapper.appendChild(cameraModeLabel);
+    cameraModeWrapper.appendChild(cameraModeSelect);
+    cameraModeWrapper.appendChild(cameraModeLabel2);
+    cameraGroup.appendChild(cameraModeWrapper);
 
     ///////////////////////////////////////////////////////////////////////////
     // Display settings
@@ -146,16 +170,9 @@ function createHTMLControls() {
 
     // Trail style
     const trailStyleWrapper = document.createElement('div');
-    trailStyleWrapper.style.marginTop = '20px';
-    trailStyleWrapper.style.marginBottom = '18px';
-
     const trailStyleLabel = document.createElement('label');
     trailStyleLabel.textContent = 'Change trail style of the cannonball';
-    trailStyleLabel.className = 'control-label';
-
     const trailStyleSelect = document.createElement('select');
-    trailStyleSelect.className = 'trail-style-select';
-
     trailStyles.forEach(style => {
         const option = document.createElement('option');
         option.value = style.code;
@@ -165,30 +182,18 @@ function createHTMLControls() {
         }
         trailStyleSelect.appendChild(option);
     });
-
     trailStyleSelect.addEventListener('change', async (event) => {
         updateTrailStyle(event.target.value);
     });
-
     trailStyleWrapper.appendChild(trailStyleLabel);
     trailStyleWrapper.appendChild(trailStyleSelect);
     displayGroup.appendChild(trailStyleWrapper);
 
     // Earth texture
     const textureWrapper = document.createElement('div');
-    textureWrapper.style.marginTop = '20px';
-    textureWrapper.style.marginBottom = '18px';
-
     const textureLabel = document.createElement('label');
     textureLabel.textContent = 'Change Earth texture ';
-    textureLabel.style.display = 'block';
-    textureLabel.style.marginBottom = '8px';
-    textureLabel.style.fontSize = '14px';
-    textureLabel.style.color = '#eee';
-
     const textureSelect = document.createElement('select');
-    textureSelect.classList.add('texture-select');
-
     earthTextures.forEach(tex => {
         const option = document.createElement('option');
         option.value = tex.value;
@@ -196,13 +201,11 @@ function createHTMLControls() {
         if (tex.value.includes('BlueMarble-5k')) option.selected = true;
         textureSelect.appendChild(option);
     });
-
     textureSelect.addEventListener('change', async () => {
         const selectedUrl = textureSelect.value;
         const { setEarthTexture } = await import('../scene/scene.js');
         setEarthTexture(selectedUrl);
     });
-
     textureWrapper.appendChild(textureLabel);
     textureWrapper.appendChild(textureSelect);
     displayGroup.appendChild(textureWrapper);
@@ -210,16 +213,13 @@ function createHTMLControls() {
     // Axis diplay
     const checkboxWrapper = document.createElement('div');
     checkboxWrapper.classList.add('checkbox-wrapper');
-
     const checkboxLabel = document.createElement('label');
     checkboxLabel.classList.add('checkbox-label');
     checkboxLabel.textContent = 'Display referential axes';
-
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = false;
     checkbox.classList.add('styled-checkbox');
-
     checkbox.addEventListener('change', async () => {
         const { scene, axesGroup } = await import('../scene/scene.js');
         if (checkbox.checked) {
@@ -228,7 +228,6 @@ function createHTMLControls() {
             scene.remove(axesGroup);
         }
     });
-
     checkboxWrapper.appendChild(checkbox);
     checkboxWrapper.appendChild(checkboxLabel);
     displayGroup.appendChild(checkboxWrapper);
@@ -256,7 +255,7 @@ function createHTMLControls() {
         // Compute world direction (local Z of tube)
         const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(elevationGroup.getWorldQuaternion(new THREE.Quaternion())).normalize();
         // Set initial velocity (direction * speed in km/s)
-        cannonball.userData.velocity.copy(direction).multiplyScalar(cannonParams.speed);
+        cannonball.userData.velocity.copy(direction).multiplyScalar(scaleFromKm(cannonParams.speed));
         // Detach from cannon and add to scene (for inertial frame)
         elevationGroup.remove(cannonball);
         scene.add(cannonball);

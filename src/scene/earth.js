@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EARTH_RADIUS } from '../constants.js';
+import { EARTH_RADIUS_SCALED } from '../constants.js';
 import { scene, renderer } from './scene.js';
 
 export let earth;
@@ -12,11 +12,12 @@ export const earthTextures = [
 ];
 
 export function createEarth() {
-    const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
+    const geometry = new THREE.SphereGeometry(EARTH_RADIUS_SCALED, 64, 64);
+    //const geometry = new THREE.BoxGeometry(EARTH_RADIUS, EARTH_RADIUS, EARTH_RADIUS);
 
-    const textureLoader = new THREE.TextureLoader();
-    const bumpTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png')
-    const specularTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png');
+    // const textureLoader = new THREE.TextureLoader();
+    // const bumpTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png')
+    // const specularTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png');
 
     const material = new THREE.MeshStandardMaterial({
         //map: earthTexture,
