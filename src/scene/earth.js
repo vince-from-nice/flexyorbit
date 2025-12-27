@@ -56,6 +56,6 @@ export function setEarthTexture(url) {
     });
 }
 
-export function disableEarthRotation() {
-    earthRotationDisabled = true;
+export function disableEarthRotation(value) {
+    earthRotationDisabled = value;
 }

@@ -145,6 +145,12 @@ body {
     background: rgba(20, 30, 50, 0.4);
 }
 
+/* Allow dropdowns to escape sections */
+.control-group,
+.group-content {
+    overflow: visible;
+}
+
 /* ==========================================================================
    LABELS
    ========================================================================== */

@@ -78,7 +78,7 @@ function createHTMLControls() {
         timeAcceleration = value;
     }, 0.1);
     addCheckbox(timeGroup, 'Disable Earth rotation', '', earthRotationDisabled, value => {
-        disableEarthRotation();
+        disableEarthRotation(value);
     });
     if (isMobile) {
         timeGroup.parentElement.open = false;
@@ -148,6 +148,11 @@ function createHTMLControls() {
     fireButton.classList.add('fire-button');
     fireButton.addEventListener('click', () => {
         fireCannonball();
+    });
+    window.addEventListener('keydown', (e) => {
+        if (e.key == " " || e.code == "Space") {
+            fireCannonball();
+        }
     });
     contentWrapper.appendChild(fireButton);
 }

@@ -9,11 +9,11 @@ import { camera, renderer } from '../scene/scene.js';
 
 export let currentControls = null;
 export const CAMERA_MODES = [
-    { value: 'orbit', label: 'Orbit controls (default)'},
-    { value: 'map', label: 'Map controls (orbit style)'},
-    { value: 'fly', label: 'Fly controls (FPS style)'},
-    { value: 'fps', label: 'First Person Shooter (FPS style)'},
-    { value: 'pointerLock', label: 'Pointer Lock (not clear)'}
+    { value: 'orbit', label: 'Orbit controls (default)' },
+    { value: 'map', label: 'Map controls (orbit style)' },
+    { value: 'fly', label: 'Fly controls (FPS style)' },
+    { value: 'fps', label: 'First Person Shooter' },
+    { value: 'pointerLock', label: 'Pointer Lock (not clear)' }
 ];
 export let currentMode = 'orbit';
 let currentModeIndex = 0;
@@ -37,7 +37,12 @@ export function initCameraControls() {
         if (e.code === 'KeyC' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
             currentModeIndex = (currentModeIndex + 1) % CAMERA_MODES.length;
             const nextMode = CAMERA_MODES[currentModeIndex].value;
-            switchCameraControl(nextMode);
+            console.log("key C ");
+            //switchCameraControl(nextMode);
+            cameraModeSelectRef.value = nextMode;
+            if (cameraModeSelectRef && cameraModeSelectRef.value !== currentMode) {
+                cameraModeSelectRef.value = currentMode;
+            }
         }
     });
 }
@@ -85,7 +90,7 @@ function initFPSControls() {
 function initPointerLockControls() {
     pointerLockControls = new PointerLockControls(camera, renderer.domElement);
     renderer.domElement.addEventListener('click', () => {
-        if (currentControlsMode === 'pointerLock') {
+        if (currentMode === 'pointerLock') {
             pointerLockControls.lock();
         }
     });
@@ -163,10 +168,6 @@ export function switchCameraControl(type) {
 
     if (currentControls.update) {
         currentControls.update(0);
-    }
-
-    if (cameraModeSelectRef && cameraModeSelectRef.value !== currentMode) {
-        cameraModeSelectRef.value = currentMode;
     }
 
     console.log(`Camera mode has switched to ${type}`);
