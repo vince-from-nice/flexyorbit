@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { updateCannonWithParams, fireCannonball, cannonParams, cannonball } from '../scene/cannon.js';
 import { updateTrailStyle } from '../scene/trails.js';
-import { EARTH_TEXTURES, setEarthTexture } from '../scene/earth.js';
+import { EARTH_TEXTURES, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
 import { setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
 import { initDraggings } from './dragging.js'
@@ -73,16 +73,18 @@ function createHTMLControls() {
         timePaused = !timePaused;
         timeButton.textContent = timePaused ? 'Resume' : 'Stop';
     });
+    timeGroup.appendChild(timeButton);
+    addSlider(timeGroup, 'Time acceleration', 1, 1000, timeAcceleration, value => {
+        timeAcceleration = value;
+    }, 0.1);
+    addCheckbox(timeGroup, 'Disable Earth rotation', '', earthRotationDisabled, value => {
+        disableEarthRotation();
+    });
     if (isMobile) {
         timeGroup.parentElement.open = false;
     } else {
         timeGroup.parentElement.open = true;
     }
-    timeGroup.appendChild(timeButton);
-    addSlider(timeGroup, 'Time acceleration', 1, 1000, timeAcceleration, value => {
-        timeAcceleration = value;
-    }, 0.1);
-
 
     // Cannon wigets
     const cannonGroupDiv = addGroup(contentWrapper, 'Cannon');
@@ -240,84 +242,84 @@ function addCheckbox(parentEl, labelBefore, labelAfter, initialValue, onChange) 
 }
 
 function addCustomSelect(parentEl, labelBefore, labelAfter, options, initialValue, onChange) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "custom-select-wrapper";
+    const wrapper = document.createElement("div");
+    wrapper.className = "custom-select-wrapper";
 
-  if (labelBefore) {
-    const lblBefore = document.createElement("label");
-    lblBefore.className = "custom-select-label-before";
-    lblBefore.textContent = labelBefore;
-    wrapper.appendChild(lblBefore);
-  }
+    if (labelBefore) {
+        const lblBefore = document.createElement("label");
+        lblBefore.className = "custom-select-label-before";
+        lblBefore.textContent = labelBefore;
+        wrapper.appendChild(lblBefore);
+    }
 
-  const box = document.createElement("div");
-  box.className = "custom-select-box";
+    const box = document.createElement("div");
+    box.className = "custom-select-box";
 
-  const selected = document.createElement("div");
-  selected.className = "custom-select-selected";
+    const selected = document.createElement("div");
+    selected.className = "custom-select-selected";
 
-  const selectedText = document.createElement("span");
-  selectedText.className = "custom-select-selected-text";
+    const selectedText = document.createElement("span");
+    selectedText.className = "custom-select-selected-text";
 
-  const arrow = document.createElement("span");
-  arrow.classNameName = "custom-select-arrow";
-  arrow.textContent = "▾";
+    const arrow = document.createElement("span");
+    arrow.classNameName = "custom-select-arrow";
+    arrow.textContent = "▾";
 
-  selected.appendChild(selectedText);
-  selected.appendChild(arrow);
-  box.appendChild(selected);
+    selected.appendChild(selectedText);
+    selected.appendChild(arrow);
+    box.appendChild(selected);
 
-  const list = document.createElement("div");
-  list.className = "custom-select-list";
+    const list = document.createElement("div");
+    list.className = "custom-select-list";
 
-  let currentValue = initialValue ?? options[0]?.value;
+    let currentValue = initialValue ?? options[0]?.value;
 
-  function setValue(value, trigger = true) {
-    const opt = options.find(o => o.value === value);
-    if (!opt) return;
-    currentValue = value;
-    selectedText.textContent = opt.label;
-    if (trigger) onChange(value);
-  }
+    function setValue(value, trigger = true) {
+        const opt = options.find(o => o.value === value);
+        if (!opt) return;
+        currentValue = value;
+        selectedText.textContent = opt.label;
+        if (trigger) onChange(value);
+    }
 
-  options.forEach(opt => {
-    const item = document.createElement("div");
-    item.className = "custom-select-item";
-    item.textContent = opt.label;
-    item.addEventListener("click", () => {
-      setValue(opt.value);
-      list.classList.remove("open");
+    options.forEach(opt => {
+        const item = document.createElement("div");
+        item.className = "custom-select-item";
+        item.textContent = opt.label;
+        item.addEventListener("click", () => {
+            setValue(opt.value);
+            list.classList.remove("open");
+        });
+        list.appendChild(item);
     });
-    list.appendChild(item);
-  });
 
-  selected.addEventListener("click", e => {
-    e.stopPropagation();
-    list.classList.toggle("open");
-  });
+    selected.addEventListener("click", e => {
+        e.stopPropagation();
+        list.classList.toggle("open");
+    });
 
-  document.addEventListener("click", () => {
-    list.classList.remove("open");
-  });
+    document.addEventListener("click", () => {
+        list.classList.remove("open");
+    });
 
-  box.appendChild(list);
-  wrapper.appendChild(box);
+    box.appendChild(list);
+    wrapper.appendChild(box);
 
-  if (labelAfter) {
-    const lblAfter = document.createElement("div");
-    lblAfter.className = "custom-select-label-after";
-    lblAfter.textContent = labelAfter;
-    wrapper.appendChild(lblAfter);
-  }
+    if (labelAfter) {
+        const lblAfter = document.createElement("div");
+        lblAfter.className = "custom-select-label-after";
+        lblAfter.textContent = labelAfter;
+        wrapper.appendChild(lblAfter);
+    }
 
-  parentEl.appendChild(wrapper);
+    parentEl.appendChild(wrapper);
 
-  setValue(currentValue, false);
+    setValue(currentValue, false);
 
-  return {
-    get value() { return currentValue; },
-    set value(v) { setValue(v); }
-  };
+    return {
+        get value() { return currentValue; },
+        set value(v) { setValue(v); }
+    };
 }
 
 export function updateHTMLDisplays() {
