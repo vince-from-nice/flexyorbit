@@ -55,7 +55,7 @@ function initOrbitControls() {
     orbitControls.panSpeed = 1.0;
     orbitControls.minDistance = EARTH_RADIUS_SCALED + scaleFromKm(300);
     orbitControls.maxDistance = EARTH_RADIUS_SCALED * 20;
-    orbitControls.enablePan = true;
+    orbitControls.enablePan = false;
 
     orbitControls.addEventListener('change', adjustOrbitControlsSpeed);
 }
