@@ -1,12 +1,34 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
-import { camera } from './scene.js';
 
-export const ATMOSPHERE_REGULAR_HEIGHT_KM = 0;
+export const ATMOSPHERE_REGULAR_HEIGHT_KM = 100;
 export let atmosphereHeightKm = ATMOSPHERE_REGULAR_HEIGHT_KM;
 export let atmosphereDensityFactor = 1.0;
 
 export let atmosphereMesh = null;
+
+const vertexShader = `
+  varying vec3 vNormal;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const fragmentShader = `
+  varying vec3 vNormal;
+  uniform vec3 uColor;
+  uniform float uIntensityMultiplier;
+  uniform float uPower;
+
+  void main() {
+    // View direction in view space is (0,0,1) since we're looking along -Z
+    float intensity = pow(1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0)), uPower);
+    intensity *= uIntensityMultiplier;
+    
+    gl_FragColor = vec4(uColor, intensity);
+  }
+`;
 
 export function createAtmosphere() {
   if (atmosphereMesh) {
@@ -15,17 +37,23 @@ export function createAtmosphere() {
     atmosphereMesh = null;
   }
 
-  const radius = EARTH_RADIUS_SCALED + scaleFromKm(atmosphereHeightKm);
+  const radius = EARTH_RADIUS_SCALED + scaleFromKm(atmosphereHeightKm) + 0.04;
 
   const geometry = new THREE.SphereGeometry(radius, 64, 48);
 
-  const material = new THREE.MeshBasicMaterial({
-    color: new THREE.Color(0x88ddff), 
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      uColor:               { value: new THREE.Color(0.5, 0.8, 1.0) },
+      uIntensityMultiplier: { value: 1.6 },
+      uPower:               { value: 2.4 }
+    },
+    vertexShader,
+    fragmentShader,
     transparent: true,
-    opacity: Math.min(0.8, Math.max(0.05, atmosphereDensityFactor * 0.4)),
-    side: THREE.BackSide,           
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
     depthWrite: false,
-    blending: THREE.NormalBlending
+    depthTest: true
   });
 
   atmosphereMesh = new THREE.Mesh(geometry, material);
@@ -50,14 +78,16 @@ export function setAtmosphereHeight(newHeightKm) {
 }
 
 export function setAtmosphereDensity(newDensity) {
-  atmosphereDensityFactor = Math.max(0.05, Math.min(2.0, newDensity));
+  atmosphereDensityFactor = Math.max(0.1, Math.min(3.0, newDensity));
 
   if (atmosphereMesh?.material) {
-    atmosphereMesh.material.opacity = Math.min(0.8, Math.max(0.05, atmosphereDensityFactor * 0.4));
+    atmosphereMesh.material.uniforms.uIntensityMultiplier.value = 1.2 + atmosphereDensityFactor * 1.1;
+    atmosphereMesh.material.uniforms.uPower.value = 1.8 + atmosphereDensityFactor * 1.2;
     atmosphereMesh.material.needsUpdate = true;
   }
 }
 
 export function updateAtmosphere() {
-  // nothing for now
+  // Can be used later for animation / time-based effects
+  // For now we just keep the structure
 }

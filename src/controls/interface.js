@@ -133,7 +133,7 @@ function createHTMLControls() {
 
     const atmoshpereGroupDiv = addGroup(contentWrapper, 'Atmosphere');
 
-    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, 0, value => {
+    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, 400, value => {
         setAtmosphereHeight(value);
     }, 5);
 
