@@ -4,7 +4,7 @@ import { scene, renderer } from './scene.js';
 
 export let earth;
 
-export const earthTextures = [
+export const EARTH_TEXTURES = [
     { value: 'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg', label: 'NASA Blue Marble (4K)' },
     { value: 'assets/earth/bluemarble-5k.jpg', label: 'NASA Blue Marble (5K)' },
     { value: 'assets/earth/bluemarble-16k.jpg', label: 'NASA Blue Marble (16K)' },

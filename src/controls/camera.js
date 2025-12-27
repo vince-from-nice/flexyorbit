@@ -8,8 +8,14 @@ import { EARTH_RADIUS_SCALED, scaleFromKm, scaleToKm } from '../constants.js';
 import { camera, renderer } from '../scene/scene.js';
 
 export let currentControls = null;
-export let controlType = 'orbit';
-const CONTROL_MODES = ['orbit', 'map', 'fly', 'fps', 'pointerLock'];
+export const CAMERA_MODES = [
+    { value: 'orbit', label: 'Orbit controls (default)'},
+    { value: 'map', label: 'Map controls (orbit style)'},
+    { value: 'fly', label: 'Fly controls (FPS style)'},
+    { value: 'fps', label: 'First Person Shooter (FPS style)'},
+    { value: 'pointerLock', label: 'Pointer Lock (not clear)'}
+];
+export let currentMode = 'orbit';
 let currentModeIndex = 0;
 let cameraModeSelectRef = null;
 
@@ -29,10 +35,9 @@ export function initCameraControls() {
 
     window.addEventListener('keydown', (e) => {
         if (e.code === 'KeyC' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            currentModeIndex = (currentModeIndex + 1) % CONTROL_MODES.length;
-            const nextMode = CONTROL_MODES[currentModeIndex];
+            currentModeIndex = (currentModeIndex + 1) % CAMERA_MODES.length;
+            const nextMode = CAMERA_MODES[currentModeIndex].value;
             switchCameraControl(nextMode);
-            console.log(`Camera mode → ${nextMode}`);
         }
     });
 }
@@ -80,7 +85,7 @@ function initFPSControls() {
 function initPointerLockControls() {
     pointerLockControls = new PointerLockControls(camera, renderer.domElement);
     renderer.domElement.addEventListener('click', () => {
-        if (controlType === 'pointerLock') {
+        if (currentControlsMode === 'pointerLock') {
             pointerLockControls.lock();
         }
     });
@@ -114,7 +119,7 @@ export function switchCameraControl(type) {
         if (currentControls === mapControls) mapControls = null;
     }
 
-    controlType = type;
+    currentMode = type;
     let newControls = null;
 
     switch (type) {
@@ -160,9 +165,11 @@ export function switchCameraControl(type) {
         currentControls.update(0);
     }
 
-    if (cameraModeSelectRef && cameraModeSelectRef.value !== controlType) {
-        cameraModeSelectRef.value = controlType;
+    if (cameraModeSelectRef && cameraModeSelectRef.value !== currentMode) {
+        cameraModeSelectRef.value = currentMode;
     }
+
+    console.log(`Camera mode has switched to ${type}`);
 }
 
 export function registerCameraModeSelect(selectElement) {

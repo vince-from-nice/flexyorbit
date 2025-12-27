@@ -2,15 +2,14 @@ import * as THREE from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-
 import { scene } from './scene.js';
 import { cannonball } from '../scene/cannon.js';
 
-export const trailStyles = [
-    { code: 'TRAIL_STYLE_WITH_SINGLE_LINES', label: 'Single thin lines' },
-    { code: 'TRAIL_STYLE_WITH_THICK_LINES', label: 'Thick screen-space lines' },
-    { code: 'TRAIL_STYLE_WITH_TUBES', label: '3D tubes (TODO)' },
-    { code: 'TRAIL_STYLE_WITH_VERTICAL_BARS', label: 'Vertical bars (TODO)' },
+export const TRAIL_STYLES = [
+    { value: 'TRAIL_STYLE_WITH_SINGLE_LINES', label: 'Single thin lines' },
+    { value: 'TRAIL_STYLE_WITH_THICK_LINES', label: 'Thick screen-space lines' },
+    { value: 'TRAIL_STYLE_WITH_TUBES', label: '3D tubes (TODO)' },
+    { value: 'TRAIL_STYLE_WITH_VERTICAL_BARS', label: 'Vertical bars (TODO)' },
 ];
 
 export let currentTrailStyle = 'TRAIL_STYLE_WITH_THICK_LINES';

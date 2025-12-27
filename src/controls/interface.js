@@ -1,14 +1,11 @@
 import * as THREE from 'three';
-import { scene } from '../scene/scene.js';
-import { scaleFromKm } from '../constants.js';
-import { cannonGroup, cannonParams, cannonball, updateCannonWithParams } from '../scene/cannon.js';
-import { updateTrailStyle, createNewCannonballTrail } from '../scene/trails.js';
-import { earthTextures } from '../scene/earth.js';
+import { updateCannonWithParams, fireCannonball, cannonParams, cannonball } from '../scene/cannon.js';
+import { updateTrailStyle } from '../scene/trails.js';
+import { EARTH_TEXTURES, setEarthTexture } from '../scene/earth.js';
 import { setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
-import { trailStyles } from '../scene/trails.js';
+import { TRAIL_STYLES } from '../scene/trails.js';
 import { initDraggings } from './dragging.js'
-import { initCameraControls, switchCameraControl, registerCameraModeSelect } from './camera.js'
-
+import { CAMERA_MODES, initCameraControls, switchCameraControl, registerCameraModeSelect } from './camera.js'
 
 export let timePaused = false;
 export let timeAcceleration = 100;
@@ -39,18 +36,6 @@ function createHTMLControls() {
 
     const mainDetails = controlsDiv.querySelector('#main-controls-toggle');
 
-    let isMobile = false;
-    if (window.innerWidth <= 768) {
-        isMobile = true;
-    }
-
-    // All controls are closed by default on mobile
-    if (isMobile) {
-        mainDetails.open = false;
-    } else {
-        mainDetails.open = true;
-    }
-
     function addGroup(parent, name) {
         const details = document.createElement('details');
         details.open = false;
@@ -68,12 +53,19 @@ function createHTMLControls() {
         return groupDiv;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Time
-    ///////////////////////////////////////////////////////////////////////////
+    // Controls are closed by default on mobile
+    let isMobile = false;
+    if (window.innerWidth <= 768) {
+        isMobile = true;
+    }
+    if (isMobile) {
+        mainDetails.open = false;
+    } else {
+        mainDetails.open = true;
+    }
 
+    // Time wigets    
     const timeGroup = addGroup(contentWrapper, 'Time control');
-
     const timeButton = document.createElement('button');
     timeButton.textContent = 'Stop';
     timeButton.classList.add('time-button');
@@ -87,155 +79,59 @@ function createHTMLControls() {
         timeGroup.parentElement.open = true;
     }
     timeGroup.appendChild(timeButton);
-
     addSlider(timeGroup, 'Time acceleration', 1, 1000, timeAcceleration, value => {
         timeAcceleration = value;
     }, 0.1);
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Cannon
-    ///////////////////////////////////////////////////////////////////////////
 
+    // Cannon wigets
     const cannonGroupDiv = addGroup(contentWrapper, 'Cannon');
-
     [latDisplay] = addSlider(cannonGroupDiv, 'Latitude (°)', -90, 90, cannonParams.lat, value => {
         cannonParams.lat = value;
         updateCannonWithParams();
     }, 0.1);
-
     [lonDisplay] = addSlider(cannonGroupDiv, 'Longitude (°)', -180, 180, cannonParams.lon, value => {
         cannonParams.lon = value;
         updateCannonWithParams();
     }, 0.1);
-
     [altDisplay] = addSlider(cannonGroupDiv, 'Altitude (km)', 0, 3000, cannonParams.altitude, value => {
         cannonParams.altitude = value;
         updateCannonWithParams();
     }, 1);
-
     [azDisplay] = addSlider(cannonGroupDiv, 'Azimuth (°)', 0, 360, cannonParams.azimuth, value => {
         cannonParams.azimuth = value;
         updateCannonWithParams();
     }, 1);
-
     [elDisplay] = addSlider(cannonGroupDiv, 'Elevation (°)', 0, 90, cannonParams.elevation, value => {
         cannonParams.elevation = value;
         updateCannonWithParams();
     }, 1);
-
     addSlider(cannonGroupDiv, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, value => {
         cannonParams.speed = value;
     }, 0.01);
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Atmosphere
-    ///////////////////////////////////////////////////////////////////////////
-
+    // Atmosphere wigets
     const atmoshpereGroupDiv = addGroup(contentWrapper, 'Atmosphere');
-
-    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, 400, value => {
+    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, 100, value => {
         setAtmosphereHeight(value);
     }, 5);
-
     [latDisplay] = addSlider(atmoshpereGroupDiv, 'Density factor', 0.0, 5.0, 1.0, value => {
         setAtmosphereDensity(value);
     }, 0.1);
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Camera
-    ///////////////////////////////////////////////////////////////////////////
-
+    // Camera wigets    
     const cameraGroup = addGroup(contentWrapper, 'Camera');
-
-    const cameraModeWrapper = document.createElement('div');
-    const cameraModeLabel = document.createElement('label');
-    cameraModeLabel.textContent = 'Change camera control';
-    const cameraModeSelect = document.createElement('select');
-    cameraModeSelect.classList.add('camera-mode-select');
-    cameraModeSelect.innerHTML = `
-        <option value="orbit">Orbit controls</option>
-        <option value="map">Map controls</option>
-        <option value="fly">Fly controls</option>
-        <option value="fps">First Person Shooter</option>
-        <option value="pointerLock">Pointer Lock</option>
-        `;
-    cameraModeSelect.addEventListener('change', (e) => {
-        switchCameraControl(e.target.value);
-    });
+    const cameraModeSelect = addCustomSelect(cameraGroup, 'Change camera control', '(or press "c" to switch mode)', CAMERA_MODES, 'orbit',
+        value => { switchCameraControl(value); });
     registerCameraModeSelect(cameraModeSelect);
-    const cameraModeLabel2 = document.createElement('label');
-    cameraModeLabel2.textContent = '(or press "c" to switch mode)';
-    cameraModeLabel2.style.fontSize = 'small';
-    cameraModeWrapper.appendChild(cameraModeLabel);
-    cameraModeWrapper.appendChild(cameraModeSelect);
-    cameraModeWrapper.appendChild(cameraModeLabel2);
-    cameraGroup.appendChild(cameraModeWrapper);
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Display settings
-    ///////////////////////////////////////////////////////////////////////////
-
+    // Display wigets 
     const displayGroup = addGroup(contentWrapper, 'Display settings');
-
-    // Trail style
-    const trailStyleWrapper = document.createElement('div');
-    const trailStyleLabel = document.createElement('label');
-    trailStyleLabel.textContent = 'Change trail style of the cannonball';
-    const trailStyleSelect = document.createElement('select');
-    trailStyles.forEach(style => {
-        const option = document.createElement('option');
-        option.value = style.code;
-        option.textContent = style.label;
-        if (style.code === cannonball.userData.trails.current.userData.style) {
-            option.selected = true;
-        } else {
-            option.selected = false;
-        }
-        trailStyleSelect.appendChild(option);
-    });
-    trailStyleSelect.addEventListener('change', async (event) => {
-        updateTrailStyle(event.target.value);
-    });
-    trailStyleWrapper.appendChild(trailStyleLabel);
-    trailStyleWrapper.appendChild(trailStyleSelect);
-    displayGroup.appendChild(trailStyleWrapper);
-
-    // Earth texture
-    const textureWrapper = document.createElement('div');
-    const textureLabel = document.createElement('label');
-    textureLabel.textContent = 'Change Earth texture ';
-    const textureSelect = document.createElement('select');
-    earthTextures.forEach(tex => {
-        const option = document.createElement('option');
-        option.value = tex.value;
-        option.textContent = tex.label;
-        if (tex.value.includes('bluemarble-5k')) {
-            option.selected = true;
-        } else {
-            option.selected = false;
-        }
-        textureSelect.appendChild(option);
-    });
-    textureSelect.addEventListener('change', async () => {
-        const selectedUrl = textureSelect.value;
-        const { setEarthTexture } = await import('../scene/earth.js');
-        setEarthTexture(selectedUrl);
-    });
-    textureWrapper.appendChild(textureLabel);
-    textureWrapper.appendChild(textureSelect);
-    displayGroup.appendChild(textureWrapper);
-
-    // Axis diplay
-    const checkboxWrapper = document.createElement('div');
-    checkboxWrapper.classList.add('checkbox-wrapper');
-    const checkboxLabel = document.createElement('label');
-    checkboxLabel.classList.add('checkbox-label');
-    checkboxLabel.textContent = 'Display referential axes';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = false;
-    checkbox.classList.add('styled-checkbox');
-    checkbox.addEventListener('change', async () => {
+    addCustomSelect(displayGroup, 'Change cannonball trail style', null, TRAIL_STYLES, cannonball.userData.trails.current.userData.style,
+        value => { updateTrailStyle(value); });
+    addCustomSelect(displayGroup, 'Change Earth texture', null, EARTH_TEXTURES, 'assets/earth/bluemarble-5k.jpg',
+        value => { setEarthTexture(value); });
+    addCheckbox(displayGroup, null, 'Display referential axes', false, async () => {
         const { scene, axesGroup } = await import('../scene/scene.js');
         if (checkbox.checked) {
             scene.add(axesGroup);
@@ -243,41 +139,13 @@ function createHTMLControls() {
             scene.remove(axesGroup);
         }
     });
-    checkboxWrapper.appendChild(checkbox);
-    checkboxWrapper.appendChild(checkboxLabel);
-    displayGroup.appendChild(checkboxWrapper);
 
-    ///////////////////////////////////////////////////////////////////////////
     // Fire button
-    /////////////////////////////////////////////////////////////////////////// 
-
     const fireButton = document.createElement('button');
     fireButton.textContent = 'Fire the cannonball !';
     fireButton.classList.add('fire-button');
     fireButton.addEventListener('click', () => {
-        console.log('Fire cannon with :', cannonParams);
-        cannonball.material.color.set(0xff0000);
-        const elevationGroup = cannonGroup.userData.elevationGroup;
-        // Reattach to elevationGroup and reset local position
-        if (cannonball.parent !== elevationGroup) {
-            scene.remove(cannonball);
-            elevationGroup.add(cannonball);
-        }
-        cannonball.position.copy(cannonball.userData.initialLocalPosition);
-        // Compute world position
-        const worldPos = new THREE.Vector3();
-        cannonball.getWorldPosition(worldPos);
-        // Compute world direction (local Z of tube)
-        const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(elevationGroup.getWorldQuaternion(new THREE.Quaternion())).normalize();
-        // Set initial velocity (direction * speed in km/s)
-        cannonball.userData.velocity.copy(direction).multiplyScalar(scaleFromKm(cannonParams.speed));
-        // Detach from cannon and add to scene (for inertial frame)
-        elevationGroup.remove(cannonball);
-        scene.add(cannonball);
-        cannonball.position.copy(worldPos);
-        cannonball.userData.isInFlight = true;
-        createNewCannonballTrail();
-        console.log("Cannonball fired !", cannonball)
+        fireCannonball();
     });
     contentWrapper.appendChild(fireButton);
 }
@@ -336,6 +204,120 @@ function addSlider(container, labelText, min, max, initial, onChange, step = 1) 
     container.appendChild(wrapper);
 
     return [numberInput];
+}
+
+function addCheckbox(parentEl, labelBefore, labelAfter, initialValue, onChange) {
+    const row = document.createElement("div");
+    row.className = "checkbox-wrapper";
+
+    if (labelBefore) {
+        const lblB = document.createElement("label");
+        lblB.textContent = labelBefore;
+        //lblB.className = "ui-checkbox-label-before";
+        row.appendChild(lblB);
+    }
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = Boolean(initialValue);
+
+    cb.addEventListener("change", () => {
+        onChange(cb.checked);
+    });
+
+    row.appendChild(cb);
+
+    if (labelAfter) {
+        const lblA = document.createElement("label");
+        lblA.textContent = labelAfter;
+        //lblA.className = "ui-checkbox-label-after";
+        row.appendChild(lblA);
+    }
+
+    parentEl.appendChild(row);
+
+    return cb;
+}
+
+function addCustomSelect(parentEl, labelBefore, labelAfter, options, initialValue, onChange) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "custom-select-wrapper";
+
+  if (labelBefore) {
+    const lblBefore = document.createElement("label");
+    lblBefore.className = "custom-select-label-before";
+    lblBefore.textContent = labelBefore;
+    wrapper.appendChild(lblBefore);
+  }
+
+  const box = document.createElement("div");
+  box.className = "custom-select-box";
+
+  const selected = document.createElement("div");
+  selected.className = "custom-select-selected";
+
+  const selectedText = document.createElement("span");
+  selectedText.className = "custom-select-selected-text";
+
+  const arrow = document.createElement("span");
+  arrow.classNameName = "custom-select-arrow";
+  arrow.textContent = "▾";
+
+  selected.appendChild(selectedText);
+  selected.appendChild(arrow);
+  box.appendChild(selected);
+
+  const list = document.createElement("div");
+  list.className = "custom-select-list";
+
+  let currentValue = initialValue ?? options[0]?.value;
+
+  function setValue(value, trigger = true) {
+    const opt = options.find(o => o.value === value);
+    if (!opt) return;
+    currentValue = value;
+    selectedText.textContent = opt.label;
+    if (trigger) onChange(value);
+  }
+
+  options.forEach(opt => {
+    const item = document.createElement("div");
+    item.className = "custom-select-item";
+    item.textContent = opt.label;
+    item.addEventListener("click", () => {
+      setValue(opt.value);
+      list.classList.remove("open");
+    });
+    list.appendChild(item);
+  });
+
+  selected.addEventListener("click", e => {
+    e.stopPropagation();
+    list.classList.toggle("open");
+  });
+
+  document.addEventListener("click", () => {
+    list.classList.remove("open");
+  });
+
+  box.appendChild(list);
+  wrapper.appendChild(box);
+
+  if (labelAfter) {
+    const lblAfter = document.createElement("div");
+    lblAfter.className = "custom-select-label-after";
+    lblAfter.textContent = labelAfter;
+    wrapper.appendChild(lblAfter);
+  }
+
+  parentEl.appendChild(wrapper);
+
+  setValue(currentValue, false);
+
+  return {
+    get value() { return currentValue; },
+    set value(v) { setValue(v); }
+  };
 }
 
 export function updateHTMLDisplays() {

@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS_SCALED, GLOBAL_SCALE, scaleFromKm } from '../constants.js';
+import { scene } from './scene.js';
 import { earth } from './earth.js';
+import { createNewCannonballTrail } from './trails.js';
+
 import { registerAnimable } from '../physics.js';
 
 export let cannonGroup, cannonball;
@@ -31,7 +34,7 @@ export function createCannon() {
     cannonGroup.add(base);
 
     // Base corner lights
-    const boxSize = 2.5 * scaleFactor; 
+    const boxSize = 2.5 * scaleFactor;
     const halfBase = 10 * scaleFactor;
     const baseThickness = 2 * scaleFactor;
     const emissiveColor = 0xffaa55;
@@ -55,7 +58,7 @@ export function createCannon() {
         });
         const box = new THREE.Mesh(geometry, material);
         box.position.copy(offset);
-        box.position.y = baseThickness / 2 + boxSize / 2; 
+        box.position.y = baseThickness / 2 + boxSize / 2;
         cannonGroup.add(box);
         glowBoxes.push(box);
     });
@@ -168,5 +171,31 @@ export function updateCannonWithParams() {
     console.log('Cannon has been updated with: lat=' + lat.toFixed(2) + '° lon=' + lon.toFixed(2) + '° altitude=' + altitude.toFixed(0) + 'km azimuth=' + azimuth.toFixed(0) + '° elevation=' + elevation.toFixed(0) + '°');
     console.log("   CannonGroup position: x=" + cannonGroup.position.x.toFixed(0) + " y=" + cannonGroup.position.y.toFixed(0) + " z=" + cannonGroup.position.z.toFixed(0));
     console.log("   CannonGroup orientation: up=<" + cannonGroup.up.x.toFixed(3) + " " + cannonGroup.up.y.toFixed(3) + " " + cannonGroup.up.z.toFixed(3) + "> horizon=<" + horizontalDir.x.toFixed(3) + " " + horizontalDir.y.toFixed(3) + " " + horizontalDir.z.toFixed(3) + ">");
+}
+
+export function fireCannonball() {
+    console.log('Fire cannon with :', cannonParams);
+    cannonball.material.color.set(0xff0000);
+    const elevationGroup = cannonGroup.userData.elevationGroup;
+    // Reattach to elevationGroup and reset local position
+    if (cannonball.parent !== elevationGroup) {
+        scene.remove(cannonball);
+        elevationGroup.add(cannonball);
+    }
+    cannonball.position.copy(cannonball.userData.initialLocalPosition);
+    // Compute world position
+    const worldPos = new THREE.Vector3();
+    cannonball.getWorldPosition(worldPos);
+    // Compute world direction (local Z of tube)
+    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(elevationGroup.getWorldQuaternion(new THREE.Quaternion())).normalize();
+    // Set initial velocity (direction * speed in km/s)
+    cannonball.userData.velocity.copy(direction).multiplyScalar(scaleFromKm(cannonParams.speed));
+    // Detach from cannon and add to scene (for inertial frame)
+    elevationGroup.remove(cannonball);
+    scene.add(cannonball);
+    cannonball.position.copy(worldPos);
+    cannonball.userData.isInFlight = true;
+    createNewCannonballTrail();
+    console.log("Cannonball fired !", cannonball)
 }
 
