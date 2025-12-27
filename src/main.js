@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { createScene, camera, renderer, scene } from './scene/scene.js';
 import { earth } from './scene/earth.js';
+import { updateAtmosphere } from './scene/atmosphere.js';
 import { updateThickLineResolution } from './scene/trails.js';
 import { initControls, timePaused, timeAcceleration } from './controls/interface.js';
 import { updateCameraControls } from './controls/camera.js';
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
       earth.rotation.y += EARTH_ANGULAR_VELOCITY * delta * timeAcceleration;
       animatePhysics(delta * timeAcceleration);
     }
+    updateAtmosphere();
     updateCameraControls(delta);
     renderer.render(scene, camera);
   }

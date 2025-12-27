@@ -4,6 +4,7 @@ import { scaleFromKm } from '../constants.js';
 import { cannonGroup, cannonParams, cannonball, updateCannonWithParams } from '../scene/cannon.js';
 import { updateTrailStyle, createNewCannonballTrail } from '../scene/trails.js';
 import { earthTextures } from '../scene/earth.js';
+import { setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { trailStyles } from '../scene/trails.js';
 import { initDraggings } from './dragging.js'
 import { initCameraControls, switchCameraControl, registerCameraModeSelect } from './camera.js'
@@ -124,13 +125,21 @@ function createHTMLControls() {
 
     addSlider(cannonGroupDiv, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, value => {
         cannonParams.speed = value;
-    }, 0.1);
+    }, 0.01);
 
     ///////////////////////////////////////////////////////////////////////////
     // Atmosphere
     ///////////////////////////////////////////////////////////////////////////
 
-    addGroup(contentWrapper, 'Atmosphere');
+    const atmoshpereGroupDiv = addGroup(contentWrapper, 'Atmosphere');
+
+    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, 0, value => {
+        setAtmosphereHeight(value);
+    }, 5);
+
+    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Density factor', 0.0, 5.0, 1.0, value => {
+        setAtmosphereDensity(value);
+    }, 0.1);
 
     ///////////////////////////////////////////////////////////////////////////
     // Camera

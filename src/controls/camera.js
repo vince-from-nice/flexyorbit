@@ -91,10 +91,10 @@ function initPointerLockControls() {
 function adjustOrbitControlsSpeed() {
     const cameraDistance = camera.position.distanceTo(orbitControls.target);
     const scaleFactor = Math.max(0.3, Math.max(1, cameraDistance / EARTH_RADIUS_SCALED * 2));
-    console.log("scale and cameraDistance: " + scaleFactor + " " + cameraDistance)
     orbitControls.rotateSpeed = baseRotateSpeed * scaleFactor;
     orbitControls.panSpeed = basePanSpeed * scaleFactor;
-    console.log("orbit speed: " + orbitControls.rotateSpeed + " " + orbitControls.panSpeed)
+    //console.log("orbit controls scale factor (camera distance): " + scaleFactor.toFixed(2) + " (" + scaleToKm(cameraDistance).toFixed(0) + " km)")
+    //console.log("orbit controls rotate and pan speed: " + orbitControls.rotateSpeed.toFixed(2) + " " + orbitControls.panSpeed.toFixed(2))
 }
 
 export function switchCameraControl(type) {

@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
 import { createEarth } from './earth.js';
+import { createAtmosphere } from './atmosphere.js';
 import { createCannon } from './cannon.js';
 import { createNewCannonballTrail } from './trails.js';
 
-export let scene, camera, renderer, axesGroup;
+export let scene, camera, renderer, axesGroup, sunLight;
 
 export function createScene(container) {
   scene = new THREE.Scene();
@@ -13,6 +14,7 @@ export function createScene(container) {
   createAxis();
   createLighting();
   createEarth();
+  scene.add(createAtmosphere());
   createCannon();
   createNewCannonballTrail();
 }
@@ -40,7 +42,7 @@ function createRenderer(container) {
 }
 
 function createAxis() {
-  const AXIS_LENGTH = EARTH_RADIUS_SCALED * 2 ;
+  const AXIS_LENGTH = EARTH_RADIUS_SCALED * 2;
   const origin = new THREE.Vector3(0, 0, 0);
   const headLength = AXIS_LENGTH * 0.1;
   const headWidth = headLength * 0.5;
@@ -58,7 +60,7 @@ function createAxis() {
 function createLighting() {
   scene.add(new THREE.AmbientLight(0x404040, 0.6));
 
-  const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
+  sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
   sunLight.position.set(EARTH_RADIUS_SCALED * 50, EARTH_RADIUS_SCALED * 20, EARTH_RADIUS_SCALED * 30);
   // Sun light - Shadow settings
   sunLight.castShadow = true;
