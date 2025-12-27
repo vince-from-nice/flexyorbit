@@ -194,7 +194,7 @@ export function fireCannonball() {
     elevationGroup.remove(cannonball);
     scene.add(cannonball);
     cannonball.position.copy(worldPos);
-    cannonball.userData.isInFlight = true;
+    cannonball.userData.isFreeFalling = true;
     createNewCannonballTrail();
     console.log("Cannonball fired !", cannonball)
 }

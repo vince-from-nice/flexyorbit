@@ -12,12 +12,12 @@ const animables = new Set();
 export function registerAnimable(obj) {
   animables.add(obj);
   obj.userData.velocity = new THREE.Vector3();
-  obj.userData.isInFlight = false;
+  obj.userData.isFreeFalling = false;
 }
 
 export function animatePhysics(delta) {
   animables.forEach(obj => {
-    if (obj?.userData?.isInFlight) {
+    if (obj?.userData?.isFreeFalling) {
 
       const accel = getGravitationalAcceleration(obj.position);
 
@@ -49,7 +49,7 @@ function getGravitationalAcceleration(position) {
 }
 
 function checkCollisionAndHandle(obj) {
-  if (!obj?.userData?.isInFlight) return false;
+  if (!obj?.userData?.isFreeFalling) return false;
 
   const worldPos = new THREE.Vector3();
   obj.getWorldPosition(worldPos);
@@ -58,7 +58,7 @@ function checkCollisionAndHandle(obj) {
 
   if (distanceToCenter <= EARTH_RADIUS_SCALED + COLLISION_THRESHOLD) {
 
-    obj.userData.isInFlight = false;
+    obj.userData.isFreeFalling = false;
     obj.userData.velocity.set(0, 0, 0);
 
     // World position

@@ -123,7 +123,7 @@ export function updateTrail(obj) {
     const now = Date.now() / 1000;
 
     // Update current trail
-    if (obj.userData.isInFlight && trails.current && trails.current.userData.history) {
+    if (obj.userData.isFreeFalling && trails.current && trails.current.userData.history) {
         trails.current.userData.history.push({
             position: obj.position.clone(),
             time: now
