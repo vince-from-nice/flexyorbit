@@ -14,13 +14,13 @@ export const TRAIL_STYLES = [
 
 export let currentTrailStyle = 'TRAIL_STYLE_WITH_VERTICAL_BARS';
 
-const MAX_POINTS = 10000;
-const LIFETIME = 120; // seconds
 const MAX_PAST_TRAILS = 10;
 const FRAMES_NBR_BETWEEN_UPDATES = 3;
 const UPDATES_NBR_BETWEEN_BARS = 4;
 const VERTICAL_BAR_THICKNESS = 50 // km
 const VERTICAL_BAR_FIXED_HEIGHT = 300 // km (useless when projection on Earth surface is used)
+const LINE_MAX_POINTS = 10000;
+const LINE_POINTS_LIFETIME = 120; // seconds
 
 let updateCounter = 0
 let stanceCounter = 0
@@ -64,7 +64,7 @@ export function createNewCannonballTrail() {
 
     if (currentTrailStyle === 'TRAIL_STYLE_WITH_SINGLE_LINES') {
         const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MAX_POINTS * 3), 3));
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(LINE_MAX_POINTS * 3), 3));
         const material = new THREE.LineBasicMaterial({ color: 0xff4444, transparent: true, opacity: 0.75 });
         trails.current.model = new THREE.Line(geometry, material);
         scene.add(trails.current.model);
@@ -89,8 +89,6 @@ export function createNewCannonballTrail() {
 export function updateTrail(obj) {
     if (!obj.userData.trails) return;
 
-    const trails = obj.userData.trails;
-
     // No need to update trailt on every frame
     if (updateCounter < FRAMES_NBR_BETWEEN_UPDATES) {
         updateCounter++;
@@ -99,6 +97,7 @@ export function updateTrail(obj) {
         updateCounter = 0;
     }
 
+    const trails = obj.userData.trails;
     const now = Date.now() / 1000;
 
     // If object is free falling update only the current trail 
@@ -109,16 +108,13 @@ export function updateTrail(obj) {
             position: obj.position.clone(),
             time: now
         });
-
-        while (currentHistory.length > 0 && now - currentHistory[0].time > LIFETIME) {
-            currentHistory.shift();
-        }
-
-        if (currentHistory.length > MAX_POINTS) {
-            currentHistory.splice(0, currentHistory.length - MAX_POINTS);
-        }
-
         if (currentStyle === 'TRAIL_STYLE_WITH_SINGLE_LINES' || currentStyle === 'TRAIL_STYLE_WITH_THICK_LINES') {
+            while (currentHistory.length > 0 && now - currentHistory[0].time > LINE_POINTS_LIFETIME) {
+                currentHistory.shift();
+            }
+            if (currentHistory.length > LINE_MAX_POINTS) {
+                currentHistory.splice(0, currentHistory.length - LINE_MAX_POINTS);
+            }
             updateTrailLineGeometry(trails.current);
         } else if (trails.current.style === 'TRAIL_STYLE_WITH_VERTICAL_BARS') {
             if (stanceCounter < UPDATES_NBR_BETWEEN_BARS) {
@@ -133,10 +129,8 @@ export function updateTrail(obj) {
                     scene.add(newBar);
                 }
             }
-            console.log("stace coutner: " + stanceCounter)
             stanceCounter++;
         }
-
         console.log("Trail has been updated with " + currentHistory.length + " points and style is " + currentStyle);
     }
 }
@@ -192,7 +186,7 @@ function createNewTrailBar(top1, top2, thickness, height, useProjection = false)
     const material = new THREE.MeshStandardMaterial({
         color: 0xff4444,
         transparent: true,
-        opacity: 0.45,
+        opacity: 0.6,
         metalness: 0.2,
         roughness: 0.7,
         side: THREE.DoubleSide
