@@ -104,13 +104,6 @@ function createHTMLControls() {
         cannonParams.azimuth = value;
         updateCannonWithParams();
     }, 1);
-    [elDisplay] = addSlider(cannonGroupDiv, 'Elevation (°)', 0, 90, cannonParams.elevation, value => {
-        cannonParams.elevation = value;
-        updateCannonWithParams();
-    }, 1);
-    addSlider(cannonGroupDiv, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, value => {
-        cannonParams.speed = value;
-    }, 0.01);
 
     // Atmosphere wigets
     const atmoshpereGroupDiv = addGroup(contentWrapper, 'Atmosphere');
@@ -128,7 +121,7 @@ function createHTMLControls() {
     registerCameraModeSelect(cameraModeSelect);
 
     // Display wigets 
-    const displayGroup = addGroup(contentWrapper, 'Display settings');
+    const displayGroup = addGroup(contentWrapper, 'Display');
     addCustomSelect(displayGroup, 'Change cannonball trail style', null, TRAIL_STYLES, cannonball.userData.trails.current.style,
         value => { updateTrailStyle(value); });
     addCustomSelect(displayGroup, 'Change Earth texture', null, EARTH_TEXTURES, 'assets/earth/bluemarble-5k.jpg',
@@ -142,7 +135,15 @@ function createHTMLControls() {
         }
     });
 
-    // Fire button
+    // Fire control 
+    const fireGroup = addGroup(contentWrapper, 'Fire control');
+    addSlider(fireGroup, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, value => {
+        cannonParams.speed = value;
+    }, 0.01);
+    [elDisplay] = addSlider(fireGroup, 'Elevation (°)', 0, 90, cannonParams.elevation, value => {
+        cannonParams.elevation = value;
+        updateCannonWithParams();
+    }, 1);
     const fireButton = document.createElement('button');
     fireButton.textContent = 'Fire the cannonball !';
     fireButton.classList.add('fire-button');
@@ -154,7 +155,8 @@ function createHTMLControls() {
             fireCannonball();
         }
     });
-    contentWrapper.appendChild(fireButton);
+    fireGroup.parentElement.open = true;
+    fireGroup.appendChild(fireButton);
 }
 
 function addSlider(container, labelText, min, max, initial, onChange, step = 1) {
