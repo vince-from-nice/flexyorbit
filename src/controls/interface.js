@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { scaleFromKm } from '../constants.js';
 import { updateCannonWithParams, fireCannonball, cannonParams, cannonball } from '../scene/cannon.js';
 import { updateTrailStyle } from '../scene/trails.js';
 import { EARTH_TEXTURES, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
