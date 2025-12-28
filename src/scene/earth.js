@@ -14,7 +14,7 @@ export const EARTH_TEXTURES = [
 ];
 
 export function createEarth() {
-    const geometry = new THREE.SphereGeometry(EARTH_RADIUS_SCALED, 64, 64);
+    const geometry = new THREE.SphereGeometry(EARTH_RADIUS_SCALED, 128, 128);
     //const geometry = new THREE.BoxGeometry(EARTH_RADIUS, EARTH_RADIUS, EARTH_RADIUS);
 
     // const textureLoader = new THREE.TextureLoader();

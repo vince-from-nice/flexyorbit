@@ -14,7 +14,7 @@ export let cannonParams = {
     altitude: 100,
     azimuth: 0,
     elevation: 45,
-    speed: 1.5
+    speed: 4.0
 };
 
 export function createCannon() {

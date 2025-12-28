@@ -39,7 +39,7 @@ export function createAtmosphere() {
 
   const radius = EARTH_RADIUS_SCALED + scaleFromKm(atmosphereHeightKm) + 0.04;
 
-  const geometry = new THREE.SphereGeometry(radius, 64, 48);
+  const geometry = new THREE.SphereGeometry(radius, 128, 128);
 
   const material = new THREE.ShaderMaterial({
     uniforms: {

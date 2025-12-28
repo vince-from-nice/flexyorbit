@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { scaleFromKm } from '../constants.js';
 import { updateCannonWithParams, fireCannonball, cannonParams, cannonball } from '../scene/cannon.js';
 import { updateTrailStyle } from '../scene/trails.js';
 import { EARTH_TEXTURES, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
@@ -129,7 +130,7 @@ function createHTMLControls() {
 
     // Display wigets 
     const displayGroup = addGroup(contentWrapper, 'Display settings');
-    addCustomSelect(displayGroup, 'Change cannonball trail style', null, TRAIL_STYLES, cannonball.userData.trails.current.userData.style,
+    addCustomSelect(displayGroup, 'Change cannonball trail style', null, TRAIL_STYLES, cannonball.userData.trails.current.style,
         value => { updateTrailStyle(value); });
     addCustomSelect(displayGroup, 'Change Earth texture', null, EARTH_TEXTURES, 'assets/earth/bluemarble-5k.jpg',
         value => { setEarthTexture(value); });
