@@ -85,11 +85,27 @@ body {
     transform: translateY(-50%) rotate(180deg);
 }
 
+/* ==========================================================================
+   HEADER-INTRO
+   ========================================================================== */
+
 /* Hide native marker for main details */
 #main-controls-toggle summary::-webkit-details-marker,
 #main-controls-toggle summary::marker {
     display: none;
 }
+
+.header-intro {
+    padding: 16px 24px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #88ccff;
+    /* background: rgba(30, 50, 90, 0.4); */
+    /* border-bottom: 1px solid rgba(100, 150, 255, 0.25); */
+    text-align: center;
+    font-weight: 500;
+}
+
 
 /* ==========================================================================
    SUB-GROUPS
@@ -434,8 +450,14 @@ button:hover {
         width: 90px;
         padding: 6px 18px 6px 10px;
     }
-}
 
+    .main-content-wrapper h4 {
+        display: none !important;
+    }
+}
+@media (max-width: 768px) {
+
+}
 /* ==========================================================================
    SPACING & TRANSITIONS
    ========================================================================== */
