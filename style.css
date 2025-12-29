@@ -454,10 +454,12 @@ button:hover {
     .main-content-wrapper h4 {
         display: none !important;
     }
-}
-@media (max-width: 768px) {
 
+    .header-intro {
+        display: none;
+    }
 }
+
 /* ==========================================================================
    SPACING & TRANSITIONS
    ========================================================================== */
