@@ -168,6 +168,31 @@ body {
 }
 
 /* ==========================================================================
+   SPACING & TRANSITIONS
+   ========================================================================== */
+
+.main-content-wrapper {
+    padding: 0;
+    transition: max-height 0.4s ease-out;
+    overflow: hidden;
+}
+
+/* Intro text spacing */
+.main-content-wrapper> :first-child {
+    margin-top: 24px !important;
+    padding: 0 24px;
+}
+
+.main-content-wrapper h4 {
+    margin: 0 0 32px 0;
+    font-style: italic;
+    font-weight: normal;
+    color: #88ccffcc;
+    text-align: center;
+    opacity: 0.9;
+}
+
+/* ==========================================================================
    LABELS
    ========================================================================== */
 
@@ -185,14 +210,17 @@ label {
 /* WebKit (Chrome, Edge, etc.) : espace supplémentaire autour des flèches */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
-    margin-left: 8px !important;       /* ← Espace à gauche des flèches (vers le texte) */
+    margin-left: 8px !important;
+    /* ← Espace à gauche des flèches (vers le texte) */
     opacity: 1;
 }
 
 /* Firefox : push le texte à gauche pour créer un espace visuel */
 input[type="number"] {
-    text-indent: 4px;                  /* ← Petit décalage du texte pour Firefox */
-    padding-right: 20px !important;    /* Force le padding droit */
+    text-indent: 4px;
+    /* ← Petit décalage du texte pour Firefox */
+    padding-right: 20px !important;
+    /* Force le padding droit */
 }
 
 input[type="range"]::-webkit-slider-thumb,
@@ -233,12 +261,14 @@ input[type="checkbox"] {
 }
 
 .slider-top-row input[type="number"] {
-    width: 100px;                      /* un peu plus large pour respirer */
+    width: 100px;
+    /* un peu plus large pour respirer */
     text-align: right;
     background: rgba(40, 60, 90, 0.7);
     border: 1px solid #00aaff88;
     color: #fff;
-    padding: 6px 20px 6px 12px;        /* ← Padding droit augmenté → espace flèches */
+    padding: 6px 20px 6px 12px;
+    /* ← Padding droit augmenté → espace flèches */
     border-radius: 4px;
 }
 
@@ -248,26 +278,34 @@ input[type="checkbox"] {
 
 .checkbox-wrapper {
     display: flex;
-    align-items: center;           /* centre verticalement checkbox et texte */
-    gap: 12px;                     /* espace entre la case et le texte */
-    margin: 10px 0;                /* espace au-dessus/en-dessous du groupe */
+    align-items: center;
+    /* centre verticalement checkbox et texte */
+    gap: 12px;
+    /* espace entre la case et le texte */
+    margin: 10px 0;
+    /* espace au-dessus/en-dessous du groupe */
 }
 
 .checkbox-wrapper input[type="checkbox"] {
-    flex-shrink: 0;                /* empêche que la case rétrécisse */
+    flex-shrink: 0;
+    /* empêche que la case rétrécisse */
     width: 18px;
     height: 18px;
-    margin: 0;                     /* reset marge par défaut */
+    margin: 0;
+    /* reset marge par défaut */
     accent-color: #00dfff;
 }
 
 .checkbox-wrapper label {
-    margin: 0;                     /* reset la marge block par défaut */
+    margin: 0;
+    /* reset la marge block par défaut */
     font-size: 15px;
     color: #aaccff;
     cursor: pointer;
-    flex: 1;                       /* prend le reste de l'espace */
-    white-space: nowrap;           /* évite retour à la ligne */
+    flex: 1;
+    /* prend le reste de l'espace */
+    white-space: nowrap;
+    /* évite retour à la ligne */
 }
 
 /* ==========================================================================
@@ -281,7 +319,7 @@ input[type="checkbox"] {
 }
 
 /* Remove extra top spacing when custom select is first in group */
-.group-content > .custom-select-wrapper:first-child {
+.group-content>.custom-select-wrapper:first-child {
     margin-top: 0;
 }
 
@@ -332,7 +370,8 @@ input[type="checkbox"] {
     overflow-y: auto;
 
     display: none;
-    z-index: 5000;   /* above controls panel */
+    z-index: 5000;
+    /* above controls panel */
 }
 
 .custom-select-list.open {
@@ -419,68 +458,88 @@ button:hover {
 }
 
 /* ==========================================================================
-   RESPONSIVE - Mobile & small screens
+   RESPONSIVE - Mobile & small screens (≤ 768px)
    ========================================================================== */
-
 @media (max-width: 768px) {
-    #controls {
-        width: calc(100% - 24px);
-        left: 12px;
-        right: 12px;
-        top: 12px;
-        padding: 0;
-        max-height: 85vh;
-    }
 
-    #main-controls-toggle summary h1 {
-        padding: 16px 48px 16px 20px;
-        font-size: 24px;
-    }
-
-    .control-group summary {
-        padding: 12px 48px 12px 20px;
-        font-size: 16px;
-    }
-
-    .group-content {
-        padding: 16px 20px;
-    }
-
-    .slider-top-row input[type="number"] {
-        width: 90px;
-        padding: 6px 18px 6px 10px;
-    }
-
-    .main-content-wrapper h4 {
-        display: none !important;
-    }
-
-    .header-intro {
-        display: none;
-    }
-}
-
-/* ==========================================================================
-   SPACING & TRANSITIONS
-   ========================================================================== */
-
-.main-content-wrapper {
+  /* Main controls panel */
+  #controls {
+    width: calc(100% - 24px);
+    left: 12px;
+    right: 12px;
+    top: 12px;
     padding: 0;
-    transition: max-height 0.4s ease-out;
-    overflow: hidden;
+    max-height: 85vh;
+  }
+
+  /* Hide intro elements */
+  .header-intro,
+  .main-content-wrapper > h4 {
+    display: none !important;
+  }
+
+  /* Group titles - more compact */
+  .control-group summary {
+    padding: 9px 48px 9px 18px;
+    font-size: 15px;
+    min-height: 36px;
+    line-height: 1.3;
+  }
+
+  /* Main title */
+  #main-controls-toggle summary h1 {
+    font-size: 22px;
+    padding: 14px 20px;
+  }
+
+  /* Content padding inside opened groups */
+  .group-content {
+    padding: 12px 18px;
+  }
+
+  /* Very small vertical spacing between groups */
+  .control-group {
+    margin: 3px 0;
+  }
+
+  .control-group + .control-group {
+    margin-top: 0;
+  }
+
+  /* Sliders & number inputs - smaller */
+  .slider-top-row {
+    margin-bottom: 8px;
+  }
+
+  .slider-top-row label {
+    font-size: 13.5px;
+  }
+
+  .slider-top-row input[type="number"] {
+    width: 88px;
+    padding: 5px 16px 5px 8px;
+    font-size: 13px;
+  }
+
+  input[type="range"] {
+    height: 18px;           /* thinner track */
+  }
+
+  /* General form elements */
+  label {
+    font-size: 13.5px;
+    margin: 8px 0 4px;
+  }
+
+  button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .time-button,
+  .fire-button {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
 }
 
-/* Intro text spacing */
-.main-content-wrapper > :first-child {
-    margin-top: 24px !important;
-    padding: 0 24px;
-}
-
-.main-content-wrapper h4 {
-    margin: 0 0 32px 0;
-    font-style: italic;
-    font-weight: normal;
-    color: #88ccffcc;
-    text-align: center;
-    opacity: 0.9;
-}

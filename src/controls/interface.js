@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { displayAxis } from '../scene/scene.js';
 import { updateCannonWithParams, fireCannonball, cannonParams, cannonball } from '../scene/cannon.js';
 import { updateTrailStyle } from '../scene/trails.js';
 import { EARTH_TEXTURES, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
@@ -126,24 +127,19 @@ function createHTMLControls() {
         value => { updateTrailStyle(value); });
     addCustomSelect(displayGroup, 'Change Earth texture', null, EARTH_TEXTURES, 'assets/earth/bluemarble-5k.jpg',
         value => { setEarthTexture(value); });
-    addCheckbox(displayGroup, null, 'Display referential axes', false, async () => {
-        const { scene, axesGroup } = await import('../scene/scene.js');
-        if (checkbox.checked) {
-            scene.add(axesGroup);
-        } else {
-            scene.remove(axesGroup);
-        }
+    addCheckbox(displayGroup, null, 'Display referential axes', false, value => {
+        displayAxis(value);
     });
 
     // Fire control 
     const fireGroup = addGroup(contentWrapper, 'Fire control');
-    addSlider(fireGroup, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, value => {
-        cannonParams.speed = value;
-    }, 0.01);
     [elDisplay] = addSlider(fireGroup, 'Elevation (°)', 0, 90, cannonParams.elevation, value => {
         cannonParams.elevation = value;
         updateCannonWithParams();
     }, 1);
+    addSlider(fireGroup, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, value => {
+        cannonParams.speed = value;
+    }, 0.01);
     const fireButton = document.createElement('button');
     fireButton.textContent = 'Fire the cannonball !';
     fireButton.classList.add('fire-button');

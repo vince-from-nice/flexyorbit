@@ -5,7 +5,7 @@ import { createAtmosphere } from './atmosphere.js';
 import { createCannon } from './cannon.js';
 import { createNewCannonballTrail } from './trails.js';
 
-export let scene, camera, renderer, axesGroup, sunLight;
+export let scene, camera, renderer, sunLight, axesGroup;
 
 export function createScene(container) {
   scene = new THREE.Scene();
@@ -109,4 +109,12 @@ function logRendererInfos() {
   // console.log('  Renderer capabilities:', renderer.capabilities);
   // That info is very relevant because of the big size of the Earth texture
   console.log('  Max texture size:', renderer.capabilities.maxTextureSize);
+}
+
+export function displayAxis(display) {
+  if (display) {
+    scene.add(axesGroup);
+  } else {
+    scene.remove(axesGroup);
+  }
 }
