@@ -4,7 +4,7 @@ import { EARTH_RADIUS_SCALED, GLOBAL_SCALE } from '../constants.js';
 import { atmosphereHeightKm, atmosphereDensitySurface } from '../scene/atmosphere.js';
 
 export const TROPOSPHERE_HEIGHT_RATIO = 0.075; // Height of the troposphere / total height of the atmosphere
-export const DRAG_COEFF = 0.001; // Magic value for now
+export const DRAG_COEFF = 0.001; // Magic value for now (no real computation with Cd, surface..) but it should be in obj.userData
 
 export function getDragAcceleration(position, velocity) {
     const speedInMeterBySecond = velocity.length() * GLOBAL_SCALE * 1000;

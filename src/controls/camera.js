@@ -53,7 +53,7 @@ function initOrbitControls() {
     orbitControls.dampingFactor = 0.05;
     orbitControls.rotateSpeed = 1.0;
     orbitControls.panSpeed = 1.0;
-    orbitControls.minDistance = EARTH_RADIUS_SCALED + scaleFromKm(1000);
+    orbitControls.minDistance = EARTH_RADIUS_SCALED + scaleFromKm(300);
     orbitControls.maxDistance = EARTH_RADIUS_SCALED * 20;
     orbitControls.enablePan = false;
 

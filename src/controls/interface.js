@@ -108,10 +108,10 @@ function createHTMLControls() {
 
     // Atmosphere wigets
     const atmoshpereGroupDiv = addGroup(contentWrapper, 'Atmosphere');
-    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
+    addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
         setAtmosphereHeight(value);
     }, 5);
-    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Density factor (kg/m³)', 0.0, 5.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
+    addSlider(atmoshpereGroupDiv, 'Density factor (kg/m³)', 0.0, 5.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
         setAtmosphereDensity(value);
     }, 0.1);
 
