@@ -6,8 +6,9 @@ import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.j
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { EARTH_RADIUS_SCALED, scaleFromKm, scaleToKm } from '../constants.js';
 import { camera, renderer } from '../scene/scene.js';
+import { earth } from '../scene/earth.js';
+import { cannonGroup, cannonball } from '../scene/cannon.js';
 
-export let currentControls = null;
 export const CAMERA_MODES = [
     { value: 'orbit', label: 'Orbit controls (default)' },
     { value: 'map', label: 'Map controls (orbit style)' },
@@ -15,9 +16,26 @@ export const CAMERA_MODES = [
     { value: 'fps', label: 'First Person Shooter' },
     { value: 'pointerLock', label: 'Pointer Lock (not clear)' }
 ];
-export let currentMode = 'orbit';
-let currentModeIndex = 0;
+let cameraCurrentMode = 'orbit';
+export let cameraCurrentControls = null;
+let cameraCurrentModeIndex = 0;
 let cameraModeSelectRef = null;
+
+export let CAMERA_TARGETS = [
+    { value: 'universe', label: 'Universe', object: null }
+];
+let cameraCurrentTarget = 'universe';
+let cameraCurrentTargetObject = null;
+let cameraCurrentTargetIndex = 0;
+let cameraTargetSelectRef = null;
+
+const CAMERA_ORBIT_ROTATE_SPEED_BASE = 0.3;
+const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN = 0.3;
+const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX = 3.0;
+const CAMERA_ORBIT_MIN_DISTANCE_LARGE = EARTH_RADIUS_SCALED + scaleFromKm(500);
+const CAMERA_ORBIT_MIN_DISTANCE_SMALL = scaleFromKm(0.01); // 10 meters
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_LARGE = EARTH_RADIUS_SCALED * 3
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_SMALL = scaleFromKm(0.01) // 10 meters
 
 let orbitControls = null;
 let flyControls = null;
@@ -25,23 +43,32 @@ let fpsControls = null;
 let pointerLockControls = null;
 let mapControls = null;
 
-const baseRotateSpeed = 0.1;
-const basePanSpeed = 1.0;
-
 export function initCameraControls() {
     initOrbitControls();
+    cameraCurrentControls = orbitControls;
 
-    currentControls = orbitControls;
+    addCameraTarget('earth', 'Earth', earth);
+    addCameraTarget('cannon', 'Cannon', cannonGroup);
+    addCameraTarget('cannonball', 'Cannonball', cannonball);
 
     window.addEventListener('keydown', (e) => {
         if (e.code === 'KeyC' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            currentModeIndex = (currentModeIndex + 1) % CAMERA_MODES.length;
-            const nextMode = CAMERA_MODES[currentModeIndex].value;
-            console.log("key C ");
-            //switchCameraControl(nextMode);
+            cameraCurrentModeIndex = (cameraCurrentModeIndex + 1) % CAMERA_MODES.length;
+            const nextMode = CAMERA_MODES[cameraCurrentModeIndex].value;
             cameraModeSelectRef.value = nextMode;
-            if (cameraModeSelectRef && cameraModeSelectRef.value !== currentMode) {
-                cameraModeSelectRef.value = currentMode;
+            if (cameraModeSelectRef && cameraModeSelectRef.value !== cameraCurrentMode) {
+                cameraModeSelectRef.value = cameraCurrentMode;
+            }
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyT' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            cameraCurrentTargetIndex = (cameraCurrentTargetIndex + 1) % CAMERA_TARGETS.length;
+            const nextTarget = CAMERA_TARGETS[cameraCurrentTargetIndex].value;
+            cameraTargetSelectRef.value = nextTarget;
+            if (cameraTargetSelectRef && cameraTargetSelectRef.value !== cameraCurrentTarget) {
+                cameraTargetSelectRef.value = cameraCurrentTarget;
             }
         }
     });
@@ -51,9 +78,9 @@ function initOrbitControls() {
     orbitControls = new OrbitControls(camera, renderer.domElement);
     orbitControls.enableDamping = true;
     orbitControls.dampingFactor = 0.05;
-    orbitControls.rotateSpeed = 1.0;
+    orbitControls.rotateSpeed = CAMERA_ORBIT_ROTATE_SPEED_BASE;
     orbitControls.panSpeed = 1.0;
-    orbitControls.minDistance = EARTH_RADIUS_SCALED + scaleFromKm(300);
+    orbitControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_LARGE;
     orbitControls.maxDistance = EARTH_RADIUS_SCALED * 20;
     orbitControls.enablePan = false;
 
@@ -90,7 +117,7 @@ function initFPSControls() {
 function initPointerLockControls() {
     pointerLockControls = new PointerLockControls(camera, renderer.domElement);
     renderer.domElement.addEventListener('click', () => {
-        if (currentMode === 'pointerLock') {
+        if (cameraCurrentMode === 'pointerLock') {
             pointerLockControls.lock();
         }
     });
@@ -100,31 +127,43 @@ function initPointerLockControls() {
 
 function adjustOrbitControlsSpeed() {
     const cameraDistance = camera.position.distanceTo(orbitControls.target);
-    const scaleFactor = Math.max(0.3, Math.max(1, cameraDistance / EARTH_RADIUS_SCALED * 2));
-    orbitControls.rotateSpeed = baseRotateSpeed * scaleFactor;
-    orbitControls.panSpeed = basePanSpeed * scaleFactor;
-    //console.log("orbit controls scale factor (camera distance): " + scaleFactor.toFixed(2) + " (" + scaleToKm(cameraDistance).toFixed(0) + " km)")
-    //console.log("orbit controls rotate and pan speed: " + orbitControls.rotateSpeed.toFixed(2) + " " + orbitControls.panSpeed.toFixed(2))
+    const ratioDistance = ['universe', 'earth'].includes(cameraCurrentTarget) ?
+        CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_LARGE : CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_SMALL;
+    let scaleFactor = cameraDistance / ratioDistance;
+    if (scaleFactor < CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN) scaleFactor = CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN;
+    if (scaleFactor > CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX) scaleFactor = CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX;
+    orbitControls.rotateSpeed = CAMERA_ORBIT_ROTATE_SPEED_BASE * scaleFactor;
+    //orbitControls.panSpeed = CAMERA_ORBIT_BASE_PAN_SPEED * scaleFactor;
+    false && console.log("orbit controls speed: "
+        + " cameraDistance=" + scaleToKm(cameraDistance).toFixed(3) + "km"
+        + " ratioDistance=" + scaleToKm(ratioDistance).toFixed(3) + "km"
+        + " scaleFactor=" + scaleFactor.toFixed(2)
+        + " rotateSpeed: " + orbitControls.rotateSpeed.toFixed(2));
 }
 
-export function switchCameraControl(type) {
+export function updateCamera(delta) {
+    updateCameraControls(delta);
+    updateCameraTargetFollow();
+}
+
+export function switchCameraMode(type) {
     const prevPosition = camera.position.clone();
     const prevQuaternion = camera.quaternion.clone();
-    const prevTarget = currentControls?.target?.clone?.() || new THREE.Vector3();
+    const prevTarget = cameraCurrentControls?.target?.clone?.() || new THREE.Vector3();
 
-    if (currentControls) {
-        currentControls.enabled = false;
-        if (currentControls instanceof OrbitControls || currentControls instanceof MapControls) {
-            currentControls.dispose();
+    if (cameraCurrentControls) {
+        cameraCurrentControls.enabled = false;
+        if (cameraCurrentControls instanceof OrbitControls || cameraCurrentControls instanceof MapControls) {
+            cameraCurrentControls.dispose();
         }
-        if (currentControls instanceof PointerLockControls) {
-            currentControls.unlock();
+        if (cameraCurrentControls instanceof PointerLockControls) {
+            cameraCurrentControls.unlock();
         }
-        if (currentControls === orbitControls) orbitControls = null;
-        if (currentControls === mapControls) mapControls = null;
+        if (cameraCurrentControls === orbitControls) orbitControls = null;
+        if (cameraCurrentControls === mapControls) mapControls = null;
     }
 
-    currentMode = type;
+    cameraCurrentMode = type;
     let newControls = null;
 
     switch (type) {
@@ -160,14 +199,14 @@ export function switchCameraControl(type) {
             return;
     }
 
-    currentControls = newControls;
-    currentControls.enabled = true;
+    cameraCurrentControls = newControls;
+    cameraCurrentControls.enabled = true;
 
     camera.position.copy(prevPosition);
     camera.quaternion.copy(prevQuaternion);
 
-    if (currentControls.update) {
-        currentControls.update(0);
+    if (cameraCurrentControls.update) {
+        cameraCurrentControls.update(0);
     }
 
     console.log(`Camera mode has switched to ${type}`);
@@ -178,8 +217,172 @@ export function registerCameraModeSelect(selectElement) {
 }
 
 export function updateCameraControls(deltaTime) {
-    if (currentControls?.update) {
-        currentControls.update(deltaTime);
+    if (cameraCurrentControls?.update) {
+        cameraCurrentControls.update(deltaTime);
     }
+}
+
+export function switchCameraTarget(value) {
+    cameraCurrentTarget = value;
+
+    const target = CAMERA_TARGETS.find(e => e.value === value);
+    cameraCurrentTargetObject = target?.object;
+
+    const position = getCurrentCameraTargetPosition();
+
+    if (['orbit', 'map'].includes(cameraCurrentMode) && cameraCurrentControls) {
+        cameraCurrentControls.target.copy(position);
+        if (['universe', 'earth'].includes(value)) {
+            cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_LARGE;
+        } else {
+            cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_SMALL;
+        }
+        repositionCameraAlignedWithEarth(position);
+    } else {
+        positionCameraInFrontOf(position, value);    
+    }    
+
+    cameraCurrentControls.update();
+
+    console.log("Camera target has switched to " + value + " with position (" + cameraCurrentControls.target.x.toFixed(0) + " " + cameraCurrentControls.target.y.toFixed(0) + " " + cameraCurrentControls.target.z.toFixed(0) + ")");
+}
+
+// TOFIX
+function repositionCameraAlignedWithEarth(targetPos) {
+    const earthCenter = new THREE.Vector3(0, 0, 0);
+
+    // Vecteur Terre → cible (normalisé)
+    const earthToTarget = targetPos.clone().sub(earthCenter).normalize();
+
+    // On choisit un plan contenant l'axe Terre → cible
+    // Direction arbitraire perpendiculaire (ortho) pour placer la caméra
+    const arbitraryUp = new THREE.Vector3(0, 1, 0);
+    let perpendicular = new THREE.Vector3().crossVectors(earthToTarget, arbitraryUp).normalize();
+
+    // Fallback si l'axe est parallèle à Y (rare mais possible)
+    if (perpendicular.lengthSq() < 0.001) {
+        perpendicular.set(1, 0, 0);
+    }
+
+    // Distance fixe → on voit bien la Terre ET l'objet
+    // Valeur suggérée : 2.5 à 4 × rayon Terre → bon compromis visibilité
+    const desiredDistance = EARTH_RADIUS_SCALED * 3.2;
+
+    // Position = cible + offset perpendiculaire + légère composante radiale (pour pas être trop bas)
+    const sideOffset   = perpendicular.multiplyScalar(desiredDistance * 0.85);
+    const radialOffset = earthToTarget.multiplyScalar(desiredDistance * 0.35);
+
+    const newPosition = targetPos.clone()
+        .add(sideOffset)
+        .add(radialOffset);
+
+    camera.position.copy(newPosition);
+
+    // Deux choix possibles (teste les deux) :
+    // Option A : vise la cible → l'objet est centré, Terre est dans le champ
+    //camera.lookAt(targetPos);
+
+    // Option B : vise le centre Terre → alignement **strict** Terre–objet (plus radical)
+    camera.lookAt(earthCenter);
+
+    console.log(
+        `Realigned camera for ${cameraCurrentTarget}: ` +
+        `pos=(${newPosition.x.toFixed(0)}, ${newPosition.y.toFixed(0)}, ${newPosition.z.toFixed(0)}) ` +
+        `dist=${scaleToKm(camera.position.distanceTo(targetPos)).toFixed(1)} km`
+    );
+}
+
+function positionCameraInFrontOf(targetPos, targetType) {
+    const baseOffset = ['cannon', 'cannonball'].includes(targetType)
+        ? scaleFromKm(1.5)      // assez proche pour bien voir le cannon/boulet
+        : scaleFromKm(800);     // vue plus large pour gros objets
+
+    let direction = camera.position.clone().sub(targetPos);
+
+    // Évite la division par zéro si caméra déjà exactement sur la cible
+    if (direction.lengthSq() < 0.0001) {
+        direction.set(0, 0, 1); // direction arbitraire
+    }
+
+    direction.normalize().multiplyScalar(baseOffset);
+
+    camera.position.copy(targetPos).add(direction);
+    camera.lookAt(targetPos);
+
+    // Quelques ajustements selon le type de contrôle
+    if (cameraCurrentControls) {
+        if (cameraCurrentControls instanceof FirstPersonControls) {
+            cameraCurrentControls.lookAt(targetPos.x, targetPos.y, targetPos.z);
+        } else if (cameraCurrentControls instanceof PointerLockControls ||
+            cameraCurrentControls instanceof FlyControls) {
+            const dir = targetPos.clone().sub(camera.position).normalize();
+            const euler = new THREE.Euler().setFromVector3(dir, 'YXZ');
+            camera.quaternion.setFromEuler(euler);
+        }
+    }
+
+    cameraCurrentControls?.update?.(0);
+}
+
+function getCurrentCameraTargetPosition() {
+    if (!cameraCurrentTargetObject) return new THREE.Vector3(0, 0, 0);
+    //return cameraCurrentTargetObject.position;
+    const worldPos = new THREE.Vector3();
+    cameraCurrentTargetObject.getWorldPosition(worldPos);
+    return worldPos;
+}
+
+export function updateCameraTargetFollow() {
+    if (!cameraCurrentControls) return;
+
+    const targetPos = getCurrentCameraTargetPosition();
+
+    const isLargeTarget = ['universe', 'earth'].includes(cameraCurrentTarget);
+    const isOrbital = ['orbit', 'map'].includes(cameraCurrentMode);
+
+    if (isOrbital) {
+        // 1. Toujours suivre la cible (smooth)
+        cameraCurrentControls.target.lerp(targetPos, 0.12);
+
+        if (!isLargeTarget) {
+            // Pour petits objets (boulet, futur satellite...) → on essaie de garder la Terre dans le champ
+            // Calcul vecteur Terre → target
+            const earthToTarget = targetPos.clone(); // puisque earth est à (0,0,0)
+            earthToTarget.normalize();
+
+            // Vecteur caméra → target
+            const camToTarget = targetPos.clone().sub(camera.position).normalize();
+
+            // Produit scalaire → si < 0.85 → la Terre commence à sortir du champ
+            const alignment = camToTarget.dot(earthToTarget);
+
+            if (alignment < 0.85) {
+                // Petit ajustement : on pousse légèrement la caméra pour mieux voir la Terre
+                const correctionDir = earthToTarget.clone().multiplyScalar(0.3);
+                const correctedPos = camera.position.clone().add(correctionDir.multiplyScalar(0.05 * scaleFromKm(1000)));
+                camera.position.lerp(correctedPos, 0.04); // très progressif
+            }
+        }
+    } else {
+        // Modes non-orbitaux : chase cam classique
+        const desiredDistance = isLargeTarget ? scaleFromKm(800) : scaleFromKm(1.5);
+        const currentDir = camera.position.clone().sub(targetPos).normalize();
+        const desiredPos = targetPos.clone().add(currentDir.multiplyScalar(desiredDistance));
+
+        camera.position.lerp(desiredPos, 0.10);
+        camera.lookAt(targetPos);
+    }
+
+    cameraCurrentControls?.update?.(0);
+}
+
+export function addCameraTarget(value, label, object) {
+    if (CAMERA_TARGETS.some(o => o.value === value)) return;
+    CAMERA_TARGETS.push({ value, label, object });
+    if (cameraTargetSelectRef) cameraTargetSelectRef.updateOptions(CAMERA_TARGETS);
+}
+
+export function registerCameraTargetSelect(selectElement) {
+    cameraTargetSelectRef = selectElement;
 }
 

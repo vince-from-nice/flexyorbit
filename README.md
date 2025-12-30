@@ -1,7 +1,7 @@
 # FlexyOrbit
 
 **Yet Another Newton's Cannon in 3D**  
-A small educational project to play with Earth's gravity and orbital mechanics.
+FlexyOrbit is a small educational project to play with Earth's gravity and orbital mechanics.
 
 <p align="center">
   <img src="assets/screenshots/20251228.jpg" alt="FlexyOrbit screenshot" width="720"/>
@@ -22,6 +22,7 @@ You can tweak every parameter using the HTML interface widgets, **but you can al
 ### Keyboard shortcuts
 - **Space** → fire the cannonball
 - **C** → switch camera mode
+- **T** → switch camera target
 
 ### Camera modes
 - **OrbitControls / MapControls**  

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { camera, renderer } from '../scene/scene.js';
 import { cannonGroup, cannonParams, updateCannonWithParams } from '../scene/cannon.js';
 import { earth } from '../scene/earth.js';
-import { currentControls } from './camera.js';
+import { cameraCurrentControls } from './camera.js';
 import { updateHTMLDisplays } from './interface.js';
 
 let isDraggingCannon = false;
@@ -44,7 +44,7 @@ function onCannonPointerDown(event) {
     dragButton = event.button;
     previousMouse.copy(mouse);
 
-    currentControls.enabled = false;
+    cameraCurrentControls.enabled = false;
 
     // Set appropriate cursor based on drag mode
     const dom = renderer.domElement;
@@ -131,6 +131,6 @@ function onCannonPointerUp() {
 
     isDraggingCannon = false;
     dragButton = -1;
-    currentControls.enabled = true;
+    cameraCurrentControls.enabled = true;
     renderer.domElement.style.cursor = 'auto';
 }

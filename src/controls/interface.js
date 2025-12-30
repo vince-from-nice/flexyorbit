@@ -6,7 +6,8 @@ import { EARTH_TEXTURES, setEarthTexture, earthRotationDisabled, disableEarthRot
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
 import { initDraggings } from './dragging.js'
-import { CAMERA_MODES, initCameraControls, switchCameraControl, registerCameraModeSelect } from './camera.js'
+import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect } from './camera.js'
+import { } from './camera.js';
 
 export let timePaused = false;
 export let timeAcceleration = 100;
@@ -118,9 +119,12 @@ function createHTMLControls() {
 
     // Camera wigets    
     const cameraGroup = addGroup(contentWrapper, 'Camera');
-    const cameraModeSelect = addCustomSelect(cameraGroup, 'Change camera control', '(or press "c" to switch mode)', CAMERA_MODES, 'orbit',
-        value => { switchCameraControl(value); });
+    const cameraModeSelect = addCustomSelect(cameraGroup, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
+        value => { switchCameraMode(value); });
     registerCameraModeSelect(cameraModeSelect);
+    const cameraTargetSelect = addCustomSelect(cameraGroup, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
+        value => { switchCameraTarget(value); });
+    registerCameraTargetSelect(cameraTargetSelect);
 
     // Display wigets 
     const displayGroup = addGroup(contentWrapper, 'Display');
@@ -322,7 +326,29 @@ function addCustomSelect(parentEl, labelBefore, labelAfter, options, initialValu
 
     return {
         get value() { return currentValue; },
-        set value(v) { setValue(v); }
+        set value(v) { setValue(v); },
+        // Allow an update of the option list
+        updateOptions: function (newOptions) {
+            options = newOptions;
+            list.innerHTML = '';  
+            // Clear existing items
+            newOptions.forEach(opt => {
+                const item = document.createElement("div");
+                item.className = "custom-select-item";
+                item.textContent = opt.label;
+                item.addEventListener("click", () => {
+                    setValue(opt.value);
+                    list.classList.remove("open");
+                });
+                list.appendChild(item);
+            });
+            // Set the current value if it still exists
+            if (newOptions.some(o => o.value === currentValue)) {
+                setValue(currentValue, false);
+            } else if (newOptions.length > 0) {
+                setValue(newOptions[0].value, true);
+            }
+        }
     };
 }
 

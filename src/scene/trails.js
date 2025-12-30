@@ -234,12 +234,12 @@ export function updateThickLineResolution() {
 
     const trails = cannonball.userData.trails;
 
-    if (trails.current && trails.current.userData.style === 'TRAIL_STYLE_WITH_THICK_LINES' && trails.current.material) {
+    if (trails.current && trails.current.style === 'TRAIL_STYLE_WITH_THICK_LINES' && trails.current.model.material) {
         trails.current.material.resolution.set(window.innerWidth, window.innerHeight);
     }
 
     trails.past.forEach(trail => {
-        if (trail.userData.style === 'TRAIL_STYLE_WITH_THICK_LINES' && trail.material) {
+        if (trail.style === 'TRAIL_STYLE_WITH_THICK_LINES' && trail.model.material) {
             trail.material.resolution.set(window.innerWidth, window.innerHeight);
         }
     });

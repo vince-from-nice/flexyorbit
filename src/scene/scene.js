@@ -20,7 +20,7 @@ export function createScene(container) {
 }
 
 function createCamera() {
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, scaleFromKm(10), EARTH_RADIUS_SCALED * 30);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(10), EARTH_RADIUS_SCALED * 30);
   camera.position.set(EARTH_RADIUS_SCALED * 2, EARTH_RADIUS_SCALED * 2, EARTH_RADIUS_SCALED * 2);
 }
 

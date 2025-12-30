@@ -1,10 +1,9 @@
 import * as THREE from 'three';
 import { createScene, camera, renderer, scene } from './scene/scene.js';
 import { earth, earthRotationDisabled } from './scene/earth.js';
-import { updateAtmosphere } from './scene/atmosphere.js';
 import { updateThickLineResolution } from './scene/trails.js';
 import { initControls, timePaused, timeAcceleration } from './controls/interface.js';
-import { updateCameraControls } from './controls/camera.js';
+import { updateCamera } from './controls/camera.js';
 import { animatePhysics } from './physics/physics.js';
 
 const EARTH_ANGULAR_VELOCITY = 2 * Math.PI / 86164;  // rad/s (période sidérale ~23h56m4s)
@@ -25,8 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       animatePhysics(delta * timeAcceleration);
     }
-    updateAtmosphere();
-    updateCameraControls(delta);
+    updateCamera(delta);
     renderer.render(scene, camera);
   }
   renderer.setAnimationLoop(animate);
