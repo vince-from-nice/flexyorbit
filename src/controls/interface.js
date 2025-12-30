@@ -11,7 +11,8 @@ import { CAMERA_MODES, initCameraControls, switchCameraControl, registerCameraMo
 export let timePaused = false;
 export let timeAcceleration = 100;
 
-let latDisplay, lonDisplay, altDisplay, azDisplay, elDisplay;
+let cannonLatDisplay, cannonLonDisplay, cannonAltDisplay, cannonAzDisplay, cannonElDisplay;
+let cannonLatSlider, cannonLonSlider, cannonAltSlider, cannonAzSlider, cannonElSlider;
 
 export function initControls() {
 
@@ -89,19 +90,19 @@ function createHTMLControls() {
 
     // Cannon wigets
     const cannonGroupDiv = addGroup(contentWrapper, 'Cannon');
-    [latDisplay] = addSlider(cannonGroupDiv, 'Latitude (°)', -90, 90, cannonParams.lat, value => {
+    [cannonLatDisplay, cannonLatSlider] = addSlider(cannonGroupDiv, 'Latitude (°)', -90, 90, cannonParams.lat, value => {
         cannonParams.lat = value;
         updateCannonWithParams();
     }, 0.1);
-    [lonDisplay] = addSlider(cannonGroupDiv, 'Longitude (°)', -180, 180, cannonParams.lon, value => {
+    [cannonLonDisplay, cannonLonSlider] = addSlider(cannonGroupDiv, 'Longitude (°)', -180, 180, cannonParams.lon, value => {
         cannonParams.lon = value;
         updateCannonWithParams();
     }, 0.1);
-    [altDisplay] = addSlider(cannonGroupDiv, 'Altitude (km)', 0, 3000, cannonParams.altitude, value => {
+    [cannonAltDisplay, cannonAltSlider] = addSlider(cannonGroupDiv, 'Altitude (km)', 0, 3000, cannonParams.altitude, value => {
         cannonParams.altitude = value;
         updateCannonWithParams();
     }, 1);
-    [azDisplay] = addSlider(cannonGroupDiv, 'Azimuth (°)', 0, 360, cannonParams.azimuth, value => {
+    [cannonAzDisplay, cannonAzSlider] = addSlider(cannonGroupDiv, 'Azimuth (°)', 0, 360, cannonParams.azimuth, value => {
         cannonParams.azimuth = value;
         updateCannonWithParams();
     }, 1);
@@ -133,7 +134,7 @@ function createHTMLControls() {
 
     // Fire control 
     const fireGroup = addGroup(contentWrapper, 'Fire control');
-    [elDisplay] = addSlider(fireGroup, 'Elevation (°)', 0, 90, cannonParams.elevation, value => {
+    [cannonElDisplay, cannonElSlider] = addSlider(fireGroup, 'Elevation (°)', 0, 90, cannonParams.elevation, value => {
         cannonParams.elevation = value;
         updateCannonWithParams();
     }, 1);
@@ -208,7 +209,7 @@ function addSlider(container, labelText, min, max, initial, onChange, step = 1) 
     wrapper.appendChild(slider);
     container.appendChild(wrapper);
 
-    return [numberInput];
+    return [numberInput, slider];
 }
 
 function addCheckbox(parentEl, labelBefore, labelAfter, initialValue, onChange) {
@@ -326,9 +327,29 @@ function addCustomSelect(parentEl, labelBefore, labelAfter, options, initialValu
 }
 
 export function updateHTMLDisplays() {
-    if (latDisplay) latDisplay.value = cannonParams.lat.toFixed(1);
-    if (lonDisplay) lonDisplay.value = cannonParams.lon.toFixed(1);
-    if (altDisplay) altDisplay.value = cannonParams.altitude.toFixed(0);
-    if (azDisplay) azDisplay.value = cannonParams.azimuth.toFixed(0);
-    if (elDisplay) elDisplay.value = cannonParams.elevation.toFixed(0);
+    if (cannonLatDisplay && cannonLatSlider) {
+        cannonLatDisplay.value = cannonParams.lat.toFixed(1);
+        cannonLatSlider.value = cannonParams.lat.toFixed(1);
+        cannonLatSlider.dispatchEvent(new Event('input'));
+    }
+    if (cannonLonDisplay && cannonLonSlider) {
+        cannonLonDisplay.value = cannonParams.lon.toFixed(1);
+        cannonLonSlider.value = cannonParams.lon.toFixed(1);
+        cannonLonSlider.dispatchEvent(new Event('input'));
+    }
+    if (cannonAltDisplay && cannonAltSlider) {
+        cannonAltDisplay.value = cannonParams.altitude.toFixed(0);
+        cannonAltSlider.value = cannonParams.altitude.toFixed(0);
+        cannonAltSlider.dispatchEvent(new Event('input'));
+    }
+    if (cannonAzDisplay && cannonAzSlider) {
+        cannonAzDisplay.value = cannonParams.azimuth.toFixed(0);
+        cannonAzSlider.value = cannonParams.azimuth.toFixed(0);
+        cannonAzSlider.dispatchEvent(new Event('input'));
+    }
+    if (cannonElDisplay && cannonElSlider) {
+        cannonElDisplay.value = cannonParams.elevation.toFixed(0);
+        cannonElSlider.value = cannonParams.elevation.toFixed(0);
+        cannonElSlider.dispatchEvent(new Event('input'));
+    }
 }
