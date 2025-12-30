@@ -3,7 +3,7 @@ import { displayAxis } from '../scene/scene.js';
 import { updateCannonWithParams, fireCannonball, cannonParams, cannonball } from '../scene/cannon.js';
 import { updateTrailStyle } from '../scene/trails.js';
 import { EARTH_TEXTURES, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
-import { setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
+import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
 import { initDraggings } from './dragging.js'
 import { CAMERA_MODES, initCameraControls, switchCameraControl, registerCameraModeSelect } from './camera.js'
@@ -108,10 +108,10 @@ function createHTMLControls() {
 
     // Atmosphere wigets
     const atmoshpereGroupDiv = addGroup(contentWrapper, 'Atmosphere');
-    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, 100, value => {
+    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
         setAtmosphereHeight(value);
     }, 5);
-    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Density factor', 0.0, 5.0, 1.0, value => {
+    [latDisplay] = addSlider(atmoshpereGroupDiv, 'Density factor (kg/m³)', 0.0, 5.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
         setAtmosphereDensity(value);
     }, 0.1);
 

@@ -131,7 +131,7 @@ export function updateTrail(obj) {
             }
             stanceCounter++;
         }
-        console.log("Trail has been updated with " + currentHistory.length + " points and style is " + currentStyle);
+        //console.log("Trail has been updated with " + currentHistory.length + " points");
     }
 }
 

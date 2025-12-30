@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
 
-export const ATMOSPHERE_REGULAR_HEIGHT_KM = 100;
+export const ATMOSPHERE_REGULAR_HEIGHT_KM = 400; // 100 km is a realistic value
+export const ATMOSPHERE_REGULAR_DENSITY_SURFACE = 1.225; // 1.225 kg/m³ is the real density at sea level
 export let atmosphereHeightKm = ATMOSPHERE_REGULAR_HEIGHT_KM;
-export let atmosphereDensityFactor = 1.0;
+export let atmosphereDensitySurface = ATMOSPHERE_REGULAR_DENSITY_SURFACE;  
 
 export let atmosphereMesh = null;
 
@@ -78,11 +79,11 @@ export function setAtmosphereHeight(newHeightKm) {
 }
 
 export function setAtmosphereDensity(newDensity) {
-  atmosphereDensityFactor = Math.max(0.1, Math.min(3.0, newDensity));
+  atmosphereDensitySurface = Math.max(0.1, Math.min(3.0, newDensity));
 
   if (atmosphereMesh?.material) {
-    atmosphereMesh.material.uniforms.uIntensityMultiplier.value = 1.2 + atmosphereDensityFactor * 1.1;
-    atmosphereMesh.material.uniforms.uPower.value = 1.8 + atmosphereDensityFactor * 1.2;
+    atmosphereMesh.material.uniforms.uIntensityMultiplier.value = 1.2 + atmosphereDensitySurface * 1.1;
+    atmosphereMesh.material.uniforms.uPower.value = 1.8 + atmosphereDensitySurface * 1.2;
     atmosphereMesh.material.needsUpdate = true;
   }
 }

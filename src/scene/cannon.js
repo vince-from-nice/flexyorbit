@@ -4,7 +4,7 @@ import { scene } from './scene.js';
 import { earth } from './earth.js';
 import { createNewCannonballTrail } from './trails.js';
 
-import { registerAnimable } from '../physics.js';
+import { registerAnimable } from '../physics/physics.js';
 
 export let cannonGroup, cannonball;
 

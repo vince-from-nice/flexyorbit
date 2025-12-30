@@ -5,7 +5,7 @@ import { updateAtmosphere } from './scene/atmosphere.js';
 import { updateThickLineResolution } from './scene/trails.js';
 import { initControls, timePaused, timeAcceleration } from './controls/interface.js';
 import { updateCameraControls } from './controls/camera.js';
-import { animatePhysics } from './physics.js';
+import { animatePhysics } from './physics/physics.js';
 
 const EARTH_ANGULAR_VELOCITY = 2 * Math.PI / 86164;  // rad/s (période sidérale ~23h56m4s)
 
