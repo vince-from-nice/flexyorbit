@@ -234,10 +234,12 @@ export function switchCameraTarget(value) {
         cameraCurrentControls.target.copy(position);
         if (['universe', 'earth'].includes(value)) {
             cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_LARGE;
+            camera.position.set(0, 0, EARTH_RADIUS_SCALED * 4);
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
         } else {
             cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_SMALL;
+            repositionCameraAlignedWithEarth(position);
         }
-        repositionCameraAlignedWithEarth(position);
     } else {
         positionCameraInFrontOf(position, value);    
     }    
@@ -247,48 +249,42 @@ export function switchCameraTarget(value) {
     console.log("Camera target has switched to " + value + " with position (" + cameraCurrentControls.target.x.toFixed(0) + " " + cameraCurrentControls.target.y.toFixed(0) + " " + cameraCurrentControls.target.z.toFixed(0) + ")");
 }
 
-// TOFIX
+// Repositions camera so that Earth center → target → camera are collinear
 function repositionCameraAlignedWithEarth(targetPos) {
     const earthCenter = new THREE.Vector3(0, 0, 0);
 
-    // Vecteur Terre → cible (normalisé)
+    // Vector from Earth center to target (normalized)
     const earthToTarget = targetPos.clone().sub(earthCenter).normalize();
 
-    // On choisit un plan contenant l'axe Terre → cible
-    // Direction arbitraire perpendiculaire (ortho) pour placer la caméra
-    const arbitraryUp = new THREE.Vector3(0, 1, 0);
-    let perpendicular = new THREE.Vector3().crossVectors(earthToTarget, arbitraryUp).normalize();
+    // Current camera distance from Earth center (before repositioning)
+    const originalAlt = camera.position.distanceTo(earthCenter);
 
-    // Fallback si l'axe est parallèle à Y (rare mais possible)
-    if (perpendicular.lengthSq() < 0.001) {
-        perpendicular.set(1, 0, 0);
+    // Target altitude from Earth center
+    const targetAlt = targetPos.distanceTo(earthCenter);
+
+    let desiredCameraDistance;
+
+    if (targetAlt < originalAlt * 0.85) {  // objet relativement proche du centre
+        // Garder ~ la même altitude que la caméra avait avant
+        desiredCameraDistance = originalAlt;
+    } else {
+        // Objet loin → on place la caméra un peu plus loin que l'objet
+        desiredCameraDistance = targetAlt + scaleFromKm(800); // 800 km au-dessus par défaut
     }
 
-    // Distance fixe → on voit bien la Terre ET l'objet
-    // Valeur suggérée : 2.5 à 4 × rayon Terre → bon compromis visibilité
-    const desiredDistance = EARTH_RADIUS_SCALED * 3.2;
-
-    // Position = cible + offset perpendiculaire + légère composante radiale (pour pas être trop bas)
-    const sideOffset   = perpendicular.multiplyScalar(desiredDistance * 0.85);
-    const radialOffset = earthToTarget.multiplyScalar(desiredDistance * 0.35);
-
-    const newPosition = targetPos.clone()
-        .add(sideOffset)
-        .add(radialOffset);
+    // Final camera position = along the same line, at desired distance
+    const newPosition = earthToTarget.multiplyScalar(desiredCameraDistance);
 
     camera.position.copy(newPosition);
 
-    // Deux choix possibles (teste les deux) :
-    // Option A : vise la cible → l'objet est centré, Terre est dans le champ
-    //camera.lookAt(targetPos);
-
-    // Option B : vise le centre Terre → alignement **strict** Terre–objet (plus radical)
+    // Critical: look at the CENTER of the Earth
+    // → the target will always lie exactly on the line of sight
     camera.lookAt(earthCenter);
 
     console.log(
-        `Realigned camera for ${cameraCurrentTarget}: ` +
-        `pos=(${newPosition.x.toFixed(0)}, ${newPosition.y.toFixed(0)}, ${newPosition.z.toFixed(0)}) ` +
-        `dist=${scaleToKm(camera.position.distanceTo(targetPos)).toFixed(1)} km`
+        `Aligned camera → Earth center → ${cameraCurrentTarget} | ` +
+        `cam dist=${scaleToKm(desiredCameraDistance).toFixed(0)} km | ` +
+        `target alt=${scaleToKm(targetAlt).toFixed(0)} km`
     );
 }
 
@@ -371,6 +367,17 @@ export function updateCameraTargetFollow() {
 
         camera.position.lerp(desiredPos, 0.10);
         camera.lookAt(targetPos);
+    }
+
+    // Follow target rotation
+    if (cameraCurrentTargetObject) {
+        // Copy the target's world quaternion to the camera
+        //console.log("Camera quaternion before: " + camera.quaternion.x + " " + camera.quaternion.y + " " + camera.quaternion.z + " " + camera.quaternion.w);
+        camera.quaternion.copy(cameraCurrentTargetObject.quaternion);
+        //console.log("Camera quaternion after: " + camera.quaternion.x + " " + camera.quaternion.y + " " + camera.quaternion.z + " " + camera.quaternion.w);
+
+        // Optional: tiny offset to avoid perfect lock-step feeling (surtout pour la Terre)
+        // camera.rotation.y += 0.0005 * delta; // exemple de micro-dérive
     }
 
     cameraCurrentControls?.update?.(0);
