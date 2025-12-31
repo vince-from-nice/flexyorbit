@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       animatePhysics(delta * timeAcceleration);
     }
-    updateCamera(delta);
+    updateCamera(delta * timeAcceleration);
     renderer.render(scene, camera);
   }
   renderer.setAnimationLoop(animate);

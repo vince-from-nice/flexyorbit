@@ -119,12 +119,12 @@ function createHTMLControls() {
 
     // Camera wigets    
     const cameraGroup = addGroup(contentWrapper, 'Camera');
-    const cameraModeSelect = addCustomSelect(cameraGroup, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
-        value => { switchCameraMode(value); });
-    registerCameraModeSelect(cameraModeSelect);
     const cameraTargetSelect = addCustomSelect(cameraGroup, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
         value => { switchCameraTarget(value); });
     registerCameraTargetSelect(cameraTargetSelect);
+    const cameraModeSelect = addCustomSelect(cameraGroup, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
+        value => { switchCameraMode(value); });
+    registerCameraModeSelect(cameraModeSelect);
 
     // Display wigets 
     const displayGroup = addGroup(contentWrapper, 'Display');
@@ -330,7 +330,7 @@ function addCustomSelect(parentEl, labelBefore, labelAfter, options, initialValu
         // Allow an update of the option list
         updateOptions: function (newOptions) {
             options = newOptions;
-            list.innerHTML = '';  
+            list.innerHTML = '';
             // Clear existing items
             newOptions.forEach(opt => {
                 const item = document.createElement("div");

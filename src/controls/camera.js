@@ -22,7 +22,7 @@ let cameraCurrentModeIndex = 0;
 let cameraModeSelectRef = null;
 
 export let CAMERA_TARGETS = [
-    { value: 'universe', label: 'Universe', object: null }
+    //{ value: 'universe', label: 'Universe', object: null }
 ];
 let cameraCurrentTarget = 'universe';
 let cameraCurrentTargetObject = null;
@@ -143,7 +143,7 @@ function adjustOrbitControlsSpeed() {
 
 export function updateCamera(delta) {
     updateCameraControls(delta);
-    updateCameraTargetFollow();
+    updateCameraTargetFollow(delta);
 }
 
 export function switchCameraMode(type) {
@@ -241,46 +241,29 @@ export function switchCameraTarget(value) {
             repositionCameraAlignedWithEarth(position);
         }
     } else {
-        positionCameraInFrontOf(position, value);    
-    }    
+        positionCameraInFrontOf(position, value);
+    }
 
     cameraCurrentControls.update();
 
     console.log("Camera target has switched to " + value + " with position (" + cameraCurrentControls.target.x.toFixed(0) + " " + cameraCurrentControls.target.y.toFixed(0) + " " + cameraCurrentControls.target.z.toFixed(0) + ")");
 }
 
-// Repositions camera so that Earth center → target → camera are collinear
+// Repositions camera so that Earth center, target and camera are on the same line
 function repositionCameraAlignedWithEarth(targetPos) {
     const earthCenter = new THREE.Vector3(0, 0, 0);
-
-    // Vector from Earth center to target (normalized)
     const earthToTarget = targetPos.clone().sub(earthCenter).normalize();
-
-    // Current camera distance from Earth center (before repositioning)
     const originalAlt = camera.position.distanceTo(earthCenter);
-
-    // Target altitude from Earth center
     const targetAlt = targetPos.distanceTo(earthCenter);
-
     let desiredCameraDistance;
-
-    if (targetAlt < originalAlt * 0.85) {  // objet relativement proche du centre
-        // Garder ~ la même altitude que la caméra avait avant
+    if (targetAlt < originalAlt * 0.85) {
         desiredCameraDistance = originalAlt;
     } else {
-        // Objet loin → on place la caméra un peu plus loin que l'objet
-        desiredCameraDistance = targetAlt + scaleFromKm(800); // 800 km au-dessus par défaut
+        desiredCameraDistance = targetAlt + scaleFromKm(800);
     }
-
-    // Final camera position = along the same line, at desired distance
     const newPosition = earthToTarget.multiplyScalar(desiredCameraDistance);
-
     camera.position.copy(newPosition);
-
-    // Critical: look at the CENTER of the Earth
-    // → the target will always lie exactly on the line of sight
     camera.lookAt(earthCenter);
-
     console.log(
         `Aligned camera → Earth center → ${cameraCurrentTarget} | ` +
         `cam dist=${scaleToKm(desiredCameraDistance).toFixed(0)} km | ` +
@@ -288,24 +271,71 @@ function repositionCameraAlignedWithEarth(targetPos) {
     );
 }
 
-function positionCameraInFrontOf(targetPos, targetType) {
-    const baseOffset = ['cannon', 'cannonball'].includes(targetType)
-        ? scaleFromKm(1.5)      // assez proche pour bien voir le cannon/boulet
-        : scaleFromKm(800);     // vue plus large pour gros objets
+export function updateCameraTargetFollow(delta) {
+    if (!cameraCurrentControls) return;
+    const targetPos = getCurrentCameraTargetPosition();
+    const isLargeTarget = ['universe', 'earth'].includes(cameraCurrentTarget);
+    const isOrbital = ['orbit', 'map'].includes(cameraCurrentMode);
 
-    let direction = camera.position.clone().sub(targetPos);
+    // For orbital mode : follow the target smoothly
+    if (isOrbital) {
+        cameraCurrentControls.target.lerp(targetPos, 0.12);
+    }
+    // For non orbital modes : classic chase camera 
+    else {
+        const desiredDistance = isLargeTarget ? scaleFromKm(800) : scaleFromKm(1.5);
+        const currentDir = camera.position.clone().sub(targetPos).normalize();
+        const desiredPos = targetPos.clone().add(currentDir.multiplyScalar(desiredDistance));
 
-    // Évite la division par zéro si caméra déjà exactement sur la cible
-    if (direction.lengthSq() < 0.0001) {
-        direction.set(0, 0, 1); // direction arbitraire
+        camera.position.lerp(desiredPos, 0.10);
+        camera.lookAt(targetPos);
     }
 
-    direction.normalize().multiplyScalar(baseOffset);
+    // TOFIX: Follow target rotation
+    if (isOrbital && cameraCurrentTargetObject) {
+        // Update directly the quaternion doesn't work 
+        //console.log("Camera quaternion before: " + camera.quaternion.x + " " + camera.quaternion.y + " " + camera.quaternion.z + " " + camera.quaternion.w);
+        //camera.quaternion.copy(cameraCurrentTargetObject.quaternion);
+        //console.log("Camera quaternion after: " + camera.quaternion.x + " " + camera.quaternion.y + " " + camera.quaternion.z + " " + camera.quaternion.w);
 
+        // Update directly the rotation doesn't work 
+        // console.log("Camera rotation before: " + camera.rotation.x + " " + camera.rotation.y + " " + camera.rotation.z);
+        // camera.rotation.x = cameraCurrentTargetObject.rotation.x;
+        // camera.rotation.y = cameraCurrentTargetObject.rotation.y;
+        // camera.rotation.z = cameraCurrentTargetObject.rotation.z;
+        // console.log("Camera rotation after: " + camera.rotation.x + " " + camera.rotation.y + " " + camera.rotation.z);
+
+        // There is no fields or getters/setters for azimuthal and polar angles in OrbitControls ???
+        // console.log("Camera azimuthal and polar angles before: " + cameraCurrentControls.azimuthalAngle + " " + cameraCurrentControls.polarAngle);
+        // cameraCurrentControls.azimuthalAngle += cameraCurrentTargetObject.rotation.y * delta;
+        // cameraCurrentControls.polarAngle += cameraCurrentTargetObject.rotation.x * delta;
+        // console.log("Camera azimuthal and polar angles after: " + cameraCurrentControls.azimuthalAngle + " " + cameraCurrentControls.polarAngle);
+
+        // Try to set manually a new camera position
+        // const target = cameraCurrentControls.target;    
+        // const currentDistance = camera.position.distanceTo(target);
+        // const fromTargetToCam = camera.position.clone().sub(target);
+        // let quat = cameraCurrentTargetObject.quaternion.clone();
+        // //quat.invert();
+        // fromTargetToCam.applyQuaternion(quat);
+        // camera.position.copy(target).add(fromTargetToCam);
+        // camera.lookAt(target);
+    }
+}
+
+function positionCameraInFrontOf(targetPos, targetType) {
+    const baseOffset = ['cannon', 'cannonball'].includes(targetType)
+        ? scaleFromKm(1.5)
+        : scaleFromKm(800);
+    let direction = camera.position.clone().sub(targetPos);
+    // Avoid division by zero if the camera is already exactly on the target
+    if (direction.lengthSq() < 0.0001) {
+        direction.set(0, 0, 1); // arbitrary direction
+    }
+    direction.normalize().multiplyScalar(baseOffset);
     camera.position.copy(targetPos).add(direction);
     camera.lookAt(targetPos);
-
-    // Quelques ajustements selon le type de contrôle
+    // Some adjustments depending on the type of control
     if (cameraCurrentControls) {
         if (cameraCurrentControls instanceof FirstPersonControls) {
             cameraCurrentControls.lookAt(targetPos.x, targetPos.y, targetPos.z);
@@ -316,71 +346,14 @@ function positionCameraInFrontOf(targetPos, targetType) {
             camera.quaternion.setFromEuler(euler);
         }
     }
-
     cameraCurrentControls?.update?.(0);
 }
 
 function getCurrentCameraTargetPosition() {
     if (!cameraCurrentTargetObject) return new THREE.Vector3(0, 0, 0);
-    //return cameraCurrentTargetObject.position;
     const worldPos = new THREE.Vector3();
     cameraCurrentTargetObject.getWorldPosition(worldPos);
     return worldPos;
-}
-
-export function updateCameraTargetFollow() {
-    if (!cameraCurrentControls) return;
-
-    const targetPos = getCurrentCameraTargetPosition();
-
-    const isLargeTarget = ['universe', 'earth'].includes(cameraCurrentTarget);
-    const isOrbital = ['orbit', 'map'].includes(cameraCurrentMode);
-
-    if (isOrbital) {
-        // 1. Toujours suivre la cible (smooth)
-        cameraCurrentControls.target.lerp(targetPos, 0.12);
-
-        if (!isLargeTarget) {
-            // Pour petits objets (boulet, futur satellite...) → on essaie de garder la Terre dans le champ
-            // Calcul vecteur Terre → target
-            const earthToTarget = targetPos.clone(); // puisque earth est à (0,0,0)
-            earthToTarget.normalize();
-
-            // Vecteur caméra → target
-            const camToTarget = targetPos.clone().sub(camera.position).normalize();
-
-            // Produit scalaire → si < 0.85 → la Terre commence à sortir du champ
-            const alignment = camToTarget.dot(earthToTarget);
-
-            if (alignment < 0.85) {
-                // Petit ajustement : on pousse légèrement la caméra pour mieux voir la Terre
-                const correctionDir = earthToTarget.clone().multiplyScalar(0.3);
-                const correctedPos = camera.position.clone().add(correctionDir.multiplyScalar(0.05 * scaleFromKm(1000)));
-                camera.position.lerp(correctedPos, 0.04); // très progressif
-            }
-        }
-    } else {
-        // Modes non-orbitaux : chase cam classique
-        const desiredDistance = isLargeTarget ? scaleFromKm(800) : scaleFromKm(1.5);
-        const currentDir = camera.position.clone().sub(targetPos).normalize();
-        const desiredPos = targetPos.clone().add(currentDir.multiplyScalar(desiredDistance));
-
-        camera.position.lerp(desiredPos, 0.10);
-        camera.lookAt(targetPos);
-    }
-
-    // Follow target rotation
-    if (cameraCurrentTargetObject) {
-        // Copy the target's world quaternion to the camera
-        //console.log("Camera quaternion before: " + camera.quaternion.x + " " + camera.quaternion.y + " " + camera.quaternion.z + " " + camera.quaternion.w);
-        camera.quaternion.copy(cameraCurrentTargetObject.quaternion);
-        //console.log("Camera quaternion after: " + camera.quaternion.x + " " + camera.quaternion.y + " " + camera.quaternion.z + " " + camera.quaternion.w);
-
-        // Optional: tiny offset to avoid perfect lock-step feeling (surtout pour la Terre)
-        // camera.rotation.y += 0.0005 * delta; // exemple de micro-dérive
-    }
-
-    cameraCurrentControls?.update?.(0);
 }
 
 export function addCameraTarget(value, label, object) {
