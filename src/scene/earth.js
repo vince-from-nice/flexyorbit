@@ -6,6 +6,8 @@ export let earth;
 
 export let earthRotationDisabled = false;
 
+const textureLoader = new THREE.TextureLoader();
+
 export const EARTH_TEXTURES = [
     { value: 'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg', label: 'NASA Blue Marble (4K)' },
     { value: 'assets/earth/bluemarble-5k.jpg', label: 'NASA Blue Marble (5K)' },
@@ -15,26 +17,17 @@ export const EARTH_TEXTURES = [
 
 export function createEarth() {
     const geometry = new THREE.SphereGeometry(EARTH_RADIUS_SCALED, 128, 128);
-    //const geometry = new THREE.BoxGeometry(EARTH_RADIUS, EARTH_RADIUS, EARTH_RADIUS);
-
-    // const textureLoader = new THREE.TextureLoader();
-    // const bumpTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png')
-    // const specularTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png');
 
     const material = new THREE.MeshStandardMaterial({
-        //map: earthTexture,
-        // bumpMap: bumpTexture,
-        // bumpScale: 0.05,
-        // specularMap: specularTexture,
+        // specularMap: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png'),
         // specular: new THREE.Color(0x333333),
         // shininess: 5,
-        // Pour gérer le z-fighting (soucis de z-buffer)
+        roughness: 0.85,
+        metalness: 0.05,
+        // To avoid z-buffer issues
         side: THREE.FrontSide,
         depthWrite: true,
         depthTest: true,
-        // polygonOffset: true,
-        // polygonOffsetFactor: -1,   // Valeur négative = recule la Terre en profondeur
-        // polygonOffsetUnits: -1     // Ajuste selon besoin (souvent -1 ou -2 suffit)
     });
 
     earth = new THREE.Mesh(geometry, material);
@@ -43,12 +36,61 @@ export function createEarth() {
 
     setEarthTexture('assets/earth/bluemarble-5k.jpg');
 
+    textureLoader.load(
+        'assets/earth/topology-bump-10k.jpg',
+        (bumpTexture) => {
+            bumpTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            material.bumpMap = bumpTexture;
+            material.bumpScale = 20;
+            material.needsUpdate = true;
+            console.log('Earth bump map loaded and applied');
+        });
+
+    // Strangely normal map 8k is much less beautiful than bump map 10K
+    // textureLoader.load(
+    //     'assets/earth/topology-normal-8k.png',
+    //     (normalTexture) => {
+    //         normalTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    //         material.normalMap = normalTexture;
+    //         material.normalScale = new THREE.Vector2(6, 6);
+    //         material.needsUpdate = true;
+    //         console.log('Earth normal map loaded and applied');
+    //     },
+    //     undefined,
+    //     (err) => console.warn('Cannot load Earth normal map', err)
+    // );
+
+    textureLoader.load(
+        'assets/earth/ocean-4k.png',
+        (oceanTexture) => {
+            oceanTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            oceanTexture.encoding = THREE.sRGBEncoding;
+            material.roughnessMap = oceanTexture;
+            material.needsUpdate = true;
+            // Insert custom roughness calculation : Thanks to https://franky-arkon-digital.medium.com/make-your-own-earth-in-three-js-8b875e281b1e
+            // if the ocean map is white for the ocean, then we have to reverse the b&w values for roughness
+            // We want the land to have 1.0 roughness, and the ocean to have a minimum of 0.5 roughness
+            material.onBeforeCompile = function (shader) {
+                shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>', `
+                    float roughnessFactor = roughness;
+                    #ifdef USE_ROUGHNESSMAP
+                    vec4 texelRoughness = texture2D( roughnessMap, vRoughnessMapUv );
+                    // reversing the black and white values because we provide the ocean map
+                    texelRoughness = vec4(1.0) - texelRoughness;
+                    // reads channel G, compatible with a combined OcclusionRoughnessMetallic (RGB) texture
+                    roughnessFactor *= clamp(texelRoughness.g, 0.5, 1.0);
+                    #endif
+                `);
+            }
+            console.log('Earth roughness map map loaded and applied');
+        }
+    );
+
     scene.add(earth);
 }
 
 export function setEarthTexture(url) {
-    const loader = new THREE.TextureLoader();
-    loader.load(url, (newTexture) => {
+    textureLoader.load(url, (newTexture) => {
         newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
         newTexture.minFilter = THREE.LinearMipMapLinearFilter;
         earth.material.map = newTexture;

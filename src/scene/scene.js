@@ -76,8 +76,17 @@ function createLighting() {
   sunLight.shadow.camera.near = EARTH_RADIUS_SCALED * 0.1;
   sunLight.shadow.camera.far = EARTH_RADIUS_SCALED * 100;
   scene.add(sunLight);
+
   // Debug : display shadow camera
   //scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
+
+  // Debug lumière – rapproche énormément le soleil temporairement
+  // sunLight.position.set(
+  //   EARTH_RADIUS_SCALED * 3,
+  //   EARTH_RADIUS_SCALED * 2,
+  //   EARTH_RADIUS_SCALED * 4
+  // );
+  // sunLight.intensity = 2.5; // ← boost pour voir les ombres du relief
 }
 
 function logRendererInfos() {
