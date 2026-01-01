@@ -19,9 +19,6 @@ export function createEarth() {
     const geometry = new THREE.SphereGeometry(EARTH_RADIUS_SCALED, 128, 128);
 
     const material = new THREE.MeshStandardMaterial({
-        // specularMap: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png'),
-        // specular: new THREE.Color(0x333333),
-        // shininess: 5,
         roughness: 0.85,
         metalness: 0.05,
         // To avoid z-buffer issues
@@ -46,7 +43,7 @@ export function createEarth() {
             console.log('Earth bump map loaded and applied');
         });
 
-    // Strangely normal map 8k is much less beautiful than bump map 10K
+    // Strangely, the normal map in 8k is much less beautiful than bump map in 10K !!
     // textureLoader.load(
     //     'assets/earth/topology-normal-8k.png',
     //     (normalTexture) => {
@@ -82,7 +79,7 @@ export function createEarth() {
                     #endif
                 `);
             }
-            console.log('Earth roughness map map loaded and applied');
+            console.log('Earth roughness map loaded and applied');
         }
     );
 

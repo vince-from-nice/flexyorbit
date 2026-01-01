@@ -110,12 +110,21 @@ function createHTMLControls() {
 
     // Atmosphere wigets
     const atmoshpereGroupDiv = addGroup(contentWrapper, 'Atmosphere');
-    addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 400, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
+    addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 600, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
         setAtmosphereHeight(value);
     }, 5);
-    addSlider(atmoshpereGroupDiv, 'Density factor (kg/m³)', 0.0, 5.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
+    addSlider(atmoshpereGroupDiv, 'Density at sea level (kg/m³)', 0.0, 2.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
         setAtmosphereDensity(value);
     }, 0.1);
+    // addSlider(atmoshpereGroupDiv, 'Opacity', 0.0, 1.0, 0.7, value => {
+    //     setAtmosphereOpacity(value);
+    // }, 0.1);
+    // addSlider(atmoshpereGroupDiv, 'PowFactor', 0.0, 10.0, 2.0, value => {
+    //     setAtmosphereParam1(value);
+    // }, 0.1);
+    // addSlider(atmoshpereGroupDiv, 'Multiplier', 0.0, 10.0, 5.0, value => {
+    //     setAtmosphereParam2(value);
+    // }, 0.1);
 
     // Camera wigets    
     const cameraGroup = addGroup(contentWrapper, 'Camera');
