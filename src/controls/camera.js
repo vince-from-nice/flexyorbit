@@ -11,10 +11,10 @@ import { cannonGroup, cannonball } from '../scene/cannon.js';
 
 export const CAMERA_MODES = [
     { value: 'orbit', label: 'Orbit controls (default)' },
-    { value: 'map', label: 'Map controls (orbit style)' },
+    // { value: 'map', label: 'Map controls (orbit style)' },
     { value: 'fly', label: 'Fly controls (FPS style)' },
-    { value: 'fps', label: 'First Person Shooter' },
-    { value: 'pointerLock', label: 'Pointer Lock (not clear)' }
+    // { value: 'fps', label: 'First Person Shooter' },
+    // { value: 'pointerLock', label: 'Pointer Lock (not clear)' }
 ];
 let cameraCurrentMode = 'orbit';
 export let cameraCurrentControls = null;
@@ -89,8 +89,8 @@ function initOrbitControls() {
 
 function initFlyControls() {
     flyControls = new FlyControls(camera, renderer.domElement);
-    flyControls.rollSpeed = 1.0;
-    flyControls.movementSpeed = 200;
+    flyControls.rollSpeed = 0.01;
+    flyControls.movementSpeed = 5;
     flyControls.autoForward = false;
     flyControls.dragToLook = true;
 }
@@ -241,12 +241,12 @@ export function switchCameraTarget(value) {
             repositionCameraAlignedWithEarth(position);
         }
     } else {
-        positionCameraInFrontOf(position, value);
+        repositionCameraInFrontOf(position, value);
     }
 
     cameraCurrentControls.update();
 
-    console.log("Camera target has switched to " + value + " with position (" + cameraCurrentControls.target.x.toFixed(0) + " " + cameraCurrentControls.target.y.toFixed(0) + " " + cameraCurrentControls.target.z.toFixed(0) + ")");
+    console.log("Camera target has switched to " + value + " with position (" + cameraCurrentControls.target?.x.toFixed(0) + " " + cameraCurrentControls.target?.y.toFixed(0) + " " + cameraCurrentControls.target?.z.toFixed(0) + ")");
 }
 
 // Repositions camera so that Earth center, target and camera are on the same line
@@ -271,6 +271,33 @@ function repositionCameraAlignedWithEarth(targetPos) {
     );
 }
 
+// TOFIX: Reposition camera in front of the target
+function repositionCameraInFrontOf(targetPos, targetType) {
+    const baseOffset = ['cannon', 'cannonball'].includes(targetType)
+        ? scaleFromKm(1.5)
+        : scaleFromKm(800);
+    let direction = camera.position.clone().sub(targetPos);
+    // Avoid division by zero if the camera is already exactly on the target
+    if (direction.lengthSq() < 0.0001) {
+        direction.set(0, 0, 1); // arbitrary direction
+    }
+    direction.normalize().multiplyScalar(baseOffset);
+    camera.position.copy(targetPos).add(direction);
+    camera.lookAt(targetPos);
+    // Some adjustments depending on the type of control
+    // if (cameraCurrentControls) {
+    //     if (cameraCurrentControls instanceof FirstPersonControls) {
+    //         cameraCurrentControls.lookAt(targetPos.x, targetPos.y, targetPos.z);
+    //     } else if (cameraCurrentControls instanceof PointerLockControls ||
+    //         cameraCurrentControls instanceof FlyControls) {
+    //         const dir = targetPos.clone().sub(camera.position).normalize();
+    //         const euler = new THREE.Euler().setFromVector3(dir, 'YXZ');
+    //         camera.quaternion.setFromEuler(euler);
+    //     }
+    // }
+    cameraCurrentControls?.update?.(0);
+}
+
 export function updateCameraTargetFollow(delta) {
     if (!cameraCurrentControls) return;
     const targetPos = getCurrentCameraTargetPosition();
@@ -283,12 +310,12 @@ export function updateCameraTargetFollow(delta) {
     }
     // For non orbital modes : classic chase camera 
     else {
-        const desiredDistance = isLargeTarget ? scaleFromKm(800) : scaleFromKm(1.5);
-        const currentDir = camera.position.clone().sub(targetPos).normalize();
-        const desiredPos = targetPos.clone().add(currentDir.multiplyScalar(desiredDistance));
+        // const desiredDistance = isLargeTarget ? scaleFromKm(800) : scaleFromKm(1.5);
+        // const currentDir = camera.position.clone().sub(targetPos).normalize();
+        // const desiredPos = targetPos.clone().add(currentDir.multiplyScalar(desiredDistance));
 
-        camera.position.lerp(desiredPos, 0.10);
-        camera.lookAt(targetPos);
+        // camera.position.lerp(desiredPos, 0.10);
+        // camera.lookAt(targetPos);
     }
 
     // TOFIX: Follow target rotation
@@ -321,32 +348,6 @@ export function updateCameraTargetFollow(delta) {
         // camera.position.copy(target).add(fromTargetToCam);
         // camera.lookAt(target);
     }
-}
-
-function positionCameraInFrontOf(targetPos, targetType) {
-    const baseOffset = ['cannon', 'cannonball'].includes(targetType)
-        ? scaleFromKm(1.5)
-        : scaleFromKm(800);
-    let direction = camera.position.clone().sub(targetPos);
-    // Avoid division by zero if the camera is already exactly on the target
-    if (direction.lengthSq() < 0.0001) {
-        direction.set(0, 0, 1); // arbitrary direction
-    }
-    direction.normalize().multiplyScalar(baseOffset);
-    camera.position.copy(targetPos).add(direction);
-    camera.lookAt(targetPos);
-    // Some adjustments depending on the type of control
-    if (cameraCurrentControls) {
-        if (cameraCurrentControls instanceof FirstPersonControls) {
-            cameraCurrentControls.lookAt(targetPos.x, targetPos.y, targetPos.z);
-        } else if (cameraCurrentControls instanceof PointerLockControls ||
-            cameraCurrentControls instanceof FlyControls) {
-            const dir = targetPos.clone().sub(camera.position).normalize();
-            const euler = new THREE.Euler().setFromVector3(dir, 'YXZ');
-            camera.quaternion.setFromEuler(euler);
-        }
-    }
-    cameraCurrentControls?.update?.(0);
 }
 
 function getCurrentCameraTargetPosition() {
