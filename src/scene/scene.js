@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
 import { createEarth } from './earth.js';
 import { createAtmosphere } from './atmosphere.js';
+import { createMoon } from './moon.js';
 import { createCannon } from './cannon.js';
 import { createNewCannonballTrail } from './trails.js';
 
@@ -15,12 +16,13 @@ export function createScene(container) {
   createLighting();
   createEarth();
   scene.add(createAtmosphere());
+  scene.add(createMoon())
   createCannon();
   createNewCannonballTrail();
 }
 
 function createCamera() {
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(10), EARTH_RADIUS_SCALED * 30);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(10), EARTH_RADIUS_SCALED * 100);
   camera.position.set(EARTH_RADIUS_SCALED * 2, EARTH_RADIUS_SCALED * 2, EARTH_RADIUS_SCALED * 2);
 }
 
