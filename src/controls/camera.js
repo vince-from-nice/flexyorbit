@@ -7,6 +7,7 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { EARTH_RADIUS_SCALED, scaleFromKm, scaleToKm } from '../constants.js';
 import { camera, renderer } from '../scene/scene.js';
 import { earth } from '../scene/earth.js';
+import { moon, MOON_DISTANCE, MOON_RADIUS } from '../scene/moon.js';
 import { cannonGroup, cannonball } from '../scene/cannon.js';
 
 export const CAMERA_MODES = [
@@ -32,8 +33,13 @@ let cameraTargetSelectRef = null;
 const CAMERA_ORBIT_ROTATE_SPEED_BASE = 0.3;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN = 0.3;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX = 3.0;
-const CAMERA_ORBIT_MIN_DISTANCE_LARGE = EARTH_RADIUS_SCALED + scaleFromKm(500);
-const CAMERA_ORBIT_MIN_DISTANCE_SMALL = scaleFromKm(0.01); // 10 meters
+const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS_SCALED + scaleFromKm(500);
+const CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON = MOON_RADIUS + scaleFromKm(500);
+const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromKm(0.01); // 10 meters
+const CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH = EARTH_RADIUS_SCALED * 3;
+const CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON = MOON_RADIUS * 3;
+const CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS = scaleFromKm(2000); 
+
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_LARGE = EARTH_RADIUS_SCALED * 3
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_SMALL = scaleFromKm(0.01) // 10 meters
 
@@ -48,6 +54,7 @@ export function initCameraControls() {
     cameraCurrentControls = orbitControls;
 
     addCameraTarget('earth', 'Earth', earth);
+    addCameraTarget('moon', 'Moon', moon);
     addCameraTarget('cannon', 'Cannon', cannonGroup);
     addCameraTarget('cannonball', 'Cannonball', cannonball);
 
@@ -80,8 +87,8 @@ function initOrbitControls() {
     orbitControls.dampingFactor = 0.05;
     orbitControls.rotateSpeed = CAMERA_ORBIT_ROTATE_SPEED_BASE;
     orbitControls.panSpeed = 1.0;
-    orbitControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_LARGE;
-    orbitControls.maxDistance = EARTH_RADIUS_SCALED * 20;
+    orbitControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH;
+    orbitControls.maxDistance = EARTH_RADIUS_SCALED * 100;
     orbitControls.enablePan = false;
 
     orbitControls.addEventListener('change', adjustOrbitControlsSpeed);
@@ -222,56 +229,51 @@ export function updateCameraControls(deltaTime) {
     }
 }
 
-export function switchCameraTarget(value) {
-    cameraCurrentTarget = value;
+export function switchCameraTarget(newTarget) {
+    cameraCurrentTarget = newTarget;
 
-    const target = CAMERA_TARGETS.find(e => e.value === value);
+    const target = CAMERA_TARGETS.find(e => e.value === newTarget);
     cameraCurrentTargetObject = target?.object;
 
     const position = getCurrentCameraTargetPosition();
 
     if (['orbit', 'map'].includes(cameraCurrentMode) && cameraCurrentControls) {
         cameraCurrentControls.target.copy(position);
-        if (['universe', 'earth'].includes(value)) {
-            cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_LARGE;
-            camera.position.set(0, 0, EARTH_RADIUS_SCALED * 4);
-            camera.lookAt(new THREE.Vector3(0, 0, 0));
-        } else {
-            cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_SMALL;
-            repositionCameraAlignedWithEarth(position);
-        }
+        repositionCameraAlignedWithEarthAndTarget(position, newTarget);
     } else {
-        repositionCameraInFrontOf(position, value);
+        repositionCameraInFrontOf(position, newTarget);
     }
 
     cameraCurrentControls.update();
 
-    console.log("Camera target has switched to " + value + " with position (" + cameraCurrentControls.target?.x.toFixed(0) + " " + cameraCurrentControls.target?.y.toFixed(0) + " " + cameraCurrentControls.target?.z.toFixed(0) + ")");
+    showCameraTargetMessage(target?.label);
+
+    console.log("Camera target has switched to " + newTarget + " with position (" + cameraCurrentControls.target?.x.toFixed(0) + " " + cameraCurrentControls.target?.y.toFixed(0) + " " + cameraCurrentControls.target?.z.toFixed(0) + ")");
 }
 
 // Repositions camera so that Earth center, target and camera are on the same line
-function repositionCameraAlignedWithEarth(targetPos) {
+function repositionCameraAlignedWithEarthAndTarget(targetPos) {
     const earthCenter = new THREE.Vector3(0, 0, 0);
-    const earthToTarget = targetPos.clone().sub(earthCenter).normalize();
-    const originalAlt = camera.position.distanceTo(earthCenter);
     const targetAlt = targetPos.distanceTo(earthCenter);
-    let desiredCameraDistance;
-    if (targetAlt < originalAlt * 0.85) {
-        desiredCameraDistance = originalAlt;
+    let newDirection = targetPos.clone().sub(earthCenter).normalize();
+    let newDistance;
+    if (['universe', 'earth'].includes(cameraCurrentTarget)) {
+        cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH;
+        newDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH;
+        newDirection = camera.position.clone().sub(earthCenter).normalize();
+    } else if (['moon'].includes(cameraCurrentTarget)) {
+        cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON;
+        newDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON;
     } else {
-        desiredCameraDistance = targetAlt + scaleFromKm(800);
+        cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS;
+        newDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS;
     }
-    const newPosition = earthToTarget.multiplyScalar(desiredCameraDistance);
+    const newPosition = newDirection.multiplyScalar(newDistance);
     camera.position.copy(newPosition);
     camera.lookAt(earthCenter);
-    console.log(
-        `Aligned camera → Earth center → ${cameraCurrentTarget} | ` +
-        `cam dist=${scaleToKm(desiredCameraDistance).toFixed(0)} km | ` +
-        `target alt=${scaleToKm(targetAlt).toFixed(0)} km`
-    );
+    //console.log(`Aligned camera → ${cameraCurrentTarget} → Earth center | cam dist=${scaleToKm(newDistance).toFixed(0)} km | target alt=${scaleToKm(targetAlt).toFixed(0)} km`);
 }
 
-// TOFIX: Reposition camera in front of the target
 function repositionCameraInFrontOf(targetPos, targetType) {
     const baseOffset = ['cannon', 'cannonball'].includes(targetType)
         ? scaleFromKm(1.5)
@@ -313,7 +315,6 @@ export function updateCameraTargetFollow(delta) {
         // const desiredDistance = isLargeTarget ? scaleFromKm(800) : scaleFromKm(1.5);
         // const currentDir = camera.position.clone().sub(targetPos).normalize();
         // const desiredPos = targetPos.clone().add(currentDir.multiplyScalar(desiredDistance));
-
         // camera.position.lerp(desiredPos, 0.10);
         // camera.lookAt(targetPos);
     }
@@ -367,3 +368,17 @@ export function registerCameraTargetSelect(selectElement) {
     cameraTargetSelectRef = selectElement;
 }
 
+function showCameraTargetMessage(label) {
+    let message = document.getElementById('camera-target-message');
+    if (message) {
+        message.remove();
+    }
+    message = document.createElement('div');
+    message.id = 'camera-target-message';
+    message.textContent = `Camera target has changed to ${label}`;
+    document.body.appendChild(message); 
+    setTimeout(() => {
+        message.classList.add('hidden');
+        setTimeout(() => message.remove(), 500);
+    }, 2000);
+}
