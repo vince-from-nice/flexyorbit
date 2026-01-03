@@ -12,7 +12,7 @@ export const MOON_DISTANCE = MOON_DISTANCE_KM / GLOBAL_SCALE
 
 export let moon
 
-let moonRotationDisabled = false
+export let moonRotationDisabled = false
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -48,12 +48,12 @@ export function createMoon() {
             console.log('Moon bump map loaded and applied');
         });
 
-    moon.position.set(MOON_DISTANCE, 0, 0);
+    moon.position.set(0, 0, -MOON_DISTANCE);
     //moon.position.set(1000, 1000, -2000);
 
     registerAnimable(moon);
     moon.userData.isFreeFalling = true;
-    const initialDirection = new THREE.Vector3(0, 1, 0);
+    const initialDirection = new THREE.Vector3(-1, 0, 0);
     const initialSpeed = scaleFromKm(MOON_ORBITAL_SPEED_AVG_KMS)
     //const initialSpeed = scaleFromKm(0);
     moon.userData.velocity.copy(initialDirection).multiplyScalar(initialSpeed);

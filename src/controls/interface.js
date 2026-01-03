@@ -3,11 +3,11 @@ import { displayAxis } from '../scene/scene.js';
 import { updateCannonWithParams, fireCannonball, cannonParams, cannonball } from '../scene/cannon.js';
 import { updateTrailStyle } from '../scene/trails.js';
 import { EARTH_TEXTURES, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
+import { disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
 import { initDraggings } from './dragging.js'
 import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect } from './camera.js'
-import { } from './camera.js';
 
 export let timePaused = false;
 export let timeAcceleration = 100;
@@ -80,8 +80,9 @@ function createHTMLControls() {
     addSlider(timeGroup, 'Time acceleration', 1, 10000, timeAcceleration, value => {
         timeAcceleration = value;
     }, 1.0);
-    addCheckbox(timeGroup, 'Disable Earth rotation', '', earthRotationDisabled, value => {
+    addCheckbox(timeGroup, 'Disable Earth & Moon rotation', '', earthRotationDisabled, value => {
         disableEarthRotation(value);
+        disableMoonRotation(value);
     });
     if (isMobile) {
         timeGroup.parentElement.open = false;

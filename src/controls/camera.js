@@ -34,15 +34,18 @@ let cameraTargetSelectRef = null;
 const CAMERA_ORBIT_ROTATE_SPEED_BASE = 0.3;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN = 0.3;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX = 3.0;
+
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS_SCALED + scaleFromKm(500);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON = MOON_RADIUS + scaleFromKm(500);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromKm(0.01); // 10 meters
+
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH = EARTH_RADIUS_SCALED * 3;
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON = MOON_RADIUS * 3;
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS = scaleFromKm(2000); 
 
-const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_LARGE = EARTH_RADIUS_SCALED * 3
-const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_SMALL = scaleFromKm(0.01) // 10 meters
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS_SCALED * 3
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON = MOON_RADIUS * 3
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.01) // 10 meters
 
 let orbitControls = null;
 let flyControls = null;
@@ -135,8 +138,14 @@ function initPointerLockControls() {
 
 function adjustOrbitControlsSpeed() {
     const cameraDistance = camera.position.distanceTo(orbitControls.target);
-    const ratioDistance = ['universe', 'earth'].includes(cameraCurrentTarget) ?
-        CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_LARGE : CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_SMALL;
+    let ratioDistance;
+    if (['universe', 'earth'].includes(cameraCurrentTarget)) {
+        ratioDistance = CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH;
+    } else if (['moon'].includes(cameraCurrentTarget)) {
+        ratioDistance = CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON;
+    } else {
+        ratioDistance = CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS;
+    }
     let scaleFactor = cameraDistance / ratioDistance;
     if (scaleFactor < CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN) scaleFactor = CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN;
     if (scaleFactor > CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX) scaleFactor = CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX;
@@ -256,18 +265,23 @@ export function switchCameraTarget(newTarget) {
 function repositionCameraAlignedWithEarthAndTarget(targetPos) {
     const earthCenter = new THREE.Vector3(0, 0, 0);
     const targetAlt = targetPos.distanceTo(earthCenter);
-    let newDirection = targetPos.clone().sub(earthCenter).normalize();
-    let newDistance;
+    let newDistance, newDirection;
     if (['universe', 'earth'].includes(cameraCurrentTarget)) {
         cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH;
         newDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH;
-        newDirection = camera.position.clone().sub(earthCenter).normalize();
     } else if (['moon'].includes(cameraCurrentTarget)) {
         cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON;
         newDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON;
     } else {
         cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS;
         newDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS;
+    }
+    // When the target is earth or universe a hard direction is used
+    if (['universe', 'earth'].includes(cameraCurrentTarget)) {
+        newDirection = new THREE.Vector3(0, 0, 1)
+        //newDirection = camera.position.clone().sub(earthCenter).normalize();
+    } else {
+        newDirection = targetPos.clone().sub(earthCenter).normalize();
     }
     const newPosition = newDirection.multiplyScalar(newDistance);
     camera.position.copy(newPosition);
