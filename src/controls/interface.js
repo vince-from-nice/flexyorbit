@@ -77,9 +77,9 @@ function createHTMLControls() {
         timeButton.textContent = timePaused ? 'Resume' : 'Stop';
     });
     timeGroup.appendChild(timeButton);
-    addSlider(timeGroup, 'Time acceleration', 1, 1000, timeAcceleration, value => {
+    addSlider(timeGroup, 'Time acceleration', 1, 10000, timeAcceleration, value => {
         timeAcceleration = value;
-    }, 0.1);
+    }, 1.0);
     addCheckbox(timeGroup, 'Disable Earth rotation', '', earthRotationDisabled, value => {
         disableEarthRotation(value);
     });

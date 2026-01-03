@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { printPos } from '../utils.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
@@ -248,7 +249,7 @@ export function switchCameraTarget(newTarget) {
 
     showCameraTargetMessage(target?.label);
 
-    console.log("Camera target has switched to " + newTarget + " with position (" + cameraCurrentControls.target?.x.toFixed(0) + " " + cameraCurrentControls.target?.y.toFixed(0) + " " + cameraCurrentControls.target?.z.toFixed(0) + ")");
+    console.log("Camera target has switched to " + newTarget + " with position " + printPos(cameraCurrentControls.target));
 }
 
 // Repositions camera so that Earth center, target and camera are on the same line

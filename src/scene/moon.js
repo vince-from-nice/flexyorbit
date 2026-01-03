@@ -1,9 +1,11 @@
 import * as THREE from 'three';
-import { GLOBAL_SCALE } from '../constants.js';
+import { GLOBAL_SCALE, scaleFromKm } from '../constants.js';
 import { renderer } from './scene.js';
+import { registerAnimable } from '../physics/physics.js';
 
 const MOON_RADIUS_KM = 1737
 const MOON_DISTANCE_KM = 384400
+const MOON_ORBITAL_SPEED_AVG_KMS = 1.022 // Moon orbital speed average is 1022 km/s
 
 export const MOON_RADIUS = MOON_RADIUS_KM / GLOBAL_SCALE
 export const MOON_DISTANCE = MOON_DISTANCE_KM / GLOBAL_SCALE
@@ -47,6 +49,14 @@ export function createMoon() {
         });
 
     moon.position.set(MOON_DISTANCE, 0, 0);
+    //moon.position.set(1000, 1000, -2000);
+
+    registerAnimable(moon);
+    moon.userData.isFreeFalling = true;
+    const initialDirection = new THREE.Vector3(0, 1, 0);
+    const initialSpeed = scaleFromKm(MOON_ORBITAL_SPEED_AVG_KMS)
+    //const initialSpeed = scaleFromKm(0);
+    moon.userData.velocity.copy(initialDirection).multiplyScalar(initialSpeed);
 
     return moon;
 }

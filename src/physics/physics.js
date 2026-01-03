@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-
+import { printPos } from '../utils.js';
 import { getGravitationalAcceleration } from './gravitation.js';
 import { getDragAcceleration } from './friction.js';
 import { checkCollisionAndHandle } from './collision.js';
@@ -17,7 +17,7 @@ export function animatePhysics(delta) {
   animables.forEach(obj => {
     if (obj?.userData?.isFreeFalling) {
 
-      //console.log("Animate object with position=" + obj.position.length().toFixed(2) + " and velocity=" + obj.userData.velocity.length().toFixed(3));
+      //console.log("Animate object with velocity = " + obj.userData.velocity.length().toFixed(3) + " and position = " + printPos(obj.position));
 
       const acceleration = getGravitationalAcceleration(obj.position);
 
