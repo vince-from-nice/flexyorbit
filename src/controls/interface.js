@@ -77,9 +77,9 @@ function createHTMLControls() {
         timeButton.textContent = timePaused ? 'Resume' : 'Stop';
     });
     timeGroup.appendChild(timeButton);
-    addSlider(timeGroup, 'Time acceleration', 1, 10000, timeAcceleration, value => {
+    addSlider(timeGroup, 'Time acceleration', 1, 100000, timeAcceleration, value => {
         timeAcceleration = value;
-    }, 1.0);
+    }, 1.0, { logarithmic: true });
     addCheckbox(timeGroup, 'Disable Earth & Moon rotation', '', earthRotationDisabled, value => {
         disableEarthRotation(value);
         disableMoonRotation(value);
@@ -170,7 +170,7 @@ function createHTMLControls() {
     fireGroup.appendChild(fireButton);
 }
 
-function addSlider(container, labelText, min, max, initial, onChange, step = 1) {
+function addSlider(container, labelText, min, max, initial, onChange, step = 1, options = {}) {
     const wrapper = document.createElement('div');
     wrapper.classList.add('slider-wrapper');
 
@@ -190,34 +190,68 @@ function addSlider(container, labelText, min, max, initial, onChange, step = 1) 
     numberInput.classList.add('number-input');
     topRow.appendChild(numberInput);
 
+    const logarithmic = options.logarithmic || false;
+
     const slider = document.createElement('input');
     slider.type = 'range';
-    slider.min = min;
-    slider.max = max;
-    slider.step = step;
-    slider.value = initial;
     slider.classList.add('custom-slider');
+    if (logarithmic) {
+        slider.min = 0;
+        slider.max = 1;
+        slider.step = 0.0001; // Fine precision for log scale
+        const norm = Math.log(initial / min) / Math.log(max / min);
+        slider.value = norm;
+    } else {
+        slider.min = min;
+        slider.max = max;
+        slider.step = step;
+        slider.value = initial;
+    }
 
-    // Dynamic gradient (in JS instead of CSS)
-    slider.addEventListener('input', () => {
-        const percent = (slider.value - min) / (max - min) * 100;
+    // Dynamic gradient
+    slider.addEventListener('input', updateGradient);
+    updateGradient(); // Initial
+
+    function updateGradient() {
+        const norm = (slider.value - slider.min) / (slider.max - slider.min);
+        const percent = norm * 100;
         slider.style.background = `linear-gradient(to right, #00aaff ${percent}%, #444 ${percent}%)`;
-    });
-    slider.dispatchEvent(new Event('input'));
+    }
 
-    const update = (val) => {
-        let parsed = parseFloat(val);
-        if (isNaN(parsed)) return;
-        val = Math.max(min, Math.min(max, parsed));
-        slider.value = val;
+    const updateFromSlider = () => {
+        const norm = (slider.value - slider.min) / (slider.max - slider.min);
+        let val;
+        if (logarithmic) {
+            val = min * Math.pow(max / min, norm);
+        } else {
+            val = min + norm * (max - min);
+        }
+        val = Math.round(val); // Round to nearest integer
+        val = Math.max(min, Math.min(max, val));
         numberInput.value = val;
         onChange(val);
-        const percent = (val - min) / (max - min) * 100;
-        slider.style.background = `linear-gradient(to right, #00aaff ${percent}%, #444 ${percent}%)`;
+        updateGradient();
     };
 
-    slider.addEventListener('input', () => update(slider.value));
-    numberInput.addEventListener('change', () => update(numberInput.value));  // change au lieu de input pour éviter boucle
+    const updateFromNumber = () => {
+        let val = parseFloat(numberInput.value);
+        if (isNaN(val)) return;
+        val = Math.round(val); // Round to nearest integer
+        val = Math.max(min, Math.min(max, val));
+        numberInput.value = val;
+        let norm;
+        if (logarithmic) {
+            norm = Math.log(val / min) / Math.log(max / min);
+        } else {
+            norm = (val - min) / (max - min);
+        }
+        slider.value = slider.min + norm * (slider.max - slider.min);
+        onChange(val);
+        updateGradient();
+    };
+
+    slider.addEventListener('input', updateFromSlider);
+    numberInput.addEventListener('change', updateFromNumber);
 
     wrapper.appendChild(topRow);
     wrapper.appendChild(slider);

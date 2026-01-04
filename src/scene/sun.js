@@ -47,8 +47,7 @@ export function createSun() {
 function createSunLight() {
         sunLight = new THREE.DirectionalLight(0xffffe5, 2.8);
         sunLight.target = earth;
-        //sunLight.position.copy(sun.position);
-        sunLight.position.set(EARTH_RADIUS_SCALED * 3, 0, 0);
+        sunLight.position.copy(sun.position);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 4096;
         sunLight.shadow.mapSize.height = 4096;
@@ -59,15 +58,8 @@ function createSunLight() {
         sunLight.shadow.camera.right = shadowRadius;
         sunLight.shadow.camera.top = shadowRadius;
         sunLight.shadow.camera.bottom = -shadowRadius;
-        sunLight.shadow.camera.near = 1;
-        sunLight.shadow.camera.far = shadowRadius * 2;
-        const dirFromEarthToSun = new THREE.Vector3().subVectors(sun.position, earth.position).normalize();
-        // Offset plus grand pour placer la camera "du côté Soleil" (évite clipping)
-        // const offset = dirFromEarthToSun.multiplyScalar(EARTH_RADIUS_SCALED * 50);
-        // sunLight.shadow.camera.position.copy(earth.position).add(offset);
-        console.log("Sun shadow camera position : " + printPos(sunLight.shadow.camera.position))
-        sunLight.shadow.camera.updateProjectionMatrix();
-        sunLight.shadow.camera.updateMatrixWorld();
+        sunLight.shadow.camera.near = SUN_DISTANCE - shadowRadius;
+        sunLight.shadow.camera.far = SUN_DISTANCE + shadowRadius;
         //const shadowCameraHelper = new THREE.CameraHelper(sunLight.shadow.camera);
         //scene.add(shadowCameraHelper);
         scene.add(sunLight);
