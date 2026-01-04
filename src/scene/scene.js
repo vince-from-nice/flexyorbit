@@ -1,45 +1,43 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
+import { SUN_DISTANCE, createSun } from './sun.js';
 import { createEarth } from './earth.js';
 import { createAtmosphere } from './atmosphere.js';
 import { createMoon } from './moon.js';
 import { createCannon } from './cannon.js';
 import { createNewCannonballTrail } from './trails.js';
 
-export let scene, camera, renderer, sunLight, axesGroup;
+export let scene, camera, renderer, axesGroup;
 
 export function createScene(container) {
   scene = new THREE.Scene();
+  scene.add(new THREE.AmbientLight(0x404040, 0.4));
   createRenderer(container);
   createCamera();
   createAxis();
-  createLighting();
+  createMilkyWay();
   createEarth();
-  scene.add(createAtmosphere());
-  scene.add(createMoon())
+  createAtmosphere();
+  createMoon();
+  createSun();
   createCannon();
   createNewCannonballTrail();
 }
 
 function createCamera() {
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(10), EARTH_RADIUS_SCALED * 300);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(10), SUN_DISTANCE * 2);
   camera.position.set(EARTH_RADIUS_SCALED * 2, EARTH_RADIUS_SCALED * 0, EARTH_RADIUS_SCALED * 0);
 }
 
 function createRenderer(container) {
   renderer = new THREE.WebGLRenderer({ antialias: true });
-
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-
   renderer.logarithmicDepthBuffer = true; // always usefull even the unit is km ?
-
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   //renderer.shadowMap.type = THREE.PCFShadowMap;
-
   container.appendChild(renderer.domElement);
-
   logRendererInfos();
 }
 
@@ -48,47 +46,30 @@ function createAxis() {
   const origin = new THREE.Vector3(0, 0, 0);
   const headLength = AXIS_LENGTH * 0.1;
   const headWidth = headLength * 0.5;
-
   axesGroup = new THREE.Group();
-
   axesGroup.add(new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, AXIS_LENGTH, 0xff0000, headLength, headWidth));
   axesGroup.add(new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), origin, AXIS_LENGTH, 0x00ff00, headLength, headWidth));
   axesGroup.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), origin, AXIS_LENGTH, 0x0000ff, headLength, headWidth));
-
   // Not display it by default
   //scene.add(axesGroup);
 }
 
-function createLighting() {
-  scene.add(new THREE.AmbientLight(0x404040, 0.6));
-
-  sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
-  sunLight.position.set(EARTH_RADIUS_SCALED * 50, EARTH_RADIUS_SCALED * 20, EARTH_RADIUS_SCALED * 30);
-  // Sun light - Shadow settings
-  sunLight.castShadow = true;
-  sunLight.shadow.mapSize.width = 4096;
-  sunLight.shadow.mapSize.height = 4096;
-  sunLight.shadow.bias = -0.0001;
-  sunLight.shadow.normalBias = 0.5;
-  const shadowSize = EARTH_RADIUS_SCALED * 3;
-  sunLight.shadow.camera.left = -shadowSize;
-  sunLight.shadow.camera.right = shadowSize;
-  sunLight.shadow.camera.top = shadowSize;
-  sunLight.shadow.camera.bottom = -shadowSize;
-  sunLight.shadow.camera.near = EARTH_RADIUS_SCALED * 0.1;
-  sunLight.shadow.camera.far = EARTH_RADIUS_SCALED * 100;
-  scene.add(sunLight);
-
-  // Debug : display shadow camera
-  //scene.add(new THREE.CameraHelper(sunLight.shadow.camera));
-
-  // Debug lumière – rapproche énormément le soleil temporairement
-  // sunLight.position.set(
-  //   EARTH_RADIUS_SCALED * 3,
-  //   EARTH_RADIUS_SCALED * 2,
-  //   EARTH_RADIUS_SCALED * 4
-  // );
-  // sunLight.intensity = 2.5; // ← boost pour voir les ombres du relief
+function createMilkyWay() {
+  const loadingManager = new THREE.LoadingManager();
+  const textureLoader = new THREE.TextureLoader(loadingManager);
+  try {
+    const envMap = textureLoader.load('assets/milkyway/solarsystemscope-8k.jpg');
+    envMap.mapping = THREE.EquirectangularReflectionMapping;
+    envMap.colorSpace = THREE.SRGBColorSpace;
+    envMap.wrapS = THREE.RepeatWrapping;
+    envMap.wrapT = THREE.RepeatWrapping;
+    envMap.repeat.set(1, 1);
+    scene.background = envMap;
+    scene.environment = envMap;
+  } catch (err) {
+    console.error("Error loading Milwy Way :", err);
+    scene.background = new THREE.Color(0x050514);
+  }
 }
 
 function logRendererInfos() {

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
+import { scene } from './scene.js';
 
 export const ATMOSPHERE_REGULAR_HEIGHT_KM = 200; // where is the limit of the atmosphere ? :)
 export const ATMOSPHERE_REGULAR_DENSITY_SURFACE = 1.225; // 1.225 kg/m³ is the real density at sea level
@@ -79,6 +80,8 @@ export function createAtmosphere() {
   atmosphereMesh.name = 'atmosphere';
   atmosphereMesh.frustumCulled = false;
   atmosphereMesh.visible = true;
+
+  scene.add(atmosphereMesh);
 
   return atmosphereMesh;
 }

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLOBAL_SCALE, scaleFromKm } from '../constants.js';
-import { renderer } from './scene.js';
+import { scene, renderer } from './scene.js';
 import { registerAnimable } from '../physics/physics.js';
 
 const MOON_RADIUS_KM = 1737
@@ -58,6 +58,8 @@ export function createMoon() {
     //const initialSpeed = scaleFromKm(0);
     moon.userData.velocity.copy(initialDirection).multiplyScalar(initialSpeed);
 
+    scene.add(moon);
+    
     return moon;
 }
 
