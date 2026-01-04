@@ -10,6 +10,8 @@ const SUN_DISTANCE_KM = 149600000
 export const SUN_RADIUS = SUN_RADIUS_KM / GLOBAL_SCALE
 export const SUN_DISTANCE = SUN_DISTANCE_KM / GLOBAL_SCALE
 
+const EARTH_OBLIQUITY = 23.44 * Math.PI / 180; 
+
 export let sun, sunLight
 
 export function createSun() {
@@ -35,7 +37,7 @@ export function createSun() {
 
         sun = new THREE.Mesh(sunGeometry, sunMaterial);
 
-        sun.position.set(SUN_DISTANCE, 0, 0);
+        sun.position.set(SUN_DISTANCE * Math.cos(EARTH_OBLIQUITY), SUN_DISTANCE * Math.sin(EARTH_OBLIQUITY), 0);
         //sun.position.set(200000, 0, 0);
 
         scene.add(sun);
