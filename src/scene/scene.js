@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
+import { EARTH_RADIUS, scaleFromKm } from '../constants.js';
 import { SUN_DISTANCE, createSun } from './sun.js';
 import { createEarth } from './earth.js';
 import { createAtmosphere } from './atmosphere.js';
@@ -26,7 +26,7 @@ export function createScene(container) {
 
 function createCamera() {
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(10), SUN_DISTANCE * 2);
-  camera.position.set(EARTH_RADIUS_SCALED * 2, EARTH_RADIUS_SCALED * 0, EARTH_RADIUS_SCALED * 0);
+  camera.position.set(EARTH_RADIUS * 2, EARTH_RADIUS * 0, EARTH_RADIUS * 0);
 }
 
 function createRenderer(container) {
@@ -42,7 +42,7 @@ function createRenderer(container) {
 }
 
 function createAxis() {
-  const AXIS_LENGTH = EARTH_RADIUS_SCALED * 2;
+  const AXIS_LENGTH = EARTH_RADIUS * 2;
   const origin = new THREE.Vector3(0, 0, 0);
   const headLength = AXIS_LENGTH * 0.1;
   const headWidth = headLength * 0.5;

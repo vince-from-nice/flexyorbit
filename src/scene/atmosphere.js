@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
+import { EARTH_RADIUS, scaleFromKm } from '../constants.js';
 import { scene } from './scene.js';
 
 export const ATMOSPHERE_REGULAR_HEIGHT_KM = 200; // where is the limit of the atmosphere ? :)
@@ -57,7 +57,7 @@ export function createAtmosphere() {
     atmosphereMesh = null;
   }
 
-  const radius = EARTH_RADIUS_SCALED + scaleFromKm(atmosphereHeightKm);
+  const radius = EARTH_RADIUS + scaleFromKm(atmosphereHeightKm);
 
   const geometry = new THREE.SphereGeometry(radius, 128, 128);
 

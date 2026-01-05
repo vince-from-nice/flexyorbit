@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EARTH_RADIUS_SCALED, GLOBAL_SCALE, scaleFromKm } from '../constants.js';
+import { EARTH_RADIUS, GLOBAL_SCALE, scaleFromKm } from '../constants.js';
 import { scene } from './scene.js';
 import { earth } from './earth.js';
 import { createNewCannonballTrail } from './trails.js';
@@ -131,7 +131,7 @@ export function updateCannonWithParams() {
     const azimuthRad = azimuth * Math.PI / 180;
     const elevationRad = elevation * Math.PI / 180;
 
-    const r = EARTH_RADIUS_SCALED + scaleFromKm(altitude);
+    const r = EARTH_RADIUS + scaleFromKm(altitude);
 
     // Compute and set the new position of the cannon group
     const phi = Math.PI / 2 - latRad;

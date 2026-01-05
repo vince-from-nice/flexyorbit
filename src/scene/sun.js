@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GLOBAL_SCALE, EARTH_RADIUS_SCALED } from '../constants.js';
+import { GLOBAL_SCALE, EARTH_RADIUS } from '../constants.js';
 import { printPos } from '../utils.js';
 import { scene } from './scene.js';
 import { earth } from './earth.js';
@@ -55,7 +55,7 @@ function createSunLight() {
         sunLight.shadow.mapSize.height = 4096;
         sunLight.shadow.bias = -0.0001;
         sunLight.shadow.normalBias = 0.5;
-        const shadowRadius = EARTH_RADIUS_SCALED * 3;
+        const shadowRadius = EARTH_RADIUS * 3;
         sunLight.shadow.camera.left = -shadowRadius;
         sunLight.shadow.camera.right = shadowRadius;
         sunLight.shadow.camera.top = shadowRadius;

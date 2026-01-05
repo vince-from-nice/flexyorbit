@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EARTH_RADIUS_SCALED } from '../constants.js';
+import { EARTH_RADIUS } from '../constants.js';
 import { scene, renderer } from './scene.js';
 
 export let earth;
@@ -16,7 +16,7 @@ export const EARTH_TEXTURES = [
 ];
 
 export function createEarth() {
-    const geometry = new THREE.SphereGeometry(EARTH_RADIUS_SCALED, 128, 128);
+    const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 128, 128);
 
     const material = new THREE.MeshStandardMaterial({
         roughness: 0.85,

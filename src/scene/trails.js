@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-import { EARTH_RADIUS_SCALED, scaleFromKm } from '../constants.js';
+import { EARTH_RADIUS, scaleFromKm } from '../constants.js';
 import { scene } from './scene.js';
 import { cannonball } from '../scene/cannon.js';
 
@@ -153,10 +153,10 @@ function createNewTrailBar(top1, top2, thickness, height, useProjection = false)
     let b0, b1, b2, b3;
 
     if (useProjection) {
-        b0 = t0.clone().normalize().multiplyScalar(EARTH_RADIUS_SCALED);
-        b1 = t1.clone().normalize().multiplyScalar(EARTH_RADIUS_SCALED);
-        b2 = t2.clone().normalize().multiplyScalar(EARTH_RADIUS_SCALED);
-        b3 = t3.clone().normalize().multiplyScalar(EARTH_RADIUS_SCALED);
+        b0 = t0.clone().normalize().multiplyScalar(EARTH_RADIUS);
+        b1 = t1.clone().normalize().multiplyScalar(EARTH_RADIUS);
+        b2 = t2.clone().normalize().multiplyScalar(EARTH_RADIUS);
+        b3 = t3.clone().normalize().multiplyScalar(EARTH_RADIUS);
     } else {
         const down = new THREE.Vector3(0, -height, 0);
         b0 = t0.clone().add(down);

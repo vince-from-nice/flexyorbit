@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { EARTH_RADIUS_SCALED, GLOBAL_SCALE } from '../constants.js';
+import { EARTH_RADIUS, GLOBAL_SCALE } from '../constants.js';
 
 import { scene } from '../scene/scene.js';
 import { earth } from '../scene/earth.js';
@@ -15,7 +15,7 @@ export function checkCollisionAndHandle(obj) {
 
   const distanceToCenter = worldPos.length();
 
-  if (distanceToCenter <= EARTH_RADIUS_SCALED + COLLISION_THRESHOLD_SCALED) {
+  if (distanceToCenter <= EARTH_RADIUS + COLLISION_THRESHOLD_SCALED) {
 
     obj.userData.isFreeFalling = false;
     obj.userData.velocity.set(0, 0, 0);
@@ -24,7 +24,7 @@ export function checkCollisionAndHandle(obj) {
     const surfaceWorldPos = new THREE.Vector3()
       .copy(obj.getWorldPosition(new THREE.Vector3()))
       .normalize()
-      .multiplyScalar(EARTH_RADIUS_SCALED + COLLISION_THRESHOLD_SCALED);
+      .multiplyScalar(EARTH_RADIUS + COLLISION_THRESHOLD_SCALED);
 
     // Changing parent after world position fetching
     if (obj.parent !== earth) {

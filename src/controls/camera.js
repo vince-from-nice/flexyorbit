@@ -5,7 +5,7 @@ import { MapControls } from 'three/addons/controls/MapControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import { EARTH_RADIUS_SCALED, scaleFromKm, scaleToKm } from '../constants.js';
+import { EARTH_RADIUS, scaleFromKm, scaleToKm } from '../constants.js';
 import { camera, renderer } from '../scene/scene.js';
 import { earth } from '../scene/earth.js';
 import { moon, MOON_DISTANCE, MOON_RADIUS } from '../scene/moon.js';
@@ -35,15 +35,15 @@ const CAMERA_ORBIT_ROTATE_SPEED_BASE = 0.3;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN = 0.3;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX = 3.0;
 
-const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS_SCALED + scaleFromKm(500);
+const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS + scaleFromKm(500);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON = MOON_RADIUS + scaleFromKm(500);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromKm(0.01); // 10 meters
 
-const CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH = EARTH_RADIUS_SCALED * 3;
+const CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH = EARTH_RADIUS * 3;
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON = MOON_RADIUS * 3;
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS = scaleFromKm(2000);
 
-const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS_SCALED * 3
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS * 3
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON = MOON_RADIUS * 3
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.01) // 10 meters
 
@@ -92,7 +92,7 @@ function initOrbitControls() {
     orbitControls.rotateSpeed = CAMERA_ORBIT_ROTATE_SPEED_BASE;
     orbitControls.panSpeed = 1.0;
     orbitControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH;
-    orbitControls.maxDistance = EARTH_RADIUS_SCALED * 100;
+    orbitControls.maxDistance = EARTH_RADIUS * 100;
     orbitControls.enablePan = false;
 
     orbitControls.addEventListener('change', adjustOrbitControlsSpeed);
@@ -110,8 +110,8 @@ function initMapControls() {
     mapControls = new MapControls(camera, renderer.domElement);
     mapControls.enableDamping = true;
     mapControls.dampingFactor = 0.05;
-    mapControls.minDistance = EARTH_RADIUS_SCALED + scaleFromKm(300);
-    mapControls.maxDistance = EARTH_RADIUS_SCALED * 20;
+    mapControls.minDistance = EARTH_RADIUS + scaleFromKm(300);
+    mapControls.maxDistance = EARTH_RADIUS * 20;
     mapControls.maxPolarAngle = Math.PI / 2;
 }
 
