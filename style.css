@@ -437,7 +437,7 @@ button:hover {
    MESSAGES
    ========================================================================== */
 
-#camera-target-message {
+#temporary-message {
     position: fixed;
     top: 10px;
     left: 50%;
@@ -453,7 +453,7 @@ button:hover {
     transition: opacity 0.5s ease-out;
 }
 
-#camera-target-message.hidden {
+#temporary-message.hidden {
     opacity: 0;
 }
 

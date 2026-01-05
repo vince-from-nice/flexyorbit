@@ -116,7 +116,7 @@ function createHTMLControls() {
     }, 5);
     addSlider(atmoshpereGroupDiv, 'Density at sea level (kg/m³)', 0.0, 2.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
         setAtmosphereDensity(value);
-    }, 0.1);
+    }, 0.01);
     // addSlider(atmoshpereGroupDiv, 'Opacity', 0.0, 1.0, 0.7, value => {
     //     setAtmosphereOpacity(value);
     // }, 0.1);
@@ -186,7 +186,7 @@ function addSlider(container, labelText, min, max, initial, onChange, step = 1, 
     numberInput.min = min;
     numberInput.max = max;
     numberInput.step = step;
-    numberInput.value = initial;
+    numberInput.value = initial;  // garde la précision initiale
     numberInput.classList.add('number-input');
     topRow.appendChild(numberInput);
 
@@ -195,28 +195,33 @@ function addSlider(container, labelText, min, max, initial, onChange, step = 1, 
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.classList.add('custom-slider');
+
     if (logarithmic) {
         slider.min = 0;
         slider.max = 1;
-        slider.step = 0.0001; // Fine precision for log scale
-        const norm = Math.log(initial / min) / Math.log(max / min);
-        slider.value = norm;
+        slider.step = 0.0001;
+        // Protection contre log(0) ou valeurs invalides
+        const norm = (initial > min && min > 0)
+            ? Math.log(initial / min) / Math.log(max / min)
+            : 0;
+        slider.value = Math.max(0, Math.min(1, norm));
     } else {
         slider.min = min;
         slider.max = max;
         slider.step = step;
-        slider.value = initial;
+        slider.value = initial;  // ← position exacte dès le départ
     }
 
     // Dynamic gradient
-    slider.addEventListener('input', updateGradient);
-    updateGradient(); // Initial
-
     function updateGradient() {
         const norm = (slider.value - slider.min) / (slider.max - slider.min);
         const percent = norm * 100;
         slider.style.background = `linear-gradient(to right, #00aaff ${percent}%, #444 ${percent}%)`;
     }
+    slider.addEventListener('input', updateGradient);
+    updateGradient();
+
+    const snapToStep = (val) => Math.round(val / step) * step;
 
     const updateFromSlider = () => {
         const norm = (slider.value - slider.min) / (slider.max - slider.min);
@@ -226,8 +231,12 @@ function addSlider(container, labelText, min, max, initial, onChange, step = 1, 
         } else {
             val = min + norm * (max - min);
         }
-        val = Math.round(val); // Round to nearest integer
+
+        // Remplacer Math.round(val) par :
+        val = Math.round(val / step) * step;   // ← snap au pas réel (0.1, 0.01, 1...)
+
         val = Math.max(min, Math.min(max, val));
+
         numberInput.value = val;
         onChange(val);
         updateGradient();
@@ -236,9 +245,13 @@ function addSlider(container, labelText, min, max, initial, onChange, step = 1, 
     const updateFromNumber = () => {
         let val = parseFloat(numberInput.value);
         if (isNaN(val)) return;
-        val = Math.round(val); // Round to nearest integer
+
+        // Remplacer Math.round(val) par :
+        val = Math.round(val / step) * step;   // ← même chose ici
+
         val = Math.max(min, Math.min(max, val));
         numberInput.value = val;
+
         let norm;
         if (logarithmic) {
             norm = Math.log(val / min) / Math.log(max / min);
@@ -252,10 +265,15 @@ function addSlider(container, labelText, min, max, initial, onChange, step = 1, 
 
     slider.addEventListener('input', updateFromSlider);
     numberInput.addEventListener('change', updateFromNumber);
+    // Optionnel : pour update live pendant la frappe
+    // numberInput.addEventListener('input', updateFromNumber);
 
     wrapper.appendChild(topRow);
     wrapper.appendChild(slider);
     container.appendChild(wrapper);
+
+    // Force une synchro initiale propre
+    updateFromNumber();
 
     return [numberInput, slider];
 }

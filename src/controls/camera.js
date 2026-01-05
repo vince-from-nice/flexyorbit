@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { printPos } from '../utils.js';
+import { printPos, showTemporaryMessage } from '../utils.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
@@ -41,7 +41,7 @@ const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromKm(0.01); // 10 meters
 
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH = EARTH_RADIUS_SCALED * 3;
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON = MOON_RADIUS * 3;
-const CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS = scaleFromKm(2000); 
+const CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS = scaleFromKm(2000);
 
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS_SCALED * 3
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON = MOON_RADIUS * 3
@@ -226,6 +226,8 @@ export function switchCameraMode(type) {
         cameraCurrentControls.update(0);
     }
 
+    showTemporaryMessage("Camera mode has changed to " + type);
+
     console.log(`Camera mode has switched to ${type}`);
 }
 
@@ -256,7 +258,7 @@ export function switchCameraTarget(newTarget) {
 
     cameraCurrentControls.update();
 
-    showCameraTargetMessage(target?.label);
+    showTemporaryMessage("Camera target has changed to " + target?.label);
 
     console.log("Camera target has switched to " + newTarget + " with position " + printPos(cameraCurrentControls.target));
 }
@@ -383,17 +385,3 @@ export function registerCameraTargetSelect(selectElement) {
     cameraTargetSelectRef = selectElement;
 }
 
-function showCameraTargetMessage(label) {
-    let message = document.getElementById('camera-target-message');
-    if (message) {
-        message.remove();
-    }
-    message = document.createElement('div');
-    message.id = 'camera-target-message';
-    message.textContent = `Camera target has changed to ${label}`;
-    document.body.appendChild(message); 
-    setTimeout(() => {
-        message.classList.add('hidden');
-        setTimeout(() => message.remove(), 500);
-    }, 2000);
-}
