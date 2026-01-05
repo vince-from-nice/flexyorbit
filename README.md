@@ -4,7 +4,7 @@
 FlexyOrbit is a small educational project to play with Earth's gravity and orbital mechanics.
 
 <p align="center">
-  <img src="assets/screenshots/202260105.jpg" alt="FlexyOrbit screenshot" width="720"/>
+  <img src="assets/screenshots/20260105.jpg" alt="FlexyOrbit screenshot" width="720"/>
 </p>
 
 The idea for this project came after discovering the beautiful interactive simulations by **[ScienceÉtonnante](https://www.youtube.com/@ScienceEtonnante)**, especially [the famous Newton's Cannon one](https://explorables.scienceetonnante.com/newton-cannon/).
