@@ -1,41 +1,34 @@
-import * as THREE from 'three';
+import world from '../world.js';
+import { scaleToKm } from '../constants.js';
 import { printPos } from '../utils.js';
 import { getGravitationalAcceleration } from './gravitation.js';
 import { getDragAcceleration } from './friction.js';
 import { checkCollisionAndHandle } from './collision.js';
-import { updateTrail } from '../scene/trails.js';
 
-const animables = new Set();
+export function animatePhysicalEntities(delta) {
+  for (const obj of world.getPhysicalEntities()) {
+    if (obj?.isFreeFalling) {
 
-export function registerAnimable(obj) {
-  animables.add(obj);
-  obj.userData.velocity = new THREE.Vector3();
-  obj.userData.isFreeFalling = false;
-}
+      obj.accelerations.gravity = getGravitationalAcceleration(obj.body.position);
 
-export function animatePhysics(delta) {
-  animables.forEach(obj => {
-    if (obj?.userData?.isFreeFalling) {
+      obj.accelerations.friction = getDragAcceleration(obj.body.position, obj.velocity, obj.name);
 
-      //console.log("Animate object with velocity = " + obj.userData.velocity.length().toFixed(3) + " and position = " + printPos(obj.position));
-
-      const acceleration = getGravitationalAcceleration(obj.position);
-
-      const dragAcceleration = getDragAcceleration(obj.position, obj.userData.velocity);
-      acceleration.add(dragAcceleration);
+      obj.accelerations.total = obj.accelerations.gravity.clone().add(obj.accelerations.friction);
 
       // v += a * dt
-      obj.userData.velocity.addScaledVector(acceleration, delta);
+      obj.velocity.addScaledVector(obj.accelerations.total, delta);
 
       // pos += v * dt
-      obj.position.addScaledVector(obj.userData.velocity, delta);
+      obj.body.position.addScaledVector(obj.velocity, delta);
 
-      if (obj.userData.trails) {
-        updateTrail(obj);
+      if (obj.trail) {
+        obj.trail.update(obj);
       }
 
       checkCollisionAndHandle(obj);
+
+      //console.log("Animate " + obj.name + " with velocity = " + scaleToKm(obj.velocity.length()).toFixed(3) + " km/s and position = " + printPos(obj.body.position));
     }
-  });
+  };
 }
 

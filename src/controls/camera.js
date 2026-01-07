@@ -1,15 +1,13 @@
 import * as THREE from 'three';
+import world from '../world.js';
 import { printPos, showTemporaryMessage } from '../utils.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { MapControls } from 'three/addons/controls/MapControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
-import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { EARTH_RADIUS, scaleFromKm, scaleToKm } from '../constants.js';
 import { camera, renderer } from '../scene/scene.js';
 import { earth } from '../scene/earth.js';
-import { moon, MOON_DISTANCE, MOON_RADIUS } from '../scene/moon.js';
-import { cannonGroup, cannonball } from '../scene/cannon.js';
+import { moonMesh, MOON_RADIUS } from '../scene/moon.js';
+import { cannonGroup, cannonballMesh } from '../scene/cannon.js';
 
 export const CAMERA_MODES = [
     { value: 'orbit', label: 'Orbit controls (default)' },
@@ -26,7 +24,7 @@ let cameraModeSelectRef = null;
 export let CAMERA_TARGETS = [
     //{ value: 'universe', label: 'Universe', object: null }
 ];
-let cameraCurrentTarget = 'universe';
+let cameraCurrentTarget = 'Earth';
 let cameraCurrentTargetObject = null;
 let cameraCurrentTargetIndex = 0;
 let cameraTargetSelectRef = null;
@@ -49,18 +47,14 @@ const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.01) // 10 meters
 
 let orbitControls = null;
 let flyControls = null;
-let fpsControls = null;
-let pointerLockControls = null;
-let mapControls = null;
 
 export function initCameraControls() {
     initOrbitControls();
+    initFlyControls();
+
     cameraCurrentControls = orbitControls;
 
-    addCameraTarget('earth', 'Earth', earth);
-    addCameraTarget('moon', 'Moon', moon);
-    addCameraTarget('cannon', 'Cannon', cannonGroup);
-    addCameraTarget('cannonball', 'Cannonball', cannonball);
+    refreshCameraTargets();
 
     window.addEventListener('keydown', (e) => {
         if (e.code === 'KeyC' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
@@ -106,36 +100,6 @@ function initFlyControls() {
     flyControls.dragToLook = true;
 }
 
-function initMapControls() {
-    mapControls = new MapControls(camera, renderer.domElement);
-    mapControls.enableDamping = true;
-    mapControls.dampingFactor = 0.05;
-    mapControls.minDistance = EARTH_RADIUS + scaleFromKm(300);
-    mapControls.maxDistance = EARTH_RADIUS * 20;
-    mapControls.maxPolarAngle = Math.PI / 2;
-}
-
-function initFPSControls() {
-    fpsControls = new FirstPersonControls(camera, renderer.domElement);
-    fpsControls.movementSpeed = 200;
-    fpsControls.lookSpeed = 0.1;
-    fpsControls.lookVertical = true;
-    fpsControls.constrainVerticalLook = true;
-    fpsControls.heightMin = scaleFromKm(2);
-    fpsControls.heightMax = scaleFromKm(5000);
-}
-
-function initPointerLockControls() {
-    pointerLockControls = new PointerLockControls(camera, renderer.domElement);
-    renderer.domElement.addEventListener('click', () => {
-        if (cameraCurrentMode === 'pointerLock') {
-            pointerLockControls.lock();
-        }
-    });
-    pointerLockControls.addEventListener('lock', () => console.log('Pointer locked'));
-    pointerLockControls.addEventListener('unlock', () => console.log('Pointer unlocked'));
-}
-
 function adjustOrbitControlsSpeed() {
     const cameraDistance = camera.position.distanceTo(orbitControls.target);
     let ratioDistance;
@@ -158,11 +122,6 @@ function adjustOrbitControlsSpeed() {
         + " rotateSpeed: " + orbitControls.rotateSpeed.toFixed(2));
 }
 
-export function updateCamera(delta) {
-    updateCameraControls(delta);
-    updateCameraTargetFollow(delta);
-}
-
 export function switchCameraMode(type) {
     const prevPosition = camera.position.clone();
     const prevQuaternion = camera.quaternion.clone();
@@ -170,75 +129,34 @@ export function switchCameraMode(type) {
 
     if (cameraCurrentControls) {
         cameraCurrentControls.enabled = false;
-        if (cameraCurrentControls instanceof OrbitControls || cameraCurrentControls instanceof MapControls) {
-            cameraCurrentControls.dispose();
-        }
-        if (cameraCurrentControls instanceof PointerLockControls) {
-            cameraCurrentControls.unlock();
-        }
-        if (cameraCurrentControls === orbitControls) orbitControls = null;
-        if (cameraCurrentControls === mapControls) mapControls = null;
     }
 
     cameraCurrentMode = type;
-    let newControls = null;
-
+    let cameraNewControls = null;
     switch (type) {
         case 'orbit':
-            initOrbitControls();
-            newControls = orbitControls;
-            newControls.target.copy(prevTarget);
-            break;
-
-        case 'map':
-            initMapControls();
-            newControls = mapControls;
-            newControls.target.copy(prevTarget);
+            cameraCurrentControls = orbitControls;
+            cameraCurrentControls.target.copy(prevTarget);
             break;
 
         case 'fly':
-            if (!flyControls) initFlyControls();
-            newControls = flyControls;
-            break;
-
-        case 'fps':
-            if (!fpsControls) initFPSControls();
-            newControls = fpsControls;
-            break;
-
-        case 'pointerLock':
-            if (!pointerLockControls) initPointerLockControls();
-            newControls = pointerLockControls;
+            cameraCurrentControls = flyControls;
             break;
 
         default:
-            console.warn('Mode inconnu:', type);
+            console.warn('Unknown camera mode:', type);
             return;
     }
-
-    cameraCurrentControls = newControls;
     cameraCurrentControls.enabled = true;
 
     camera.position.copy(prevPosition);
     camera.quaternion.copy(prevQuaternion);
 
-    if (cameraCurrentControls.update) {
-        cameraCurrentControls.update(0);
-    }
+    cameraCurrentControls.update(0);
 
     showTemporaryMessage("Camera mode has changed to " + type);
 
     console.log(`Camera mode has switched to ${type}`);
-}
-
-export function registerCameraModeSelect(selectElement) {
-    cameraModeSelectRef = selectElement;
-}
-
-export function updateCameraControls(deltaTime) {
-    if (cameraCurrentControls?.update) {
-        cameraCurrentControls.update(deltaTime);
-    }
 }
 
 export function switchCameraTarget(newTarget) {
@@ -268,10 +186,10 @@ function repositionCameraAlignedWithEarthAndTarget(targetPos) {
     const earthCenter = new THREE.Vector3(0, 0, 0);
     const targetAlt = targetPos.distanceTo(earthCenter);
     let newDistance, newDirection;
-    if (['universe', 'earth'].includes(cameraCurrentTarget)) {
+    if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
         cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH;
         newDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH;
-    } else if (['moon'].includes(cameraCurrentTarget)) {
+    } else if (['Moon'].includes(cameraCurrentTarget)) {
         cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON;
         newDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON;
     } else {
@@ -279,7 +197,7 @@ function repositionCameraAlignedWithEarthAndTarget(targetPos) {
         newDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS;
     }
     // When the target is earth or universe a hard direction is used
-    if (['universe', 'earth'].includes(cameraCurrentTarget)) {
+    if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
         newDirection = new THREE.Vector3(0, 0, 1)
         //newDirection = camera.position.clone().sub(earthCenter).normalize();
     } else {
@@ -292,7 +210,7 @@ function repositionCameraAlignedWithEarthAndTarget(targetPos) {
 }
 
 function repositionCameraInFrontOf(targetPos, targetType) {
-    const baseOffset = ['cannon', 'cannonball'].includes(targetType)
+    const baseOffset = ['Cannon', 'Cannonball'].includes(targetType)
         ? scaleFromKm(1.5)
         : scaleFromKm(800);
     let direction = camera.position.clone().sub(targetPos);
@@ -320,7 +238,7 @@ function repositionCameraInFrontOf(targetPos, targetType) {
 export function updateCameraTargetFollow(delta) {
     if (!cameraCurrentControls) return;
     const targetPos = getCurrentCameraTargetPosition();
-    const isLargeTarget = ['universe', 'earth'].includes(cameraCurrentTarget);
+    const isLargeTarget = ['Universe', 'Earth'].includes(cameraCurrentTarget);
     const isOrbital = ['orbit', 'map'].includes(cameraCurrentMode);
 
     // For orbital mode : follow the target smoothly
@@ -375,9 +293,18 @@ function getCurrentCameraTargetPosition() {
     return worldPos;
 }
 
-export function addCameraTarget(value, label, object) {
-    if (CAMERA_TARGETS.some(o => o.value === value)) return;
-    CAMERA_TARGETS.push({ value, label, object });
+export function updateCamera(deltaTime) {
+    cameraCurrentControls.update(deltaTime);
+    updateCameraTargetFollow(deltaTime);
+}
+
+export function refreshCameraTargets() {
+    CAMERA_TARGETS = [];
+    CAMERA_TARGETS.push({ value: 'Earth', label: 'Earth', object: earth });
+    CAMERA_TARGETS.push({ value: 'Cannon', label: 'Cannon', object: cannonGroup });
+    for (const entity of world.getPhysicalEntities()) {
+        CAMERA_TARGETS.push({ value: entity.name, label: entity.name, object: entity.body });
+    }
     if (cameraTargetSelectRef) cameraTargetSelectRef.updateOptions(CAMERA_TARGETS);
 }
 
@@ -385,3 +312,6 @@ export function registerCameraTargetSelect(selectElement) {
     cameraTargetSelectRef = selectElement;
 }
 
+export function registerCameraModeSelect(selectElement) {
+    cameraModeSelectRef = selectElement;
+}

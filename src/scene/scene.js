@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS, scaleFromKm } from '../constants.js';
 import { SUN_DISTANCE, createSun } from './sun.js';
-import { createEarth } from './earth.js';
+import { createEarth, earth, earthRotationDisabled, EARTH_ANGULAR_VELOCITY } from './earth.js';
 import { createAtmosphere } from './atmosphere.js';
-import { createMoon } from './moon.js';
+import { createMoon, moonMesh, moonRotationDisabled, MOON_ANGULAR_VELOCITY } from './moon.js';
 import { createCannon } from './cannon.js';
-import { createNewCannonballTrail } from './trails.js';
 
 export let scene, camera, renderer, axesGroup;
 
@@ -21,7 +20,7 @@ export function createScene(container) {
   createMoon();
   createSun();
   createCannon();
-  createNewCannonballTrail();
+  //reateNewCannonballTrail();
 }
 
 function createCamera() {
@@ -108,5 +107,14 @@ export function displayAxis(display) {
     scene.add(axesGroup);
   } else {
     scene.remove(axesGroup);
+  }
+}
+
+export function animateEarthAndMonth(deltaTime) {
+  if (!earthRotationDisabled) {
+    earth.rotation.y += EARTH_ANGULAR_VELOCITY * deltaTime;
+  }
+  if (!moonRotationDisabled) {
+    moonMesh.rotation.y += MOON_ANGULAR_VELOCITY * deltaTime;
   }
 }

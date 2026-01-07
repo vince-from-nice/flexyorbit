@@ -8,6 +8,8 @@ export let earthRotationDisabled = false;
 
 const textureLoader = new THREE.TextureLoader();
 
+export const EARTH_ANGULAR_VELOCITY = 2 * Math.PI / 86164;  // Earth rotation in rad/s (real period is ~23h56m4s)
+
 export const EARTH_TEXTURES = [
     { value: 'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg', label: 'NASA Blue Marble (4K)' },
     { value: 'assets/earth/bluemarble-5k.jpg', label: 'NASA Blue Marble (5K)' },

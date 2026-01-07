@@ -1,6 +1,6 @@
 import { displayAxis } from '../scene/scene.js';
-import { updateCannonWithParams, fireCannonball, cannonParams, cannonball } from '../scene/cannon.js';
-import { TRAIL_STYLES, updateTrailStyle } from '../scene/trails.js';
+import { updateCannonWithParams, fireCannonball, cannonParams, cannonballMesh } from '../scene/cannon.js';
+import { TRAIL_STYLES } from '../scene/trails.js';
 import { EARTH_TEXTURES, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
 import { disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
@@ -137,8 +137,8 @@ function createHTMLControls() {
 
     // Display wigets 
     const displayGroup = addGroup(contentWrapper, 'Display');
-    addCustomSelect(displayGroup, 'Change cannonball trail style', null, TRAIL_STYLES, cannonball.userData.trails.current.style,
-        value => { updateTrailStyle(value); });
+    // addCustomSelect(displayGroup, 'Change cannonball trail style', null, TRAIL_STYLES, cannonballMesh.userData.trails.current.style,
+    //     value => { updateTrailStyle(value); });
     addCustomSelect(displayGroup, 'Change Earth texture', null, EARTH_TEXTURES, 'assets/earth/bluemarble-5k.jpg',
         value => { setEarthTexture(value); });
     addCheckbox(displayGroup, null, 'Display referential axes', false, value => {

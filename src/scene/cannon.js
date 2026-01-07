@@ -1,12 +1,12 @@
 import * as THREE from 'three';
+import world from '../world.js';
+import { ENTITY_TYPES, Entity } from '../entity.js';
 import { EARTH_RADIUS, GLOBAL_SCALE, scaleFromKm } from '../constants.js';
 import { scene } from './scene.js';
 import { earth } from './earth.js';
-import { createNewCannonballTrail } from './trails.js';
+import { TRAIL_STYLES, Trail } from './trails.js';
 
-import { registerAnimable } from '../physics/physics.js';
-
-export let cannonGroup, cannonball;
+export let cannonGroup, cannonballMesh;
 
 export let cannonParams = {
     lat: 43.53,
@@ -19,10 +19,10 @@ export let cannonParams = {
 
 export function createCannon() {
     cannonGroup = new THREE.Group();
-    const scaleFactor = 10 / GLOBAL_SCALE;
+    cannonGroup.scale.setScalar(10 / GLOBAL_SCALE);
 
     // Base
-    const baseGeometry = new THREE.BoxGeometry(20 * scaleFactor, 2 * scaleFactor, 20 * scaleFactor);
+    const baseGeometry = new THREE.BoxGeometry(20, 2, 20);
     const baseMaterial = new THREE.MeshStandardMaterial({
         color: 0x555555,
         metalness: 0.7,
@@ -30,13 +30,13 @@ export function createCannon() {
     });
     const base = new THREE.Mesh(baseGeometry, baseMaterial);
     base.castShadow = true;
-    base.position.y = 1 * scaleFactor;
+    base.position.y = 1;
     cannonGroup.add(base);
 
     // Base corner lights
-    const boxSize = 2.5 * scaleFactor;
-    const halfBase = 10 * scaleFactor;
-    const baseThickness = 2 * scaleFactor;
+    const boxSize = 2.5;
+    const halfBase = 10;
+    const baseThickness = 2;
     const emissiveColor = 0xffaa55;
     const emissiveIntensity = 2.2;
     const glowBoxes = [];
@@ -64,8 +64,8 @@ export function createCannon() {
     });
 
     // Tube
-    const tubeLength = 30 * scaleFactor;
-    const tubeGeometry = new THREE.CylinderGeometry(2 * scaleFactor, 2.5 * scaleFactor, tubeLength, 32);
+    const tubeLength = 30;
+    const tubeGeometry = new THREE.CylinderGeometry(2, 2.5, tubeLength, 32);
     const tubeMaterial = new THREE.MeshStandardMaterial({
         color: 0x777777,
         metalness: 0.9,
@@ -81,36 +81,23 @@ export function createCannon() {
     // Group for the elevation
     const elevationGroup = new THREE.Group();
     elevationGroup.add(tube);
-    elevationGroup.position.set(0, 4 * scaleFactor, 0);
+    elevationGroup.position.set(0, 4, 0);
     cannonGroup.add(elevationGroup);
 
     // Light on the tube
-    // const muzzleLight = new THREE.PointLight(0x00aaff, 10, 40 * scaleFactor);
+    // const muzzleLight = new THREE.PointLight(0x00aaff, 10, 40);
     // muzzleLight.position.set(0, 0, tubeLength);
     // elevationGroup.add(muzzleLight);
 
-    // Cannonball
-    const cannonballRadius = 3 * scaleFactor;
-    const ballGeometry = new THREE.SphereGeometry(cannonballRadius, 32, 32); // Rayon un peu plus grand que le tube (radius ~2-2.5)
-    const ballMaterial = new THREE.MeshStandardMaterial({
-        color: 0xff0000,
-        emissive: 0xff0000,
-        emissiveIntensity: 0.5,
-        metalness: 0.8,
-        roughness: 0.2
-    });
-    cannonball = new THREE.Mesh(ballGeometry, ballMaterial);
-    cannonball.castShadow = true;
-    // Set the initial position at the exact end of the tube and save it
-    const initialPosition = new THREE.Vector3(0, 0, tubeLength + cannonballRadius);
-    cannonball.userData.initialLocalPosition = initialPosition;
-    cannonball.position.copy(initialPosition);
-    registerAnimable(cannonball);
-    elevationGroup.add(cannonball);
-
     // References
     cannonGroup.userData.elevationGroup = elevationGroup;
-    cannonGroup.userData.tube = tube;
+    cannonGroup.userData.fireCounter = 0;
+
+    // Compute and save cannonball initial position at the exact end of the tube
+    const initialPosition = new THREE.Vector3(0, 0, tubeLength + 3);
+    cannonGroup.userData.elevationGroup.userData.cannonballInitialPosition = initialPosition;
+
+    //createCannonball(cannonGroup, scaleFactor, tubeLength);
 
     // A first update with the initial parameters
     updateCannonWithParams();
@@ -175,27 +162,52 @@ export function updateCannonWithParams() {
 
 export function fireCannonball() {
     console.log('Fire cannon with :', cannonParams);
-    cannonball.material.color.set(0xff0000);
-    const elevationGroup = cannonGroup.userData.elevationGroup;
-    // Reattach to elevationGroup and reset local position
-    if (cannonball.parent !== elevationGroup) {
-        scene.remove(cannonball);
-        elevationGroup.add(cannonball);
+    try {
+        // Create a new entity
+        const cannonballEntity = createCannonball(cannonGroup);
+        world.addEntity(cannonballEntity);
+        const cannonballMesh = cannonballEntity.body;
+        // Update its color to red
+        cannonballMesh.material.color.set(0xff0000);
+        cannonballMesh.material.emissive.set(0xff0000);
+        // Compute world position
+        const worldPos = new THREE.Vector3();
+        cannonballMesh.getWorldPosition(worldPos);
+        cannonballMesh.position.copy(worldPos);
+        // Compute world direction
+        const elevationGroup = cannonGroup.userData.elevationGroup;
+        const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(elevationGroup.getWorldQuaternion(new THREE.Quaternion())).normalize();
+        // Set initial velocity
+        cannonballEntity.velocity.copy(direction).multiplyScalar(scaleFromKm(cannonParams.speed));
+        cannonballEntity.isFreeFalling = true;
+        // Detach from cannon and add to scene
+        elevationGroup.remove(cannonballMesh);
+        scene.add(cannonballMesh);
+        console.log("Cannonball fired !", cannonballMesh)
+    } catch(error) {
+        console.error("Unable to fire cannonball: " + error);
     }
-    cannonball.position.copy(cannonball.userData.initialLocalPosition);
-    // Compute world position
-    const worldPos = new THREE.Vector3();
-    cannonball.getWorldPosition(worldPos);
-    // Compute world direction (local Z of tube)
-    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(elevationGroup.getWorldQuaternion(new THREE.Quaternion())).normalize();
-    // Set initial velocity (direction * speed in km/s)
-    cannonball.userData.velocity.copy(direction).multiplyScalar(scaleFromKm(cannonParams.speed));
-    // Detach from cannon and add to scene (for inertial frame)
-    elevationGroup.remove(cannonball);
-    scene.add(cannonball);
-    cannonball.position.copy(worldPos);
-    cannonball.userData.isFreeFalling = true;
-    createNewCannonballTrail();
-    console.log("Cannonball fired !", cannonball)
 }
+
+function createCannonball(cannonGroup) {
+    const ballGeometry = new THREE.SphereGeometry(3, 32, 32);
+    const ballMaterial = new THREE.MeshStandardMaterial({
+        color: 0x00ff00,
+        emissive: 0x00ff00,
+        emissiveIntensity: 0.5,
+        metalness: 0.8,
+        roughness: 0.2
+    });
+    cannonballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
+    cannonballMesh.castShadow = true;
+    cannonballMesh.position.copy(cannonGroup.userData.elevationGroup.userData.cannonballInitialPosition);
+    cannonGroup.userData.elevationGroup.add(cannonballMesh);
+    cannonGroup.userData.fireCounter++;
+    const cannonballEntity = new Entity(ENTITY_TYPES.CANNONBALL,
+        "Cannonball #" + cannonGroup.userData.fireCounter,
+        cannonballMesh,
+        {trail: new Trail("TRAIL_STYLE_WITH_VERTICAL_BARS")});
+    return cannonballEntity;
+}
+
 

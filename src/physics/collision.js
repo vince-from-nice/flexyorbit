@@ -8,39 +8,37 @@ import { earth } from '../scene/earth.js';
 export const COLLISION_THRESHOLD_SCALED = 1 / GLOBAL_SCALE; // km scaled
 
 export function checkCollisionAndHandle(obj) {
-  if (!obj?.userData?.isFreeFalling) return false;
-
   const worldPos = new THREE.Vector3();
-  obj.getWorldPosition(worldPos);
+  obj.body.getWorldPosition(worldPos);
 
   const distanceToCenter = worldPos.length();
 
   if (distanceToCenter <= EARTH_RADIUS + COLLISION_THRESHOLD_SCALED) {
 
-    obj.userData.isFreeFalling = false;
-    obj.userData.velocity.set(0, 0, 0);
+    obj.isFreeFalling = false;
+    obj.velocity.set(0, 0, 0);
 
     // World position
     const surfaceWorldPos = new THREE.Vector3()
-      .copy(obj.getWorldPosition(new THREE.Vector3()))
+      .copy(obj.body.getWorldPosition(new THREE.Vector3()))
       .normalize()
       .multiplyScalar(EARTH_RADIUS + COLLISION_THRESHOLD_SCALED);
 
     // Changing parent after world position fetching
-    if (obj.parent !== earth) {
+    if (obj.body.parent !== earth) {
       scene.remove(obj);
-      earth.add(obj);
+      earth.add(obj.body);
     }
 
     // Explicit conversion from world to earth
     earth.worldToLocal(surfaceWorldPos);
 
-    obj.position.copy(surfaceWorldPos);
+    obj.body.position.copy(surfaceWorldPos);
 
-    obj.material.color.set(0x1a1a1a);
-    obj.material.emissive.set(0x000000);
+    obj.body.material.color.set(0x1a1a1a);
+    obj.body.material.emissive.set(0x000000);
 
-    console.log("Impact !");
+    console.log(obj.name + " has impacted !");
 
     return true;
   }

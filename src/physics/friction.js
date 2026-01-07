@@ -6,7 +6,7 @@ import { atmosphereHeightKm, atmosphereDensitySurface } from '../scene/atmospher
 export const TROPOSPHERE_HEIGHT_RATIO = 0.07; // Height of the troposphere / total height of the atmosphere
 export const DRAG_COEFF = 0.0004; // Magic value for now (no real computation with Cd, surface..) but it should be in obj.userData
 
-export function getDragAcceleration(position, velocity) {
+export function getDragAcceleration(position, velocity, name) {
     const speedInMeterBySecond = velocity.length() * GLOBAL_SCALE * 1000;
     if (speedInMeterBySecond < 0.001) return new THREE.Vector3();
     
@@ -18,7 +18,8 @@ export function getDragAcceleration(position, velocity) {
     // Need ton convert from meter to the internal unit
     dragMagnitude = dragMagnitude / (1000 * GLOBAL_SCALE);
 
-    console.log(`Altitude: ${getAltitude(position).toFixed(0)} km | `
+    console.log("Computing drag for " + name  + " | " 
+        + `Altitude: ${getAltitude(position).toFixed(0)} km | `
         + `Air density: ${density.toFixed(3)} | `
         + `Speed: ${(speedInMeterBySecond).toFixed(0)} m/s | `
         + `Drag magnitude: ${dragMagnitude.toFixed(6)}`);
