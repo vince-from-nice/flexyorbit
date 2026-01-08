@@ -165,7 +165,6 @@ export function fireCannonball() {
     try {
         // Create a new entity
         const cannonballEntity = createCannonball(cannonGroup);
-        world.addEntity(cannonballEntity);
         const cannonballMesh = cannonballEntity.body;
         // Update its color to red
         cannonballMesh.material.color.set(0xff0000);
@@ -184,7 +183,7 @@ export function fireCannonball() {
         elevationGroup.remove(cannonballMesh);
         scene.add(cannonballMesh);
         console.log("Cannonball fired !", cannonballMesh)
-    } catch(error) {
+    } catch (error) {
         console.error("Unable to fire cannonball: " + error);
     }
 }
@@ -206,7 +205,8 @@ function createCannonball(cannonGroup) {
     const cannonballEntity = new Entity(ENTITY_TYPES.CANNONBALL,
         "Cannonball #" + cannonGroup.userData.fireCounter,
         cannonballMesh,
-        {trail: new Trail(true, "TRAIL_STYLE_WITH_VERTICAL_BARS")});
+        { trail: new Trail(true, "TRAIL_STYLE_WITH_VERTICAL_BARS") });
+    world.addEntity(cannonballEntity);
     return cannonballEntity;
 }
 

@@ -21,13 +21,13 @@ export function animatePhysicalEntities(delta) {
       // pos += v * dt
       obj.body.position.addScaledVector(obj.velocity, delta);
 
-      if (obj.trail) {
-        obj.trail.update(obj);
-      }
-
       checkCollisionAndHandle(obj);
 
       //console.log("Animate " + obj.name + " with velocity = " + scaleToKm(obj.velocity.length()).toFixed(3) + " km/s and position = " + printPos(obj.body.position));
+    }
+
+    if (obj.trail) {
+      obj.trail.update(obj);
     }
   };
 }

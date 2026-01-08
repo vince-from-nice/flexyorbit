@@ -27,23 +27,25 @@ export class Trail {
         this.history = [];
         this.color = '#cb44c0';
         this.lifetime = HISTORY_DEFAULT_LIFETIME;
+        this.model = null; // a mesh or an array of {mesh, time}
         this.updateCounter = 0
         this.stanceCounter = 0
         this.#resetModel();
     }
 
+    #removeMesh(mesh) {
+        scene.remove(mesh);
+        mesh.geometry.dispose();
+        mesh.material.dispose();
+    }
+
     #resetModel() {
         if (this.model) {
             if (Array.isArray(this.model)) {
-                this.model.forEach(model => {
-                    scene.remove(this.model);
-                    this.model.geometry.dispose();
-                    this.model.material.dispose();
-                })
+                this.model.forEach(model => { if (model.mesh) this.#removeMesh(model.mesh) });
+            } else {
+                this.#removeMesh(this.model);
             }
-            scene.remove(this.model);
-            this.model.geometry.dispose();
-            this.model.material.dispose();
         }
         if (this.style === 'TRAIL_STYLE_WITH_SINGLE_LINES') {
             const geometry = new THREE.BufferGeometry();
@@ -86,21 +88,35 @@ export class Trail {
 
         const now = Date.now() / 1000;
 
-        this.history.push({
-            position: obj.body.position.clone(),
-            time: now
-        });
+        if (obj.isFreeFalling) {
+            this.history.push({
+                position: obj.body.position.clone(),
+                time: now
+            });
+        }
+
+        while (this.history.length > 0 && now - this.history[0].time > this.lifetime) {
+            this.history.shift();
+        }
+        if (this.history.length > HISTORY_MAX_SIZE) {
+            this.history.splice(0, this.history.length - HISTORY_MAX_SIZE);
+        }
 
         if (this.style === 'TRAIL_STYLE_WITH_SINGLE_LINES' || this.style === 'TRAIL_STYLE_WITH_THICK_LINES') {
-            while (this.history.length > 0 && now - this.history[0].time > this.lifetime) {
-                this.history.shift();
-            }
-            if (this.history.length > HISTORY_MAX_SIZE) {
-                this.history.splice(0, this.history.length - HISTORY_MAX_SIZE);
-            }
             this.#updateTrailLineGeometry();
         } else if (this.style === 'TRAIL_STYLE_WITH_VERTICAL_BARS') {
-            if (this.stanceCounter >= UPDATES_NBR_BETWEEN_BARS) {
+            const newModel = []
+            this.model.forEach(model => {
+                if (now - model.time > this.lifetime) {
+                    this.#removeMesh(model.mesh)
+                } else {
+                    if (newModel.length <= HISTORY_MAX_SIZE) {
+                        newModel.push({ mesh: model.mesh, time: model.time })
+                    }
+                }
+            });
+            this.model = newModel;
+            if (obj.isFreeFalling && this.stanceCounter >= UPDATES_NBR_BETWEEN_BARS) {
                 if (this.history.length > 1) {
                     this.stanceCounter = 0;
                     const newBar = this.#createNewTrailBar(
@@ -108,11 +124,12 @@ export class Trail {
                         this.history[this.history.length - 2].position,
                         scaleFromKm(VERTICAL_BAR_THICKNESS), scaleFromKm(VERTICAL_BAR_FIXED_HEIGHT), true);
                     scene.add(newBar);
+                    this.model.push({ mesh: newBar, time: now });
                 }
             }
             this.stanceCounter++;
         }
-        console.log("Trail has been updated with " + this.history.length + " points");
+        console.log("Trail of " + obj.name + " has been updated with " + this.history.length + " points");
     }
 
     #createNewTrailBar(top1, top2, thickness, height, useProjection = false) {

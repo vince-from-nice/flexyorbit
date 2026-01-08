@@ -3,6 +3,7 @@ import { GLOBAL_SCALE, scaleFromKm } from '../constants.js';
 import world from '../world.js';
 import { ENTITY_TYPES, Entity } from '../entity.js';
 import { scene, renderer } from './scene.js';
+import { Trail } from './trails.js';
 
 const MOON_RADIUS_KM = 1737
 const MOON_DISTANCE_KM = 384400
@@ -52,7 +53,7 @@ export function createMoon() {
             console.log('Moon bump map loaded and applied');
         });
 
-    const moonEntity = new Entity(ENTITY_TYPES.MOON, "Moon", moonMesh);
+    const moonEntity = new Entity(ENTITY_TYPES.MOON, "Moon", moonMesh,  { trail: new Trail(true, "TRAIL_STYLE_WITH_SINGLE_LINES") });
     world.addEntity(moonEntity);
     scene.add(moonMesh);
 
