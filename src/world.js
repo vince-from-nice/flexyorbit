@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Entity, ENTITY_TYPES } from './entity.js';
+import { refreshEntitySelect } from './controls/interface.js';
 import { refreshCameraTargets } from './controls/camera.js';
 
 class World {
@@ -22,6 +23,7 @@ class World {
     this.entitiesByName.set(entity.name, entity);
     this.physicalEntities.add(entity);
 
+    refreshEntitySelect();
     refreshCameraTargets();
 
     return true;

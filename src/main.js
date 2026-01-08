@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import world from './world.js';
 import { createScene, camera, renderer, scene, animateEarthAndMonth } from './scene/scene.js';
 import { Trail } from './scene/trails.js';
-import { initControls, timePaused, timeAcceleration } from './controls/interface.js';
+import { initControls, timePaused, timeAcceleration, updateEntityWidgets } from './controls/interface.js';
 import { updateCamera } from './controls/camera.js';
 import { animatePhysicalEntities } from './physics/physics.js';
 
@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
       animateEarthAndMonth(deltaTime * timeAcceleration);
       animatePhysicalEntities(deltaTime * timeAcceleration);
     }
+
+    updateEntityWidgets();
 
     updateCamera(deltaTime * timeAcceleration);
 

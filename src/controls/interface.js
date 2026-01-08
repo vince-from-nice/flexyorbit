@@ -1,3 +1,6 @@
+import world from '../world.js';
+import { scaleToKm } from '../constants.js';
+import { cartesianToPolar, polarToCartesian } from '../utils.js';
 import { displayAxis } from '../scene/scene.js';
 import { updateCannonWithParams, fireCannonball, cannonParams, cannonballMesh } from '../scene/cannon.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
@@ -6,7 +9,7 @@ import { disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect } from './camera.js'
 import { initDraggings } from './dragging.js'
-import { addSlider, addCheckbox, addCustomSelect } from './widgets.js'
+import { addSlider, addCheckbox, addCustomSelect, addPanel, addSubPanel, addReadOnly, addEditableText } from './widgets.js'
 
 export let timePaused = false;
 export let timeAcceleration = 100;
@@ -14,16 +17,22 @@ export let timeAcceleration = 100;
 let cannonLatDisplay, cannonLonDisplay, cannonAltDisplay, cannonAzDisplay, cannonElDisplay;
 let cannonLatSlider, cannonLonSlider, cannonAltSlider, cannonAzSlider, cannonElSlider;
 
+let currentEntityName = null, entityPanelContainer = null, entitySelectRef = null;
+const entityWidgets = {};
+
 export function initControls() {
 
-    createHTMLControls();
+    createInterface();
 
     initCameraControls();
 
     initDraggings();
+
+    currentEntityName = 'Moon';
+    rebuildEntityPanel();
 }
 
-function createHTMLControls() {
+function createInterface() {
     const controlsDiv = document.getElementById('controls');
     if (!controlsDiv) {
         console.error("Element #controls not found !");
@@ -38,23 +47,6 @@ function createHTMLControls() {
 
     const mainDetails = controlsDiv.querySelector('#main-controls-toggle');
 
-    function addGroup(parent, name) {
-        const details = document.createElement('details');
-        details.open = false;
-        details.classList.add('control-group');
-
-        const summary = document.createElement('summary');
-        summary.textContent = name;
-        details.appendChild(summary);
-
-        const groupDiv = document.createElement('div');
-        groupDiv.classList.add('group-content');
-        details.appendChild(groupDiv);
-        parent.appendChild(details);
-
-        return groupDiv;
-    }
-
     // Controls are closed by default on mobile
     let isMobile = false;
     if (window.innerWidth <= 768) {
@@ -66,8 +58,8 @@ function createHTMLControls() {
         mainDetails.open = true;
     }
 
-    // Time wigets    
-    const timeGroup = addGroup(contentWrapper, 'Time control');
+    // Time panel    
+    const timePanel = addPanel(contentWrapper, 'Time control');
     const timeButton = document.createElement('button');
     timeButton.textContent = 'Stop';
     timeButton.classList.add('time-button');
@@ -75,22 +67,31 @@ function createHTMLControls() {
         timePaused = !timePaused;
         timeButton.textContent = timePaused ? 'Resume' : 'Stop';
     });
-    timeGroup.appendChild(timeButton);
-    addSlider(timeGroup, 'Time acceleration', 1, 100000, timeAcceleration, value => {
+    timePanel.appendChild(timeButton);
+    addSlider(timePanel, 'Time acceleration', 1, 100000, timeAcceleration, value => {
         timeAcceleration = value;
     }, 1.0, { logarithmic: true });
-    addCheckbox(timeGroup, 'Disable Earth & Moon rotation', '', earthRotationDisabled, value => {
+    addCheckbox(timePanel, 'Disable Earth & Moon rotation', '', earthRotationDisabled, value => {
         disableEarthRotation(value);
         disableMoonRotation(value);
     });
     if (isMobile) {
-        timeGroup.parentElement.open = false;
+        timePanel.parentElement.open = false;
     } else {
-        timeGroup.parentElement.open = true;
+        timePanel.parentElement.open = true;
     }
 
-    // Cannon wigets
-    const cannonGroupDiv = addGroup(contentWrapper, 'Cannon');
+    // Entity panel
+    const entityPanel = addPanel(contentWrapper, 'Objects');
+    entitySelectRef = addCustomSelect(entityPanel, null, null, [], null,
+        name => { currentEntityName = name; rebuildEntityPanel(); }
+    );
+    entityPanelContainer = document.createElement('div');
+    entityPanel.appendChild(entityPanelContainer);
+    refreshEntitySelect();
+
+    // Cannon panel
+    const cannonGroupDiv = addPanel(contentWrapper, 'Cannon');
     [cannonLatDisplay, cannonLatSlider] = addSlider(cannonGroupDiv, 'Latitude (°)', -90, 90, cannonParams.lat, value => {
         cannonParams.lat = value;
         updateCannonWithParams();
@@ -108,8 +109,8 @@ function createHTMLControls() {
         updateCannonWithParams();
     }, 1);
 
-    // Atmosphere wigets
-    const atmoshpereGroupDiv = addGroup(contentWrapper, 'Atmosphere');
+    // Atmosphere panel
+    const atmoshpereGroupDiv = addPanel(contentWrapper, 'Atmosphere');
     addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 600, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
         setAtmosphereHeight(value);
     }, 5);
@@ -126,17 +127,17 @@ function createHTMLControls() {
     //     setAtmosphereParam2(value);
     // }, 0.1);
 
-    // Camera wigets    
-    const cameraGroup = addGroup(contentWrapper, 'Camera');
-    const cameraTargetSelect = addCustomSelect(cameraGroup, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
+    // Camera panel    
+    const cameraPanel = addPanel(contentWrapper, 'Camera');
+    const cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
         value => { switchCameraTarget(value); });
     registerCameraTargetSelect(cameraTargetSelect);
-    const cameraModeSelect = addCustomSelect(cameraGroup, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
+    const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
         value => { switchCameraMode(value); });
     registerCameraModeSelect(cameraModeSelect);
 
-    // Display wigets 
-    const displayGroup = addGroup(contentWrapper, 'Display');
+    // Display panel 
+    const displayGroup = addPanel(contentWrapper, 'Display');
     // addCustomSelect(displayGroup, 'Change cannonball trail style', null, TRAIL_STYLES, cannonballMesh.userData.trails.current.style,
     //     value => { updateTrailStyle(value); });
     addCustomSelect(displayGroup, 'Change Earth texture', null, EARTH_TEXTURES, 'assets/earth/bluemarble-5k.jpg',
@@ -145,13 +146,13 @@ function createHTMLControls() {
         displayAxis(value);
     });
 
-    // Fire control 
-    const fireGroup = addGroup(contentWrapper, 'Fire control');
-    [cannonElDisplay, cannonElSlider] = addSlider(fireGroup, 'Elevation (°)', 0, 90, cannonParams.elevation, value => {
+    // Fire control panel
+    const firePanel = addPanel(contentWrapper, 'Fire control');
+    [cannonElDisplay, cannonElSlider] = addSlider(firePanel, 'Elevation (°)', 0, 90, cannonParams.elevation, value => {
         cannonParams.elevation = value;
         updateCannonWithParams();
     }, 1);
-    addSlider(fireGroup, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, value => {
+    addSlider(firePanel, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, value => {
         cannonParams.speed = value;
     }, 0.01);
     const fireButton = document.createElement('button');
@@ -165,11 +166,11 @@ function createHTMLControls() {
             fireCannonball();
         }
     });
-    fireGroup.parentElement.open = true;
-    fireGroup.appendChild(fireButton);
+    firePanel.parentElement.open = true;
+    firePanel.appendChild(fireButton);
 }
 
-export function updateHTMLDisplays() {
+export function updateCannonWidgets() {
     if (cannonLatDisplay && cannonLatSlider) {
         cannonLatDisplay.value = cannonParams.lat.toFixed(1);
         cannonLatSlider.value = cannonParams.lat.toFixed(1);
@@ -194,5 +195,151 @@ export function updateHTMLDisplays() {
         cannonElDisplay.value = cannonParams.elevation.toFixed(0);
         cannonElSlider.value = cannonParams.elevation.toFixed(0);
         cannonElSlider.dispatchEvent(new Event('input'));
+    }
+}
+
+function rebuildEntityPanel() {
+    entityPanelContainer.innerHTML = '';
+    if (!currentEntityName) return;
+
+    const entity = world.getEntityByName(currentEntityName);
+    if (!entity) return;
+
+    entityWidgets.current = entity;
+
+    // ── Basic ───────────────────────────────────────────────
+    const basic = addSubPanel(entityPanelContainer, 'Infos', true);
+    addReadOnly(basic, 'Type', entity.type);
+    addEditableText(basic, 'Description', entity.description, v => entity.description = v);
+    addSlider(basic, 'Mass (kg)', 1e-6, 1e12, entity.mass, v => entity.mass = v, 1, { log: true });
+    addSlider(basic, 'Drag coeff.', 0.01, 2, entity.dragCoefficient, v => entity.dragCoefficient = v, 0.01);
+    //addReadOnly(basic, 'Cross-section (m²)', entity.crossSectionArea.toExponential(2));
+
+    // ── Position ────────────────────────────────────────────
+    const posGroup = addSubPanel(entityPanelContainer, 'Position', false);
+
+    const polarGroup = addSubPanel(posGroup, 'Earth coords (lat/lon/alt)', true);
+    const pos = entity.body.position;
+    const polar = cartesianToPolar(pos);
+    entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, updateEntityPositionFromPolar, 0.1);
+    entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, updateEntityPositionFromPolar, 0.1);
+    entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 0, 500000, polar.alt, updateEntityPositionFromPolar, 1, { logarithmic: true });
+
+    const worldGroup = addSubPanel(posGroup, 'World coords (x/y/z)', true);
+    entityWidgets.posX = addReadOnly(worldGroup, 'X', pos.x.toFixed(1));
+    entityWidgets.posY = addReadOnly(worldGroup, 'Y', pos.y.toFixed(1));
+    entityWidgets.posZ = addReadOnly(worldGroup, 'Z', pos.z.toFixed(1));
+
+    // ── Velocity ────────────────────────────────────────────
+    const velGroup = addSubPanel(entityPanelContainer, 'Velocity', false);
+    entityWidgets.vx = addReadOnly(velGroup, 'Vx (km/s)', scaleToKm(entity.velocity.x).toFixed(3));
+    entityWidgets.vy = addReadOnly(velGroup, 'Vy (km/s)', scaleToKm(entity.velocity.y).toFixed(3));
+    entityWidgets.vz = addReadOnly(velGroup, 'Vz (km/s)', scaleToKm(entity.velocity.z).toFixed(3));
+    entityWidgets.speed = addReadOnly(velGroup, 'Speed (km/s)', scaleToKm(entity.velocity.length()).toFixed(3));
+
+    addCheckbox(velGroup, 'Show velocity vector', false, v => {
+        // À implémenter plus tard (flèche 3D temporaire)
+    });
+
+    // ── Accelerations ───────────────────────────────────────
+    const accGroup = addSubPanel(entityPanelContainer, 'Accelerations (km/s²)', false);
+    const fmt = v => v.toExponential(2);
+
+    entityWidgets.totalAcc = addReadOnly(accGroup, 'Total', fmt(scaleToKm(entity.accelerations.total.length())));
+    entityWidgets.gravAcc = addReadOnly(accGroup, '→ Gravity', fmt(scaleToKm(entity.accelerations.gravity.length())));
+    entityWidgets.dragAcc = addReadOnly(accGroup, '→ Drag', fmt(scaleToKm(entity.accelerations.friction.length())));
+
+    addCheckbox(accGroup, 'Show acceleration vector', false, v => { /* futur */ });
+
+    // ── Trail config ───────────────────────────────────────────────
+    const trailGroup = addSubPanel(entityPanelContainer, 'Trail display', false);
+
+    const hasTrail = !!entity.trail;
+    entityWidgets.trailEnabled = addCheckbox(trailGroup, 'Enabled', hasTrail, enabled => {
+        if (enabled && !entity.trail) {
+            entity.trail = createTrailForEntity(entity); // fonction à créer dans trails.js
+        } else if (!enabled && entity.trail) {
+            entity.trail.dispose?.();
+            entity.trail = null;
+        }
+    });
+
+    if (hasTrail) {
+        entityWidgets.trailStyle = addCustomSelect(
+            trailGroup,
+            'Style',
+            null,
+            TRAIL_STYLES,
+            entity.trail.style,
+            newStyle => entity.trail.updateTrailStyle(newStyle)
+        );
+
+        // Couleur (simplifié)
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = '#ff4444';
+        colorInput.onchange = () => {
+            const c = parseInt(colorInput.value.slice(1), 16);
+            entity.trail.setColor?.(c); // à implémenter dans Trail si besoin
+        };
+        trailGroup.appendChild(colorInput);
+    }
+}
+
+function updateEntityPositionFromPolar() {
+    if (!entityWidgets.current) return;
+    if (!entityWidgets.lat || !entityWidgets.lon || !entityWidgets.alt) {
+        return; // nasty fix for the slider init  
+    }
+    const lat = +entityWidgets.lat[0].value;
+    const lon = +entityWidgets.lon[0].value;
+    const alt = +entityWidgets.alt[0].value;
+    entityWidgets.current.body.position.copy(polarToCartesian(lat, lon, alt));
+}
+
+export function updateEntityWidgets() {
+    if (!currentEntityName) return;
+    const e = world.getEntityByName(currentEntityName);
+    if (!e) return;
+
+    // Position
+    const pos = e.body.position;
+    entityWidgets.posX.textContent = pos.x.toFixed(1);
+    entityWidgets.posY.textContent = pos.y.toFixed(1);
+    entityWidgets.posZ.textContent = pos.z.toFixed(1);
+    const polarPos = cartesianToPolar(pos);
+    entityWidgets.lat[0].value = polarPos.lat.toFixed(0);
+    entityWidgets.lon[0].value = polarPos.lon.toFixed(0);
+    entityWidgets.alt[0].value = polarPos.alt.toFixed(0);
+    entityWidgets.lat[1].value = polarPos.lat.toFixed(0);
+    entityWidgets.lon[1].value = polarPos.lon.toFixed(0);
+    entityWidgets.alt[1].value = polarPos.alt.toFixed(0);
+
+    // Speed
+    entityWidgets.vx.textContent = scaleToKm(e.velocity.x).toFixed(3);
+    entityWidgets.vy.textContent = scaleToKm(e.velocity.y).toFixed(3);
+    entityWidgets.vz.textContent = scaleToKm(e.velocity.z).toFixed(3);
+    entityWidgets.speed.textContent = scaleToKm(e.velocity.length()).toFixed(3);
+
+    // Accelerations
+    const s = scaleToKm;
+    entityWidgets.totalAcc.textContent = s(e.accelerations.total.length()).toExponential(2);
+    entityWidgets.gravAcc.textContent = s(e.accelerations.gravity.length()).toExponential(2);
+    entityWidgets.dragAcc.textContent = s(e.accelerations.friction.length()).toExponential(2);
+}
+
+export function refreshEntitySelect() {
+    if (!entitySelectRef) return;
+
+    let options = [];
+    for (const entity of world.getPhysicalEntities()) {
+        options.push({ value: entity.name, label: entity.name + " (" + entity.type + ")" })
+    }
+
+    entitySelectRef.updateOptions(options);
+
+    if (!world.getEntityByName(currentEntityName)) {
+        currentEntityName = options[0]?.value || null;
+        rebuildEntityPanel();
     }
 }

@@ -241,3 +241,80 @@ export function addCustomSelect(parentEl, labelBefore, labelAfter, options, init
         }
     };
 }
+
+export function addPanel(parent, name) {
+    const details = document.createElement('details');
+    details.open = false;
+    details.classList.add('control-group');
+
+    const summary = document.createElement('summary');
+    summary.textContent = name;
+    details.appendChild(summary);
+
+    const groupDiv = document.createElement('div');
+    groupDiv.classList.add('group-content');
+    details.appendChild(groupDiv);
+    parent.appendChild(details);
+
+    return groupDiv;
+}
+
+// Crée un sous-groupe pliable (comme les panels existants)
+export function addSubPanel(parentContainer, title, openByDefault = false) {
+    const details = document.createElement('details');
+    details.open = openByDefault;
+    details.classList.add('sub-control-group');
+
+    const summary = document.createElement('summary');
+    summary.textContent = title;
+    details.appendChild(summary);
+
+    const content = document.createElement('div');
+    content.classList.add('sub-group-content');
+    details.appendChild(content);
+
+    parentContainer.appendChild(details);
+
+    return content; // retourne le conteneur où ajouter les widgets
+}
+
+// Variante lecture seule (label + valeur fixe ou mise à jour dynamique)
+export function addReadOnly(container, labelText, initialValue) {
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('read-only-field');
+
+    const label = document.createElement('label');
+    label.textContent = labelText;
+
+    const valueSpan = document.createElement('span');
+    valueSpan.classList.add('read-only-value');
+    valueSpan.textContent = initialValue;
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(valueSpan);
+    container.appendChild(wrapper);
+
+    // Retourne l'élément à mettre à jour plus tard
+    return valueSpan;
+}
+
+// Variante texte éditable simple
+export function addEditableText(container, labelText, initialValue, onChange) {
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('text-field');
+
+    const label = document.createElement('label');
+    label.textContent = labelText;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = initialValue;
+
+    input.addEventListener('change', () => onChange?.(input.value));
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(input);
+    container.appendChild(wrapper);
+
+    return input;
+}
