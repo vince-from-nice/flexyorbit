@@ -4,7 +4,7 @@ import { ENTITY_TYPES, Entity } from '../entity.js';
 import { EARTH_RADIUS, GLOBAL_SCALE, scaleFromKm } from '../constants.js';
 import { scene } from './scene.js';
 import { earth } from './earth.js';
-import { TRAIL_STYLES, Trail } from './trails.js';
+import { Trail } from './trails.js';
 
 export let cannonGroup, cannonballMesh;
 
@@ -206,7 +206,7 @@ function createCannonball(cannonGroup) {
     const cannonballEntity = new Entity(ENTITY_TYPES.CANNONBALL,
         "Cannonball #" + cannonGroup.userData.fireCounter,
         cannonballMesh,
-        {trail: new Trail("TRAIL_STYLE_WITH_VERTICAL_BARS")});
+        {trail: new Trail(true, "TRAIL_STYLE_WITH_VERTICAL_BARS")});
     return cannonballEntity;
 }
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-
+import { Trail } from './scene/trails.js';
 
 export const ENTITY_TYPES = {
   CANNONBALL: 'cannonball',
@@ -31,7 +31,7 @@ export class Entity {
     // this.initialPosition = options?.initialPosition || this.body.position.clone();
     // this.initialVelocity = options?.initialVelocity || this.velocity.clone();
 
-    this.trail = options?.trail || null;
+    this.trail = options?.trail || new Trail();
 
     this.accelerations = {
       total: new THREE.Vector3(),

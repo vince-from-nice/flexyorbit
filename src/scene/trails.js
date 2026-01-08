@@ -13,34 +13,51 @@ export const TRAIL_STYLES = [
     { value: 'TRAIL_STYLE_WITH_VERTICAL_BARS', label: '3D vertical bars' },
 ];
 
-const MAX_PAST_TRAILS = 10;
 const FRAMES_NBR_BETWEEN_UPDATES = 3;
 const UPDATES_NBR_BETWEEN_BARS = 4;
 const VERTICAL_BAR_THICKNESS = 50 // km
-const VERTICAL_BAR_FIXED_HEIGHT = 300 // km (useless when projection on Earth surface is used)
-const LINE_MAX_POINTS = 10000;
-const LINE_POINTS_LIFETIME = 120; // seconds
+const VERTICAL_BAR_FIXED_HEIGHT = 300 // km 
+const HISTORY_MAX_SIZE = 10000;
+const HISTORY_DEFAULT_LIFETIME = 10; // seconds
 
 export class Trail {
-    constructor(style) {
-        this.style = style;
+    constructor(enabled, style) {
+        this.enabled = enabled || false
+        this.style = style || "TRAIL_STYLE_WITH_SINGLE_LINES";
         this.history = [];
+        this.color = '#cb44c0';
+        this.lifetime = HISTORY_DEFAULT_LIFETIME;
         this.updateCounter = 0
         this.stanceCounter = 0
-        this.#initModel();
+        this.#resetModel();
     }
 
-    #initModel() {
+    #resetModel() {
+        if (this.model) {
+            if (Array.isArray(this.model)) {
+                this.model.forEach(model => {
+                    scene.remove(this.model);
+                    this.model.geometry.dispose();
+                    this.model.material.dispose();
+                })
+            }
+            scene.remove(this.model);
+            this.model.geometry.dispose();
+            this.model.material.dispose();
+        }
         if (this.style === 'TRAIL_STYLE_WITH_SINGLE_LINES') {
             const geometry = new THREE.BufferGeometry();
-            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(LINE_MAX_POINTS * 3), 3));
-            const material = new THREE.LineBasicMaterial({ color: 0xff4444, transparent: true, opacity: 0.75 });
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(HISTORY_MAX_SIZE * 3), 3));
+            const material = new THREE.LineBasicMaterial({ color: this.color, transparent: true, opacity: 0.75 });
             this.model = new THREE.Line(geometry, material);
             scene.add(this.model);
         } else if (this.style === 'TRAIL_STYLE_WITH_THICK_LINES') {
+            scene.remove(this.model);
+            this.model.geometry.dispose();
+            this.model.material.dispose();
             const geometry = new LineGeometry();
             const material = new LineMaterial({
-                color: 0xff4444,
+                color: this.color,
                 linewidth: 4.0,
                 transparent: true,
                 opacity: 0.8,
@@ -57,6 +74,8 @@ export class Trail {
     }
 
     update(obj) {
+        if (!this.enabled) return;
+
         // No need to update trail on every frame
         if (this.updateCounter < FRAMES_NBR_BETWEEN_UPDATES) {
             this.updateCounter++;
@@ -67,34 +86,33 @@ export class Trail {
 
         const now = Date.now() / 1000;
 
-        if (obj.isFreeFalling && this.history) {
-            this.history.push({
-                position: obj.body.position.clone(),
-                time: now
-            });
-            if (this.style === 'TRAIL_STYLE_WITH_SINGLE_LINES' || this.style === 'TRAIL_STYLE_WITH_THICK_LINES') {
-                while (this.history.length > 0 && now - this.history[0].time > LINE_POINTS_LIFETIME) {
-                    this.history.shift();
-                }
-                if (this.history.length > LINE_MAX_POINTS) {
-                    this.history.splice(0, this.history.length - LINE_MAX_POINTS);
-                }
-                this.#updateTrailLineGeometry();
-            } else if (this.style === 'TRAIL_STYLE_WITH_VERTICAL_BARS') {
-                if (this.stanceCounter >= UPDATES_NBR_BETWEEN_BARS) {
-                    if (this.history.length > 1) {
-                        this.stanceCounter = 0;
-                        const newBar = this.#createNewTrailBar(
-                            this.history[this.history.length - 1].position,
-                            this.history[this.history.length - 2].position,
-                            scaleFromKm(VERTICAL_BAR_THICKNESS), scaleFromKm(VERTICAL_BAR_FIXED_HEIGHT), true);
-                        scene.add(newBar);
-                    }
-                }
-                this.stanceCounter++;
+        this.history.push({
+            position: obj.body.position.clone(),
+            time: now
+        });
+
+        if (this.style === 'TRAIL_STYLE_WITH_SINGLE_LINES' || this.style === 'TRAIL_STYLE_WITH_THICK_LINES') {
+            while (this.history.length > 0 && now - this.history[0].time > this.lifetime) {
+                this.history.shift();
             }
-            console.log("Trail has been updated with " + this.history.length + " points");
+            if (this.history.length > HISTORY_MAX_SIZE) {
+                this.history.splice(0, this.history.length - HISTORY_MAX_SIZE);
+            }
+            this.#updateTrailLineGeometry();
+        } else if (this.style === 'TRAIL_STYLE_WITH_VERTICAL_BARS') {
+            if (this.stanceCounter >= UPDATES_NBR_BETWEEN_BARS) {
+                if (this.history.length > 1) {
+                    this.stanceCounter = 0;
+                    const newBar = this.#createNewTrailBar(
+                        this.history[this.history.length - 1].position,
+                        this.history[this.history.length - 2].position,
+                        scaleFromKm(VERTICAL_BAR_THICKNESS), scaleFromKm(VERTICAL_BAR_FIXED_HEIGHT), true);
+                    scene.add(newBar);
+                }
+            }
+            this.stanceCounter++;
         }
+        console.log("Trail has been updated with " + this.history.length + " points");
     }
 
     #createNewTrailBar(top1, top2, thickness, height, useProjection = false) {
@@ -146,7 +164,7 @@ export class Trail {
         geometry.computeVertexNormals();
 
         const material = new THREE.MeshStandardMaterial({
-            color: 0xff4444,
+            color: this.color,
             transparent: true,
             opacity: 0.6,
             metalness: 0.2,
@@ -197,6 +215,11 @@ export class Trail {
 
     updateTrailStyle(newStyle) {
         this.style = newStyle;
-        this.#initModel();
+        this.#resetModel();
+    }
+
+    updateTrailColor(newColor) {
+        this.color = newColor;
+        this.#resetModel();
     }
 }

@@ -254,36 +254,28 @@ function rebuildEntityPanel() {
     // ── Trail config ───────────────────────────────────────────────
     const trailGroup = addSubPanel(entityPanelContainer, 'Trail display', false);
 
-    const hasTrail = !!entity.trail;
-    entityWidgets.trailEnabled = addCheckbox(trailGroup, 'Enabled', hasTrail, enabled => {
-        if (enabled && !entity.trail) {
-            entity.trail = createTrailForEntity(entity); // fonction à créer dans trails.js
-        } else if (!enabled && entity.trail) {
-            entity.trail.dispose?.();
-            entity.trail = null;
+    entityWidgets.trailEnabled = addCheckbox(trailGroup, 'Enabled', entity.trail?.enabled, entity.trail.enabled, enabled => {
+        if (entity.trail) {
+            entity.trail.enabled = enabled;
         }
     });
 
-    if (hasTrail) {
-        entityWidgets.trailStyle = addCustomSelect(
-            trailGroup,
-            'Style',
-            null,
-            TRAIL_STYLES,
-            entity.trail.style,
-            newStyle => entity.trail.updateTrailStyle(newStyle)
-        );
-
-        // Couleur (simplifié)
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.value = '#ff4444';
-        colorInput.onchange = () => {
-            const c = parseInt(colorInput.value.slice(1), 16);
-            entity.trail.setColor?.(c); // à implémenter dans Trail si besoin
-        };
-        trailGroup.appendChild(colorInput);
-    }
+    entityWidgets.trailStyle = addCustomSelect(
+        trailGroup,
+        'Style and color',
+        null,
+        TRAIL_STYLES,
+        entity.trail.style,
+        newStyle => entity.trail.updateTrailStyle(newStyle)
+    );
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.value = entity.trail.color;
+    colorInput.onchange = () => {
+        entity.trail.updateTrailColor(colorInput.value);
+    };
+    trailGroup.appendChild(colorInput);
+    addSlider(trailGroup, 'Lifetime (seconds)', 0, 100, entity.trail.lifetime, v => entity.trail.lifetime = v, 1);
 }
 
 function updateEntityPositionFromPolar() {

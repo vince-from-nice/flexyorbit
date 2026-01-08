@@ -86,7 +86,7 @@ function initOrbitControls() {
     orbitControls.rotateSpeed = CAMERA_ORBIT_ROTATE_SPEED_BASE;
     orbitControls.panSpeed = 1.0;
     orbitControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH;
-    orbitControls.maxDistance = EARTH_RADIUS * 100;
+    orbitControls.maxDistance = scaleFromKm(1000000);
     orbitControls.enablePan = false;
 
     orbitControls.addEventListener('change', adjustOrbitControlsSpeed);
