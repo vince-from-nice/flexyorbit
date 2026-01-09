@@ -129,7 +129,7 @@ export class Trail {
             }
             this.stanceCounter++;
         }
-        console.log("Trail of " + obj.name + " has been updated with " + this.history.length + " points");
+        //console.log("Trail of " + obj.name + " has been updated with " + this.history.length + " points");
     }
 
     #createNewTrailBar(top1, top2, thickness, height, useProjection = false) {

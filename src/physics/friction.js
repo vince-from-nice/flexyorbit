@@ -4,27 +4,29 @@ import { EARTH_RADIUS, GLOBAL_SCALE } from '../constants.js';
 import { atmosphereHeightKm, atmosphereDensitySurface } from '../scene/atmosphere.js';
 
 export const TROPOSPHERE_HEIGHT_RATIO = 0.07; // Height of the troposphere / total height of the atmosphere
-export const DRAG_COEFF = 0.0004; // Magic value for now (no real computation with Cd, surface..) but it should be in obj.userData
+export const DEFAULT_DRAG_COEFF = 0.0004; // Magic value for now (no real computation with Cd, surface..) but it should be in obj.userData
 
-export function getDragAcceleration(position, velocity, name) {
-    const speedInMeterBySecond = velocity.length() * GLOBAL_SCALE * 1000;
+export function getDragAcceleration(obj) {
+    const speedInMeterBySecond = obj.velocity.length() * GLOBAL_SCALE * 1000;
     if (speedInMeterBySecond < 0.001) return new THREE.Vector3();
     
-    const density = getAirDensity(position);
+    const density = getAirDensity(obj.body.position);
     if (density <= 0) return new THREE.Vector3();
 
-    let dragMagnitude = DRAG_COEFF * density * speedInMeterBySecond * speedInMeterBySecond;
+    const dragCoefficient = obj.dragCoefficient || DEFAULT_DRAG_COEFF;
+
+    let dragMagnitude = dragCoefficient * density * speedInMeterBySecond * speedInMeterBySecond;
 
     // Need ton convert from meter to the internal unit
     dragMagnitude = dragMagnitude / (1000 * GLOBAL_SCALE);
 
-    console.log("Computing drag for " + name  + " | " 
-        + `Altitude: ${getAltitude(position).toFixed(0)} km | `
+    console.log("Computing drag for " + obj.name  + " | " 
+        + `Altitude: ${getAltitude(obj.body.position).toFixed(0)} km | `
         + `Air density: ${density.toFixed(3)} | `
         + `Speed: ${(speedInMeterBySecond).toFixed(0)} m/s | `
         + `Drag magnitude: ${dragMagnitude.toFixed(6)}`);
 
-    const dragDirection = velocity.clone().normalize().multiplyScalar(-1);
+    const dragDirection = obj.velocity.clone().normalize().multiplyScalar(-1);
 
     return dragDirection.multiplyScalar(dragMagnitude);
 }

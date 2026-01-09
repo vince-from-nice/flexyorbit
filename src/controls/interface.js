@@ -211,8 +211,8 @@ function rebuildEntityPanel() {
     const basic = addSubPanel(entityPanelContainer, 'Infos', true);
     addReadOnly(basic, 'Type', entity.type);
     addEditableText(basic, 'Description', entity.description, v => entity.description = v);
-    addSlider(basic, 'Mass (kg)', 1e-6, 1e12, entity.mass, v => entity.mass = v, 1, { log: true });
-    addSlider(basic, 'Drag coeff.', 0.01, 2, entity.dragCoefficient, v => entity.dragCoefficient = v, 0.01);
+    addSlider(basic, 'Mass (kg)', 1, 10000, entity.mass, v => entity.mass = v, 1, { logarithmic: true });
+    addSlider(basic, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, v => entity.dragCoefficient = v, 0.0001);
     //addReadOnly(basic, 'Cross-section (m²)', entity.crossSectionArea.toExponential(2));
 
     // ── Position ────────────────────────────────────────────
@@ -242,12 +242,12 @@ function rebuildEntityPanel() {
     });
 
     // ── Accelerations ───────────────────────────────────────
-    const accGroup = addSubPanel(entityPanelContainer, 'Accelerations (km/s²)', false);
+    const accGroup = addSubPanel(entityPanelContainer, 'Acceleration', false);
     const fmt = v => v.toExponential(2);
 
-    entityWidgets.totalAcc = addReadOnly(accGroup, 'Total', fmt(scaleToKm(entity.accelerations.total.length())));
-    entityWidgets.gravAcc = addReadOnly(accGroup, '→ Gravity', fmt(scaleToKm(entity.accelerations.gravity.length())));
-    entityWidgets.dragAcc = addReadOnly(accGroup, '→ Drag', fmt(scaleToKm(entity.accelerations.friction.length())));
+    entityWidgets.totalAcc = addReadOnly(accGroup, 'Total (km/s²)', fmt(scaleToKm(entity.accelerations.total.length())));
+    entityWidgets.gravAcc = addReadOnly(accGroup, '→ Gravity (km/s²)', fmt(scaleToKm(entity.accelerations.gravity.length())));
+    entityWidgets.dragAcc = addReadOnly(accGroup, '→ Drag (km/s²)', fmt(scaleToKm(entity.accelerations.friction.length())));
 
     addCheckbox(accGroup, 'Show acceleration vector', false, v => { /* futur */ });
 
@@ -275,7 +275,7 @@ function rebuildEntityPanel() {
         entity.trail.updateTrailColor(colorInput.value);
     };
     trailGroup.appendChild(colorInput);
-    addSlider(trailGroup, 'Lifetime (seconds)', 0, 100, entity.trail.lifetime, v => entity.trail.lifetime = v, 1);
+   addSlider(trailGroup, 'Lifetime (seconds)', 0, 100, entity.trail.lifetime, v => entity.trail.lifetime = v, 1);
 }
 
 function updateEntityPositionFromPolar() {
@@ -325,7 +325,7 @@ export function refreshEntitySelect() {
 
     let options = [];
     for (const entity of world.getPhysicalEntities()) {
-        options.push({ value: entity.name, label: entity.name + " (" + entity.type + ")" })
+        options.push({ value: entity.name, label: entity.name })
     }
 
     entitySelectRef.updateOptions(options);

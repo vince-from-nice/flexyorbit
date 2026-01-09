@@ -22,7 +22,7 @@ export class Entity {
 
     this.mass = options?.mass || 1;
 
-    this.dragCoefficient = options?.dragCoefficient || 0.5;
+    this.dragCoefficient = options?.dragCoefficient || 0.0004;
 
     this.isFreeFalling = options?.isFreeFalling || false;
 

@@ -11,7 +11,7 @@ export function animatePhysicalEntities(delta) {
 
       obj.accelerations.gravity = getGravitationalAcceleration(obj.body.position);
 
-      obj.accelerations.friction = getDragAcceleration(obj.body.position, obj.velocity, obj.name);
+      obj.accelerations.friction = getDragAcceleration(obj);
 
       obj.accelerations.total = obj.accelerations.gravity.clone().add(obj.accelerations.friction);
 
