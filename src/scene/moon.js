@@ -53,7 +53,7 @@ export function createMoon() {
             console.log('Moon bump map loaded and applied');
         });
 
-    const moonEntity = new Entity(ENTITY_TYPES.MOON, "Moon", moonMesh,  { trail: new Trail(true, "TRAIL_STYLE_WITH_SINGLE_LINES") });
+    const moonEntity = new Entity(ENTITY_TYPES.MOON, "Moon", moonMesh,  { trail: new Trail(true, "TRAIL_STYLE_WITH_SINGLE_LINES", '#74a9b2') });
     world.addEntity(moonEntity);
     scene.add(moonMesh);
 

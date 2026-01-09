@@ -35,8 +35,18 @@ export function checkCollisionAndHandle(obj) {
 
     obj.body.position.copy(surfaceWorldPos);
 
-    obj.body.material.color.set(0x1a1a1a);
-    obj.body.material.emissive.set(0x000000);
+    // Change body color
+    if (obj.body instanceof THREE.Group) {
+      obj.body.children.forEach(child => {
+        if (child.material) {
+          child.material.color.set(0x1a1a1a);
+          child.material.emissive.set(0x000000);
+        }
+      })
+    } else {
+      obj.body.material.color.set(0x1a1a1a);
+      obj.body.material.emissive.set(0x000000);
+    }
 
     console.log(obj.name + " has impacted !");
 

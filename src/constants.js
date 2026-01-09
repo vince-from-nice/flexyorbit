@@ -1,8 +1,10 @@
 /* Use a global scale factor (to kilometer) to avoid z-buffer issues (z-fighting) */
 export const GLOBAL_SCALE = 10; // 10 means that internal unit is 10 km
 
-export const EARTH_RADIUS_KM = 6371;
+export const EARTH_RADIUS_KM = 6371; // km
 export const EARTH_RADIUS = EARTH_RADIUS_KM / GLOBAL_SCALE;
+
+export const GM = 398600.4418 // Standard gravitational parameter in km³/s² (= G x M)
 
 
 export function scaleFromKm(value) {

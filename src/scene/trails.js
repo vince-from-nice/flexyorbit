@@ -21,11 +21,11 @@ const HISTORY_MAX_SIZE = 10000;
 const HISTORY_DEFAULT_LIFETIME = 10; // seconds
 
 export class Trail {
-    constructor(enabled, style) {
+    constructor(enabled, style, color) {
         this.enabled = enabled || false
         this.style = style || "TRAIL_STYLE_WITH_SINGLE_LINES";
         this.history = [];
-        this.color = '#cb44c0';
+        this.color = color || '#cb44c0';
         this.lifetime = HISTORY_DEFAULT_LIFETIME;
         this.model = null; // a mesh or an array of {mesh, time}
         this.updateCounter = 0

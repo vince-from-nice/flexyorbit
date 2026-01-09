@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Entity, ENTITY_TYPES } from './entity.js';
 import { refreshEntitySelect } from './controls/interface.js';
 import { refreshCameraTargets } from './controls/camera.js';
+import { createSatellite } from './scene/satellite.js';
 
 class World {
   constructor() {
@@ -51,25 +52,29 @@ class World {
     }
   }
 
-  // init() {
-  //   // Moon
-  //   const moonMesh = createMoonMesh(); 
-  //   const moon = new Entity(
-  //     ENTITY_TYPES.MOON,
-  //     'Moon',
-  //     moonMesh,
-  //     {
-  //       mass: 7.342e22,
-  //       description: 'Lune naturelle',
-  //       initialPosition: new THREE.Vector3(384_400_000, 0, 0),
-  //       initialVelocity: new THREE.Vector3(0, 0, 1022),
-  //       isFreeFalling: true
-  //     }
-  //   );
-  //   this.addEntity(moon);
-  //   return this;
-  // }
-  //
+  init() {
+    // Add the Moon
+    // const moonMesh = createMoonMesh(); 
+    // const moon = new Entity(
+    //   ENTITY_TYPES.MOON,
+    //   'Moon',
+    //   moonMesh,
+    //   {
+    //     mass: 7.342e22,
+    //     description: 'Lune naturelle',
+    //     initialPosition: new THREE.Vector3(384_400_000, 0, 0),
+    //     initialVelocity: new THREE.Vector3(0, 0, 1022),
+    //     isFreeFalling: true
+    //   }
+    // );
+    // this.addEntity(moon);
+    // return this;
+
+    // Add satellites
+    this.addEntity(createSatellite('Satellite-1', 550, 0, 0, 90)); // Equatorial orbit
+    this.addEntity(createSatellite('Satellite-2', 550, 0, 0, 0)); // Polar orbit
+  }
+
   // pause() { this.isPaused = true; }
   // resume() { this.isPaused = false; }
   // setTimeScale(scale) { this.timeScale = Math.max(0.1, scale); }

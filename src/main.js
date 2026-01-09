@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   createScene(document.body);
 
+  world.init();
+
   initControls();
 
   const clock = new THREE.Clock();
