@@ -89,6 +89,29 @@ function createInterface() {
     entityPanelContainer = document.createElement('div');
     entityPanel.appendChild(entityPanelContainer);
     refreshEntitySelect();
+    if (isMobile) {
+        entityPanel.parentElement.open = false;
+    } else {
+        entityPanel.parentElement.open = true;
+    }
+
+    // Atmosphere panel
+    const atmoshpereGroupDiv = addPanel(contentWrapper, 'Atmosphere');
+    addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 600, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
+        setAtmosphereHeight(value);
+    }, 5);
+    addSlider(atmoshpereGroupDiv, 'Density at sea level (kg/m³)', 0.0, 2.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
+        setAtmosphereDensity(value);
+    }, 0.01);
+    // addSlider(atmoshpereGroupDiv, 'Opacity', 0.0, 1.0, 0.7, value => {
+    //     setAtmosphereOpacity(value);
+    // }, 0.1);
+    // addSlider(atmoshpereGroupDiv, 'PowFactor', 0.0, 10.0, 2.0, value => {
+    //     setAtmosphereParam1(value);
+    // }, 0.1);
+    // addSlider(atmoshpereGroupDiv, 'Multiplier', 0.0, 10.0, 5.0, value => {
+    //     setAtmosphereParam2(value);
+    // }, 0.1);
 
     // Cannon panel
     const cannonGroupDiv = addPanel(contentWrapper, 'Cannon');
@@ -108,24 +131,6 @@ function createInterface() {
         cannonParams.azimuth = value;
         updateCannonWithParams();
     }, 1);
-
-    // Atmosphere panel
-    const atmoshpereGroupDiv = addPanel(contentWrapper, 'Atmosphere');
-    addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 600, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
-        setAtmosphereHeight(value);
-    }, 5);
-    addSlider(atmoshpereGroupDiv, 'Density at sea level (kg/m³)', 0.0, 2.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
-        setAtmosphereDensity(value);
-    }, 0.01);
-    // addSlider(atmoshpereGroupDiv, 'Opacity', 0.0, 1.0, 0.7, value => {
-    //     setAtmosphereOpacity(value);
-    // }, 0.1);
-    // addSlider(atmoshpereGroupDiv, 'PowFactor', 0.0, 10.0, 2.0, value => {
-    //     setAtmosphereParam1(value);
-    // }, 0.1);
-    // addSlider(atmoshpereGroupDiv, 'Multiplier', 0.0, 10.0, 5.0, value => {
-    //     setAtmosphereParam2(value);
-    // }, 0.1);
 
     // Camera panel    
     const cameraPanel = addPanel(contentWrapper, 'Camera');
@@ -207,12 +212,13 @@ function rebuildEntityPanel() {
 
     entityWidgets.current = entity;
 
-    // ── Basic ───────────────────────────────────────────────
-    const basic = addSubPanel(entityPanelContainer, 'Infos', true);
-    addReadOnly(basic, 'Type', entity.type);
-    addEditableText(basic, 'Description', entity.description, v => entity.description = v);
-    addSlider(basic, 'Mass (kg)', 1, 10000, entity.mass, v => entity.mass = v, 1, { logarithmic: true });
-    addSlider(basic, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, v => entity.dragCoefficient = v, 0.0001);
+    // ── Infos ───────────────────────────────────────────────
+    const infosGroup = addSubPanel(entityPanelContainer, 'Infos', false);
+    addReadOnly(infosGroup, 'Type', entity.type);
+    addReadOnly(infosGroup, 'Status', entity.isFreeFalling ? 'Flying' : 'Crashed');
+    addEditableText(infosGroup, 'Description', entity.description, v => entity.description = v);
+    addSlider(infosGroup, 'Mass (kg)', 1, 10000, entity.mass, v => entity.mass = v, 1, { logarithmic: true });
+    addSlider(infosGroup, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, v => entity.dragCoefficient = v, 0.0001);
     //addReadOnly(basic, 'Cross-section (m²)', entity.crossSectionArea.toExponential(2));
 
     // ── Position ────────────────────────────────────────────
@@ -226,9 +232,9 @@ function rebuildEntityPanel() {
     entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 0, 500000, polar.alt, updateEntityPositionFromPolar, 1, { logarithmic: true });
 
     const worldGroup = addSubPanel(posGroup, 'World coords (x/y/z)', true);
-    entityWidgets.posX = addReadOnly(worldGroup, 'X', pos.x.toFixed(1));
-    entityWidgets.posY = addReadOnly(worldGroup, 'Y', pos.y.toFixed(1));
-    entityWidgets.posZ = addReadOnly(worldGroup, 'Z', pos.z.toFixed(1));
+    entityWidgets.posX = addReadOnly(worldGroup, 'X (km)', scaleToKm(pos.x).toFixed(0));
+    entityWidgets.posY = addReadOnly(worldGroup, 'Y (km)', scaleToKm(pos.y).toFixed(0));
+    entityWidgets.posZ = addReadOnly(worldGroup, 'Z (km)', scaleToKm(pos.z).toFixed(0));
 
     // ── Velocity ────────────────────────────────────────────
     const velGroup = addSubPanel(entityPanelContainer, 'Velocity', false);
@@ -248,6 +254,7 @@ function rebuildEntityPanel() {
     entityWidgets.totalAcc = addReadOnly(accGroup, 'Total (km/s²)', fmt(scaleToKm(entity.accelerations.total.length())));
     entityWidgets.gravAcc = addReadOnly(accGroup, '→ Gravity (km/s²)', fmt(scaleToKm(entity.accelerations.gravity.length())));
     entityWidgets.dragAcc = addReadOnly(accGroup, '→ Drag (km/s²)', fmt(scaleToKm(entity.accelerations.friction.length())));
+    entityWidgets.engineAcc = addReadOnly(accGroup, '→ Engine (km/s²)', fmt(scaleToKm(entity.accelerations.engine.length())));
 
     addCheckbox(accGroup, 'Show acceleration vector', false, v => { /* futur */ });
 
@@ -275,7 +282,7 @@ function rebuildEntityPanel() {
         entity.trail.updateTrailColor(colorInput.value);
     };
     trailGroup.appendChild(colorInput);
-   addSlider(trailGroup, 'Lifetime (seconds)', 0, 100, entity.trail.lifetime, v => entity.trail.lifetime = v, 1);
+    addSlider(trailGroup, 'Lifetime (seconds)', 0, 100, entity.trail.lifetime, v => entity.trail.lifetime = v, 1);
 }
 
 function updateEntityPositionFromPolar() {
