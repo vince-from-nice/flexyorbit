@@ -87,6 +87,7 @@ function createInterface() {
     entityPanel.appendChild(entityPanelContainer);
     //currentEntityName = 'Satellite-1';
     refreshEntitySelect();
+ 
     if (isMobile) {
         entityPanel.parentElement.open = false;
     } else {
@@ -225,9 +226,9 @@ function rebuildEntityPanel() {
     const polarGroup = addSubPanel(posGroup, 'Earth coords', true);
     const pos = entity.body.position;
     const polar = cartesianToPolar(pos);
-    entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, updateEntityPositionFromPolar, 0.1);
-    entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, updateEntityPositionFromPolar, 0.1);
-    entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 1, 500000, polar.alt, updateEntityPositionFromPolar, 1, { logarithmic: false });
+    entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, updateEntityLat, 0.1);
+    entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, updateEntityLon, 0.1);
+    entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 1, 500000, polar.alt, updateEntityAlt, 1, { logarithmic: true });
 
     const worldGroup = addSubPanel(posGroup, 'World coords', true);
     entityWidgets.posX = addReadOnly(worldGroup, 'X (km)', scaleToKm(pos.x).toFixed(0));
@@ -281,17 +282,30 @@ function rebuildEntityPanel() {
     };
     trailGroup.appendChild(colorInput);
     addSlider(trailGroup, 'Lifetime (seconds)', 0, 100, entity.trail.lifetime, v => entity.trail.lifetime = v, 1);
-}
 
-function updateEntityPositionFromPolar() {
-    if (!entityWidgets.current) return;
-    if (!entityWidgets.lat || !entityWidgets.lon || !entityWidgets.alt) {
-        return; // nasty fix for the slider init  
+    function updateEntityLat(value) {
+        const entity = entityWidgets.current;
+        if (!entity) return;
+        const polar = cartesianToPolar(entity.body.position);
+        polar.lat = value;
+        entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
     }
-    const lat = +entityWidgets.lat[0].value;
-    const lon = +entityWidgets.lon[0].value;
-    const alt = +entityWidgets.alt[0].value;
-    entityWidgets.current.body.position.copy(polarToCartesian(lat, lon, alt));
+
+    function updateEntityLon(value) {
+        const entity = entityWidgets.current;
+        if (!entity) return;
+        const polar = cartesianToPolar(entity.body.position);
+        polar.lon = value;
+        entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
+    }
+
+    function updateEntityAlt(value) {
+        const entity = entityWidgets.current;
+        if (!entity) return;
+        const polar = cartesianToPolar(entity.body.position);
+        polar.alt = value;
+        entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
+    }
 }
 
 export function updateEntityWidgets() {
