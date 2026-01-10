@@ -17,7 +17,7 @@ export let timeAcceleration = 100;
 let cannonLatDisplay, cannonLonDisplay, cannonAltDisplay, cannonAzDisplay, cannonElDisplay;
 let cannonLatSlider, cannonLonSlider, cannonAltSlider, cannonAzSlider, cannonElSlider;
 
-let currentEntityName = null, entityPanelContainer = null, entitySelectRef = null;
+let currentEntityName, entityPanelContainer = null, entitySelectRef = null;
 const entityWidgets = {};
 
 export function initControls() {
@@ -27,9 +27,6 @@ export function initControls() {
     initCameraControls();
 
     initDraggings();
-
-    currentEntityName = 'Moon';
-    rebuildEntityPanel();
 }
 
 function createInterface() {
@@ -83,16 +80,17 @@ function createInterface() {
 
     // Entity panel
     const entityPanel = addPanel(contentWrapper, 'Objects');
-    entitySelectRef = addCustomSelect(entityPanel, null, null, [], null,
+    entitySelectRef = addCustomSelect(entityPanel, null, null, [], 'Satellite-1',
         name => { currentEntityName = name; rebuildEntityPanel(); }
     );
     entityPanelContainer = document.createElement('div');
     entityPanel.appendChild(entityPanelContainer);
+    //currentEntityName = 'Satellite-1';
     refreshEntitySelect();
     if (isMobile) {
         entityPanel.parentElement.open = false;
     } else {
-        entityPanel.parentElement.open = true;
+        entityPanel.parentElement.open = false;
     }
 
     // Atmosphere panel
@@ -222,16 +220,16 @@ function rebuildEntityPanel() {
     //addReadOnly(basic, 'Cross-section (m²)', entity.crossSectionArea.toExponential(2));
 
     // ── Position ────────────────────────────────────────────
-    const posGroup = addSubPanel(entityPanelContainer, 'Position', false);
+    const posGroup = addSubPanel(entityPanelContainer, 'Position', true);
 
-    const polarGroup = addSubPanel(posGroup, 'Earth coords (lat/lon/alt)', true);
+    const polarGroup = addSubPanel(posGroup, 'Earth coords', true);
     const pos = entity.body.position;
     const polar = cartesianToPolar(pos);
     entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, updateEntityPositionFromPolar, 0.1);
     entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, updateEntityPositionFromPolar, 0.1);
-    entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 0, 500000, polar.alt, updateEntityPositionFromPolar, 1, { logarithmic: true });
+    entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 1, 500000, polar.alt, updateEntityPositionFromPolar, 1, { logarithmic: false });
 
-    const worldGroup = addSubPanel(posGroup, 'World coords (x/y/z)', true);
+    const worldGroup = addSubPanel(posGroup, 'World coords', true);
     entityWidgets.posX = addReadOnly(worldGroup, 'X (km)', scaleToKm(pos.x).toFixed(0));
     entityWidgets.posY = addReadOnly(worldGroup, 'Y (km)', scaleToKm(pos.y).toFixed(0));
     entityWidgets.posZ = addReadOnly(worldGroup, 'Z (km)', scaleToKm(pos.z).toFixed(0));
@@ -303,15 +301,15 @@ export function updateEntityWidgets() {
 
     // Position
     const pos = e.body.position;
-    entityWidgets.posX.textContent = pos.x.toFixed(1);
-    entityWidgets.posY.textContent = pos.y.toFixed(1);
-    entityWidgets.posZ.textContent = pos.z.toFixed(1);
+    entityWidgets.posX.textContent = scaleToKm(pos.x).toFixed(0);
+    entityWidgets.posY.textContent = scaleToKm(pos.y).toFixed(0);
+    entityWidgets.posZ.textContent = scaleToKm(pos.z).toFixed(0);
     const polarPos = cartesianToPolar(pos);
-    entityWidgets.lat[0].value = polarPos.lat.toFixed(0);
-    entityWidgets.lon[0].value = polarPos.lon.toFixed(0);
+    entityWidgets.lat[0].value = polarPos.lat.toFixed(1);
+    entityWidgets.lon[0].value = polarPos.lon.toFixed(1);
     entityWidgets.alt[0].value = polarPos.alt.toFixed(0);
-    entityWidgets.lat[1].value = polarPos.lat.toFixed(0);
-    entityWidgets.lon[1].value = polarPos.lon.toFixed(0);
+    entityWidgets.lat[1].value = polarPos.lat.toFixed(1);
+    entityWidgets.lon[1].value = polarPos.lon.toFixed(1);
     entityWidgets.alt[1].value = polarPos.alt.toFixed(0);
 
     // Speed

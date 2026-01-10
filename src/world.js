@@ -73,6 +73,7 @@ class World {
     // Add satellites
     this.addEntity(createSatellite('Satellite-1', 550, 0, 0, 90)); // Equatorial orbit
     this.addEntity(createSatellite('Satellite-2', 550, 0, 0, 0)); // Polar orbit
+    this.addEntity(createSatellite('Satellite-3', 550, 0, 0, 45)); 
   }
 
   // pause() { this.isPaused = true; }
