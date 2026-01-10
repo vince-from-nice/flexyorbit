@@ -259,7 +259,6 @@ export function addPanel(parent, name) {
     return groupDiv;
 }
 
-// Crée un sous-groupe pliable (comme les panels existants)
 export function addSubPanel(parentContainer, title, openByDefault = false) {
     const details = document.createElement('details');
     details.open = openByDefault;
@@ -275,11 +274,10 @@ export function addSubPanel(parentContainer, title, openByDefault = false) {
 
     parentContainer.appendChild(details);
 
-    return content; // retourne le conteneur où ajouter les widgets
+    return content;
 }
 
-// Variante lecture seule (label + valeur fixe ou mise à jour dynamique)
-export function addReadOnly(container, labelText, initialValue) {
+export function addReadOnly(container, labelText, initialValue, color = '#0f9') {
     const wrapper = document.createElement('div');
     wrapper.classList.add('read-only-field');
 
@@ -289,16 +287,15 @@ export function addReadOnly(container, labelText, initialValue) {
     const valueSpan = document.createElement('span');
     valueSpan.classList.add('read-only-value');
     valueSpan.textContent = initialValue;
+    valueSpan.style.color = color;
 
     wrapper.appendChild(label);
     wrapper.appendChild(valueSpan);
     container.appendChild(wrapper);
 
-    // Retourne l'élément à mettre à jour plus tard
     return valueSpan;
 }
 
-// Variante texte éditable simple
 export function addEditableText(container, labelText, initialValue, onChange) {
     const wrapper = document.createElement('div');
     wrapper.classList.add('text-field');

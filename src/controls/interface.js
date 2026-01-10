@@ -214,7 +214,7 @@ function rebuildEntityPanel() {
     // ── Infos ───────────────────────────────────────────────
     const infosGroup = addSubPanel(entityPanelContainer, 'Infos', false);
     addReadOnly(infosGroup, 'Type', entity.type);
-    addReadOnly(infosGroup, 'Status', entity.isFreeFalling ? 'Flying' : 'Crashed');
+    addReadOnly(infosGroup, 'Status', entity.isFreeFalling ? 'Flying' : 'Crashed', entity.isFreeFalling ? 'rgba(119, 207, 119, 1)' : '#f44');
     addEditableText(infosGroup, 'Description', entity.description, v => entity.description = v);
     addSlider(infosGroup, 'Mass (kg)', 1, 10000, entity.mass, v => entity.mass = v, 1, { logarithmic: true });
     addSlider(infosGroup, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, v => entity.dragCoefficient = v, 0.0001);
