@@ -319,7 +319,7 @@ export function updateEntityWidgets() {
     if (!e) return;
 
     entityWidgets.status.textContent = e.isFreeFalling ? 'Flying' : 'Crashed';
-    entityWidgets.status.style.color= e.isFreeFalling ? 'rgba(37, 233, 40, 1)' : '#f44';
+    entityWidgets.status.style.color = e.isFreeFalling ? 'rgba(37, 233, 40, 1)' : '#f44';
 
     // Position
     const pos = e.body.position;
@@ -332,7 +332,7 @@ export function updateEntityWidgets() {
     entityWidgets.alt[0].value = polarPos.alt.toFixed(0);
     entityWidgets.lat[1].value = polarPos.lat.toFixed(1);
     entityWidgets.lon[1].value = polarPos.lon.toFixed(1);
-    entityWidgets.alt[1].value = polarPos.alt.toFixed(0);
+    entityWidgets.alt[1].setValue(polarPos.alt);  
 
     // Speed
     entityWidgets.vx.textContent = scaleToKm(e.velocity.x).toFixed(3);

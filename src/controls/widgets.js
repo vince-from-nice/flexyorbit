@@ -18,11 +18,38 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
     numberInput.classList.add('number-input');
     topRow.appendChild(numberInput);
 
-    const logarithmic = options.logarithmic || false;
-
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.classList.add('custom-slider');
+
+    slider.setValue = function (value) {
+        const numValue = parseFloat(value);
+        if (isNaN(numValue)) return;
+
+        if (this.dataset.realMin !== undefined) {  // Mode log détecté
+            const realMin = parseFloat(this.dataset.realMin);
+            const realMax = parseFloat(this.dataset.realMax);
+
+            let normalized = 0;
+            if (numValue > realMin && realMin > 0) {
+                normalized = Math.log(numValue / realMin) / Math.log(realMax / realMin);
+            }
+            this.value = Math.max(0, Math.min(1, normalized));
+        } else {
+            // Mode linéaire : clamp aux min/max du slider
+            this.value = Math.max(parseFloat(this.min), Math.min(parseFloat(this.max), numValue));
+        }
+
+        // Déclenche les events pour rafraîchissement (si besoin, comme dans updateSlider)
+        this.dispatchEvent(new Event('input'));
+        this.dispatchEvent(new Event('change'));
+    };
+
+    const logarithmic = options.logarithmic || false;
+    if (logarithmic) {
+        slider.dataset.realMin = min;
+        slider.dataset.realMax = max;
+    }
 
     if (logarithmic) {
         slider.min = 0;
