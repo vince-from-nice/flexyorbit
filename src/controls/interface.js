@@ -148,10 +148,10 @@ function createInterface() {
     let defaultMilkyWayTexture = 'assets/milkyway/solarsystemscope-8k.jpg';
     if (isMobile) {
         defaultEarthMainTexture = 'assets/earth/bluemarble-5k.jpg';
-        defaultEarthBumpTexture = 'assets/earth/bump-4k.jpg';
+        defaultEarthBumpTexture = 'none';
         defaultEarthRoughnessTexture = 'none';
         defaultMoonMainTexture = 'assets/moon/nasa-2k.jpg';
-        defaultMoonBumpTexture = 'assets/moon/bump-2k.jpg';
+        defaultMoonBumpTexture = 'none';
         defaultMilkyWayTexture = 'assets/milkyway/solarsystemscope-2k.jpg';
     }
     // Earth sub panel
