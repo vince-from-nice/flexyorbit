@@ -256,6 +256,28 @@ label {
 }
 
 /* ==========================================================================
+   LINKS
+   ========================================================================== */
+
+a {
+    color: #eee;          
+    text-decoration: underline;
+    text-decoration-color: rgba(200, 220, 255, 0.4);
+    text-decoration-thickness: 1px;
+}
+
+a:hover,
+a:focus {
+    color: #fff;
+    text-decoration-color: #88f;
+    text-decoration-thickness: 2px;
+}
+
+a:visited {
+    color: #eee;
+}
+
+/* ==========================================================================
    INPUTS
    ========================================================================== */
 
