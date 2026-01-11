@@ -17,6 +17,11 @@ export const EARTH_TEXTURES = [
     { value: 'assets/earth/solarsystemscope-8k.jpg', label: 'Solar System Scope (8K)' },
 ];
 
+export const EARTH_BUMP_TEXTURES = [
+    { value: 'assets/earth/bump-4k.jpg', label: 'Earth bump texture (4K)' },
+    { value: 'assets/earth/bump-10k.jpg', label: 'Earth bump texture (10K)' },
+];
+
 export function createEarth() {
     const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 128, 128);
 
@@ -33,17 +38,9 @@ export function createEarth() {
 
     earth.receiveShadow = true;
 
-    setEarthTexture('assets/earth/bluemarble-5k.jpg');
+    //updateEarthTexture('assets/earth/bluemarble-5k.jpg');
 
-    textureLoader.load(
-        'assets/earth/topology-bump-10k.jpg',
-        (bumpTexture) => {
-            bumpTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-            material.bumpMap = bumpTexture;
-            material.bumpScale = 20;
-            material.needsUpdate = true;
-            console.log('Earth bump map loaded and applied');
-        });
+    updateEarthBumpTexture('assets/earth/bump-4k.jpg');
 
     // Strangely, the normal map in 8k is much less beautiful than bump map in 10K !!
     // textureLoader.load(
@@ -81,19 +78,30 @@ export function createEarth() {
                     #endif
                 `);
             }
-            console.log('Earth roughness map loaded and applied');
+            console.log('Earth roughness map (4k) loaded and applied');
         }
     );
 
     scene.add(earth);
 }
 
-export function setEarthTexture(url) {
+export function updateEarthTexture(url) {
     textureLoader.load(url, (newTexture) => {
         newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
         newTexture.minFilter = THREE.LinearMipMapLinearFilter;
         earth.material.map = newTexture;
         earth.material.needsUpdate = true;
+        console.log('Earth texture (' + url + ') loaded and applied');
+    });
+}
+
+export function updateEarthBumpTexture(url) {
+    textureLoader.load(url, (bumpTexture) => {
+        bumpTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        earth.material.bumpMap = bumpTexture;
+        earth.material.bumpScale = 20;
+        earth.material.needsUpdate = true;
+        console.log('Earth bump map (' + url + ') loaded and applied');
     });
 }
 

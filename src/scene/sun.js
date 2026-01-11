@@ -21,7 +21,7 @@ export function createSun() {
     // sun.scale.set(150, 150, 1);
 
     const textureLoader = new THREE.TextureLoader();
-    textureLoader.load('assets/sun/solarsystemscope-2k.jpg', (sunTexture) => {
+    textureLoader.load('assets/sun/solarsystemscope-1k.jpg', (sunTexture) => {
         sunTexture.colorSpace = THREE.SRGBColorSpace;
 
         const sunGeometry = new THREE.SphereGeometry(SUN_RADIUS, 64, 64);

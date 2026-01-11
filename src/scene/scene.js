@@ -8,6 +8,15 @@ import { createCannon } from './cannon.js';
 
 export let scene, camera, renderer, axesGroup;
 
+const loadingManager = new THREE.LoadingManager();
+const textureLoader = new THREE.TextureLoader(loadingManager);
+
+export const MILKYWAY_TEXTURES = [
+    { value: 'assets/milkyway/solarsystemscope-2k.jpg', label: 'SolarSystemScope (2K)' },
+    { value: 'assets/milkyway/solarsystemscope-4k.jpg', label: 'SolarSystemScope (4K)' },
+    { value: 'assets/milkyway/solarsystemscope-8k.jpg', label: 'SolarSystemScope (8K)' },
+];
+
 export function createScene(container) {
   scene = new THREE.Scene();
   scene.add(new THREE.AmbientLight(0x404040, 0.4));
@@ -41,7 +50,7 @@ function createRenderer(container) {
 }
 
 function createAxis() {
-  const AXIS_LENGTH = EARTH_RADIUS * 2;
+  const AXIS_LENGTH = EARTH_RADIUS * 3;
   const origin = new THREE.Vector3(0, 0, 0);
   const headLength = AXIS_LENGTH * 0.1;
   const headWidth = headLength * 0.5;
@@ -54,21 +63,26 @@ function createAxis() {
 }
 
 function createMilkyWay() {
-  const loadingManager = new THREE.LoadingManager();
-  const textureLoader = new THREE.TextureLoader(loadingManager);
   try {
-    const envMap = textureLoader.load('assets/milkyway/solarsystemscope-8k.jpg');
-    envMap.mapping = THREE.EquirectangularReflectionMapping;
-    envMap.colorSpace = THREE.SRGBColorSpace;
-    envMap.wrapS = THREE.RepeatWrapping;
-    envMap.wrapT = THREE.RepeatWrapping;
-    envMap.repeat.set(1, 1);
-    scene.background = envMap;
-    scene.environment = envMap;
+    updateMilkyWayTexture('assets/milkyway/solarsystemscope-4k.jpg')
   } catch (err) {
     console.error("Error loading Milwy Way :", err);
     scene.background = new THREE.Color(0x050514);
   }
+}
+
+export function updateMilkyWayTexture(url) {
+  textureLoader.load(url, (newTexture) => {
+    newTexture.mapping = THREE.EquirectangularReflectionMapping;
+    newTexture.colorSpace = THREE.SRGBColorSpace;
+    newTexture.wrapS = THREE.RepeatWrapping;
+    newTexture.wrapT = THREE.RepeatWrapping;
+    newTexture.repeat.set(1, 1);
+    scene.background = newTexture;
+    scene.environment = newTexture;
+    scene.needsUpdate = true;
+    console.log('MilkyWay texture (' + url + ') loaded and applied');
+  });
 }
 
 function logRendererInfos() {

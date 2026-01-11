@@ -99,8 +99,6 @@ export function setAtmosphereDensity(newDensity) {
   atmosphereDensitySurface = newDensity;
   if (atmosphereMesh?.material) {
     atmosphereMesh.material.uniforms.atmMultiplier.value = computeMultiplierFromDensity(newDensity);
-    console.log("Atmosphere density surface: " + atmosphereDensitySurface);
-    console.log("Atmosphere atmPowFactor: " + atmosphereMesh.material.uniforms.atmMultiplier.value);
     atmosphereMesh.material.needsUpdate = true;
   }
 }

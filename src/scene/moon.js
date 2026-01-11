@@ -40,7 +40,7 @@ export function createMoon() {
             texture.minFilter = THREE.LinearMipMapLinearFilter;
             moonMesh.material.map = texture;
             moonMesh.material.needsUpdate = true;
-            console.log('Moon texture loaded and applied');
+            console.log('Moon texture (4k) loaded and applied');
         });
 
     textureLoader.load(
@@ -50,7 +50,7 @@ export function createMoon() {
             material.bumpMap = bumpTexture;
             material.bumpScale = 10;
             material.needsUpdate = true;
-            console.log('Moon bump map loaded and applied');
+            console.log('Moon bump map (5k) loaded and applied');
         });
 
     const moonEntity = new Entity(ENTITY_TYPES.MOON, "Moon", moonMesh,  { trail: new Trail(true, "TRAIL_STYLE_WITH_SINGLE_LINES", '#74a9b2') });

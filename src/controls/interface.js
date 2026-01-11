@@ -1,10 +1,10 @@
 import world from '../world.js';
 import { scaleToKm } from '../constants.js';
 import { cartesianToPolar, polarToCartesian, normalizeLongitude } from '../utils.js';
-import { displayAxis } from '../scene/scene.js';
+import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis } from '../scene/scene.js';
 import { updateCannonWithParams, fireCannonball, cannonParams, cannonballMesh } from '../scene/cannon.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
-import { EARTH_TEXTURES, earth, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
+import { EARTH_TEXTURES, EARTH_BUMP_TEXTURES, updateEarthTexture, updateEarthBumpTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
 import { disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect } from './camera.js'
@@ -143,13 +143,15 @@ function createInterface() {
 
     // Display panel 
     const displayGroup = addPanel(contentWrapper, 'Display');
-    // addCustomSelect(displayGroup, 'Change cannonball trail style', null, TRAIL_STYLES, cannonballMesh.userData.trails.current.style,
-    //     value => { updateTrailStyle(value); });
-    addCustomSelect(displayGroup, 'Change Earth texture', null, EARTH_TEXTURES, 'assets/earth/bluemarble-5k.jpg',
-        value => { setEarthTexture(value); });
     addCheckbox(displayGroup, null, 'Display referential axes', false, value => {
         displayAxis(value);
     });
+    addCustomSelect(displayGroup, 'Earth main texture', null, EARTH_TEXTURES, 'assets/earth/bluemarble-5k.jpg',
+        value => { updateEarthTexture(value); });
+    addCustomSelect(displayGroup, 'Earth bump texture', null, EARTH_BUMP_TEXTURES, 'assets/earth/bump-4k.jpg',
+        value => { updateEarthBumpTexture(value); });
+    addCustomSelect(displayGroup, 'Milky Way background', null, MILKYWAY_TEXTURES, 'assets/milkyway/solarsystemscope-4k.jpg',
+        value => { updateMilkyWayTexture(value); });
 
     // Fire control panel
     const firePanel = addPanel(contentWrapper, 'Fire control');
@@ -332,7 +334,7 @@ export function updateEntityWidgets() {
     entityWidgets.alt[0].value = polarPos.alt.toFixed(0);
     entityWidgets.lat[1].value = polarPos.lat.toFixed(1);
     entityWidgets.lon[1].value = polarPos.lon.toFixed(1);
-    entityWidgets.alt[1].setValue(polarPos.alt);  
+    entityWidgets.alt[1].setValue(polarPos.alt);
 
     // Speed
     entityWidgets.vx.textContent = scaleToKm(e.velocity.x).toFixed(3);
