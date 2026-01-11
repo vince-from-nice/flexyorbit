@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import { Trail } from './scene/trails.js';
 
 export const ENTITY_TYPES = {
-  CANNONBALL: 'cannonball',
-  SATELLITE: 'satellite',
-  SPACESHIP: 'spaceshipt',
-  ASTEROID: 'asteroid',
+  CANNONBALL: 'Cannonball',
+  SATELLITE: 'Satellite',
+  SPACESHIP: 'Spaceshipt',
+  ASTEROID: 'Asteroid',
   MOON: 'Moon'
 };
 

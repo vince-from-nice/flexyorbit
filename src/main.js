@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const clock = new THREE.Clock();
 
   function animate() {
-
-    const deltaTime = clock.getDelta();
+    // Protect huge delta when browser is inactive
+    const deltaTime = Math.min(clock.getDelta(), 1/30);
 
     if (!timePaused) {
       animateEarthAndMonth(deltaTime * timeAcceleration);

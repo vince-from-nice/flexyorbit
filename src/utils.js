@@ -21,21 +21,31 @@ export function showTemporaryMessage(text) {
 }
 
 export function cartesianToPolar(pos) {
-  const r = pos.length();
-  const alt_km = (r - EARTH_RADIUS) * GLOBAL_SCALE;
-  const lat_rad = Math.asin(pos.y / r);
-  const lat_deg = lat_rad * 180 / Math.PI;
-  const lon_rad = Math.atan2(pos.z, pos.x);
-  const lon_deg = lon_rad * 180 / Math.PI;
-  return { lat: lat_deg, lon: lon_deg, alt: alt_km };
+    const r = pos.length();
+    const alt_km = (r - EARTH_RADIUS) * GLOBAL_SCALE;
+    const lat_rad = Math.asin(pos.y / r);
+    const lat_deg = lat_rad * 180 / Math.PI;
+    const lon_rad = Math.atan2(pos.z, pos.x);
+    let lon_deg = lon_rad * 180 / Math.PI;
+    lon_deg = -lon_deg;
+    lon_deg = normalizeLongitude(lon_deg);
+    return { lat: lat_deg, lon: lon_deg, alt: alt_km };
 }
 
 export function polarToCartesian(lat_deg, lon_deg, alt_km) {
-  const r = EARTH_RADIUS + alt_km / GLOBAL_SCALE;
-  const lat_rad = lat_deg * Math.PI / 180;
-  const lon_rad = lon_deg * Math.PI / 180;
-  const x = r * Math.cos(lat_rad) * Math.cos(lon_rad);
-  const y = r * Math.sin(lat_rad);
-  const z = r * Math.cos(lat_rad) * Math.sin(lon_rad);
-  return new THREE.Vector3(x, y, z);
+    const r = EARTH_RADIUS + alt_km / GLOBAL_SCALE;
+    const lat_rad = lat_deg * Math.PI / 180;
+    const lon_rad = lon_deg * Math.PI / 180;
+    const theta = -lon_rad;
+    const x = r * Math.cos(lat_rad) * Math.cos(theta);
+    const y = r * Math.sin(lat_rad);
+    const z = r * Math.cos(lat_rad) * Math.sin(theta);
+    return new THREE.Vector3(x, y, z);
+}
+
+export function normalizeLongitude(lon) {
+    lon = lon % 360;
+    if (lon > 180) lon -= 360;
+    if (lon < -180) lon += 360;
+    return lon;
 }

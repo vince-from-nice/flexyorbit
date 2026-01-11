@@ -218,10 +218,9 @@ export function addCustomSelect(parentEl, labelBefore, labelAfter, options, init
         get value() { return currentValue; },
         set value(v) { setValue(v); },
         // Allow an update of the option list
-        updateOptions: function (newOptions) {
+        updateOptions: function (newOptions, preferredValue = null) {
             options = newOptions;
             list.innerHTML = '';
-            // Clear existing items
             newOptions.forEach(opt => {
                 const item = document.createElement("div");
                 item.className = "custom-select-item";
@@ -232,11 +231,22 @@ export function addCustomSelect(parentEl, labelBefore, labelAfter, options, init
                 });
                 list.appendChild(item);
             });
-            // Set the current value if it still exists
-            if (newOptions.some(o => o.value === currentValue)) {
-                setValue(currentValue, false);
-            } else if (newOptions.length > 0) {
-                setValue(newOptions[0].value, true);
+            let valueToSet = null;
+            // 1. On privilégie la valeur explicitement demandée (si elle existe)
+            if (preferredValue && newOptions.some(o => o.value === preferredValue)) {
+                valueToSet = preferredValue;
+            }
+            // 2. Sinon on garde l'ancienne si toujours valide
+            else if (currentValue && newOptions.some(o => o.value === currentValue)) {
+                valueToSet = currentValue;
+            }
+            // 3. Sinon on prend la première (fallback)
+            else if (newOptions.length > 0) {
+                valueToSet = newOptions[0].value;
+            }
+            if (valueToSet !== null) {
+                const shouldTriggerChange = (valueToSet !== currentValue);
+                setValue(valueToSet, shouldTriggerChange);
             }
         }
     };

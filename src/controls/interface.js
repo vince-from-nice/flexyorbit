@@ -1,10 +1,10 @@
 import world from '../world.js';
 import { scaleToKm } from '../constants.js';
-import { cartesianToPolar, polarToCartesian } from '../utils.js';
+import { cartesianToPolar, polarToCartesian, normalizeLongitude } from '../utils.js';
 import { displayAxis } from '../scene/scene.js';
 import { updateCannonWithParams, fireCannonball, cannonParams, cannonballMesh } from '../scene/cannon.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
-import { EARTH_TEXTURES, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
+import { EARTH_TEXTURES, earth, setEarthTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
 import { disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect } from './camera.js'
@@ -17,7 +17,7 @@ export let timeAcceleration = 100;
 let cannonLatDisplay, cannonLonDisplay, cannonAltDisplay, cannonAzDisplay, cannonElDisplay;
 let cannonLatSlider, cannonLonSlider, cannonAltSlider, cannonAzSlider, cannonElSlider;
 
-let currentEntityName, entityPanelContainer = null, entitySelectRef = null;
+let currentEntityName = 'Satellite-1', entityPanelContainer = null, entitySelectRef = null;
 const entityWidgets = {};
 
 export function initControls() {
@@ -80,14 +80,15 @@ function createInterface() {
 
     // Entity panel
     const entityPanel = addPanel(contentWrapper, 'Objects');
-    entitySelectRef = addCustomSelect(entityPanel, null, null, [], 'Satellite-1',
+    entitySelectRef = addCustomSelect(entityPanel, null, null, [], null,
         name => { currentEntityName = name; rebuildEntityPanel(); }
     );
     entityPanelContainer = document.createElement('div');
     entityPanel.appendChild(entityPanelContainer);
+    //refreshEntitySelect();
     //currentEntityName = 'Satellite-1';
     refreshEntitySelect();
- 
+
     if (isMobile) {
         entityPanel.parentElement.open = false;
     } else {
@@ -214,7 +215,7 @@ function rebuildEntityPanel() {
     // ── Infos ───────────────────────────────────────────────
     const infosGroup = addSubPanel(entityPanelContainer, 'Infos', false);
     addReadOnly(infosGroup, 'Type', entity.type);
-    addReadOnly(infosGroup, 'Status', entity.isFreeFalling ? 'Flying' : 'Crashed', entity.isFreeFalling ? 'rgba(119, 207, 119, 1)' : '#f44');
+    entityWidgets.status = addReadOnly(infosGroup, 'Status', entity.isFreeFalling ? 'Flying' : 'Crashed', entity.isFreeFalling ? 'rgba(37, 233, 40, 1)' : '#f44');
     addEditableText(infosGroup, 'Description', entity.description, v => entity.description = v);
     addSlider(infosGroup, 'Mass (kg)', 1, 10000, entity.mass, v => entity.mass = v, 1, { logarithmic: true });
     addSlider(infosGroup, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, v => entity.dragCoefficient = v, 0.0001);
@@ -226,6 +227,7 @@ function rebuildEntityPanel() {
     const polarGroup = addSubPanel(posGroup, 'Earth coords', true);
     const pos = entity.body.position;
     const polar = cartesianToPolar(pos);
+    //polar.lon = normalizeLongitude(polar.lon - (earth.rotation.y * 180 / Math.PI));
     entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, updateEntityLat, 0.1);
     entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, updateEntityLon, 0.1);
     entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 1, 500000, polar.alt, updateEntityAlt, 1, { logarithmic: true });
@@ -288,6 +290,7 @@ function rebuildEntityPanel() {
         if (!entity) return;
         const polar = cartesianToPolar(entity.body.position);
         polar.lat = value;
+        //polar.lon = normalizeLongitude(polar.lon + (earth.rotation.y * 180 / Math.PI) % 360);
         entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
     }
 
@@ -296,6 +299,7 @@ function rebuildEntityPanel() {
         if (!entity) return;
         const polar = cartesianToPolar(entity.body.position);
         polar.lon = value;
+        //polar.lon = normalizeLongitude(value + (earth.rotation.y * 180 / Math.PI) % 360);
         entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
     }
 
@@ -304,6 +308,7 @@ function rebuildEntityPanel() {
         if (!entity) return;
         const polar = cartesianToPolar(entity.body.position);
         polar.alt = value;
+        //polar.lon = normalizeLongitude(polar.lon + (earth.rotation.y * 180 / Math.PI) % 360);
         entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
     }
 }
@@ -312,6 +317,9 @@ export function updateEntityWidgets() {
     if (!currentEntityName) return;
     const e = world.getEntityByName(currentEntityName);
     if (!e) return;
+
+    entityWidgets.status.textContent = e.isFreeFalling ? 'Flying' : 'Crashed';
+    entityWidgets.status.style.color= e.isFreeFalling ? 'rgba(37, 233, 40, 1)' : '#f44';
 
     // Position
     const pos = e.body.position;
@@ -347,7 +355,7 @@ export function refreshEntitySelect() {
         options.push({ value: entity.name, label: entity.name })
     }
 
-    entitySelectRef.updateOptions(options);
+    entitySelectRef.updateOptions(options, currentEntityName);
 
     if (!world.getEntityByName(currentEntityName)) {
         currentEntityName = options[0]?.value || null;
