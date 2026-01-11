@@ -10,7 +10,8 @@ const textureLoader = new THREE.TextureLoader();
 
 export const EARTH_ANGULAR_VELOCITY = 2 * Math.PI / 86164;  // Earth rotation in rad/s (real period is ~23h56m4s)
 
-export const EARTH_TEXTURES = [
+export const EARTH_MAIN_TEXTURES = [
+    { value: 'none', label: 'No texture' },
     { value: 'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg', label: 'NASA Blue Marble (4K)' },
     { value: 'assets/earth/bluemarble-5k.jpg', label: 'NASA Blue Marble (5K)' },
     { value: 'assets/earth/bluemarble-16k.jpg', label: 'NASA Blue Marble (16K)' },
@@ -18,8 +19,14 @@ export const EARTH_TEXTURES = [
 ];
 
 export const EARTH_BUMP_TEXTURES = [
-    { value: 'assets/earth/bump-4k.jpg', label: 'Earth bump texture (4K)' },
-    { value: 'assets/earth/bump-10k.jpg', label: 'Earth bump texture (10K)' },
+    { value: 'none', label: 'Nothing (no relief)' },
+    { value: 'assets/earth/bump-4k.jpg', label: 'Earth bump map (4K)' },
+    { value: 'assets/earth/bump-10k.jpg', label: 'Earth bump map (10K)' },
+];
+
+export const EARTH_ROUGHNESS_TEXTURES = [
+    { value: 'none', label: 'Nothing (no specular light)' },
+    { value: 'assets/earth/ocean-4k.png', label: 'Earth ocean map (4K)' },
 ];
 
 export function createEarth() {
@@ -38,35 +45,62 @@ export function createEarth() {
 
     earth.receiveShadow = true;
 
-    //updateEarthTexture('assets/earth/bluemarble-5k.jpg');
+    // Texture are set from the interface init
+    // updateEarthMainTexture('assets/earth/bluemarble-5k.jpg');
+    // updateEarthBumpTexture('assets/earth/bump-4k.jpg');
+    // updateEarthRoughnessTexture('assets/earth/ocean-4k.png');
 
-    updateEarthBumpTexture('assets/earth/bump-4k.jpg');
+    scene.add(earth);
+}
 
-    // Strangely, the normal map in 8k is much less beautiful than bump map in 10K !!
-    // textureLoader.load(
-    //     'assets/earth/topology-normal-8k.png',
-    //     (normalTexture) => {
-    //         normalTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    //         material.normalMap = normalTexture;
-    //         material.normalScale = new THREE.Vector2(6, 6);
-    //         material.needsUpdate = true;
-    //         console.log('Earth normal map loaded and applied');
-    //     },
-    //     undefined,
-    //     (err) => console.warn('Cannot load Earth normal map', err)
-    // );
+export function updateEarthMainTexture(value) {
+    const oldTexture = earth.material.map;
+    earth.material.map = null;
+    earth.material.needsUpdate = true;
+    if (value !== 'none') {
+        textureLoader.load(value, (newTexture) => {
+            newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            newTexture.minFilter = THREE.LinearMipMapLinearFilter;
+            newTexture.needsUpdate = true;
+            earth.material.map = newTexture;
+            earth.material.needsUpdate = true;
+            console.log('Earth main texture (' + value + ') loaded and applied');
+        });
+    }
+    if (oldTexture && oldTexture !== earth.material.map) oldTexture.dispose();
+}
 
-    textureLoader.load(
-        'assets/earth/ocean-4k.png',
-        (oceanTexture) => {
-            oceanTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-            oceanTexture.encoding = THREE.sRGBEncoding;
-            material.roughnessMap = oceanTexture;
-            material.needsUpdate = true;
+export function updateEarthBumpTexture(value) {
+    const oldTexture = earth.material.bumpMap;
+    earth.material.bumpMap = null;
+    earth.material.needsUpdate = true;
+    if (value !== 'none') {
+        textureLoader.load(value, (newTexture) => {
+            newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            earth.material.bumpMap = newTexture;
+            earth.material.bumpScale = 20;
+            earth.material.needsUpdate = true;
+            console.log('Earth bump map (' + value + ') loaded and applied');
+        });
+    }
+    if (oldTexture && oldTexture !== earth.material.bumpMap) {
+        oldTexture.dispose();
+    }
+}
+
+export function updateEarthRoughnessTexture(value) {
+    const oldTexture = earth.material.roughnessMap;
+    earth.material.roughnessMap = null;
+    earth.material.needsUpdate = true;
+    if (value !== 'none') {
+        textureLoader.load(value, (newTexture) => {
+            newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            newTexture.encoding = THREE.sRGBEncoding;
+            earth.material.roughnessMap = newTexture;
             // Insert custom roughness calculation : Thanks to https://franky-arkon-digital.medium.com/make-your-own-earth-in-three-js-8b875e281b1e
             // if the ocean map is white for the ocean, then we have to reverse the b&w values for roughness
             // We want the land to have 1.0 roughness, and the ocean to have a minimum of 0.5 roughness
-            material.onBeforeCompile = function (shader) {
+            earth.material.onBeforeCompile = function (shader) {
                 shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>', `
                     float roughnessFactor = roughness;
                     #ifdef USE_ROUGHNESSMAP
@@ -78,31 +112,13 @@ export function createEarth() {
                     #endif
                 `);
             }
-            console.log('Earth roughness map (4k) loaded and applied');
-        }
-    );
-
-    scene.add(earth);
-}
-
-export function updateEarthTexture(url) {
-    textureLoader.load(url, (newTexture) => {
-        newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        newTexture.minFilter = THREE.LinearMipMapLinearFilter;
-        earth.material.map = newTexture;
-        earth.material.needsUpdate = true;
-        console.log('Earth texture (' + url + ') loaded and applied');
-    });
-}
-
-export function updateEarthBumpTexture(url) {
-    textureLoader.load(url, (bumpTexture) => {
-        bumpTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        earth.material.bumpMap = bumpTexture;
-        earth.material.bumpScale = 20;
-        earth.material.needsUpdate = true;
-        console.log('Earth bump map (' + url + ') loaded and applied');
-    });
+            earth.material.needsUpdate = true;
+            console.log('Earth roughness map (' + value + ') loaded and applied');
+        });
+    }
+    if (oldTexture && oldTexture !== earth.material.bumpMap) {
+        oldTexture.dispose();
+    }
 }
 
 export function disableEarthRotation(value) {

@@ -12,9 +12,10 @@ const loadingManager = new THREE.LoadingManager();
 const textureLoader = new THREE.TextureLoader(loadingManager);
 
 export const MILKYWAY_TEXTURES = [
-    { value: 'assets/milkyway/solarsystemscope-2k.jpg', label: 'SolarSystemScope (2K)' },
-    { value: 'assets/milkyway/solarsystemscope-4k.jpg', label: 'SolarSystemScope (4K)' },
-    { value: 'assets/milkyway/solarsystemscope-8k.jpg', label: 'SolarSystemScope (8K)' },
+  { value: 'none', label: 'Nothing (black sky)' },
+  { value: 'assets/milkyway/solarsystemscope-2k.jpg', label: 'SolarSystemScope (2K)' },
+  { value: 'assets/milkyway/solarsystemscope-4k.jpg', label: 'SolarSystemScope (4K)' },
+  { value: 'assets/milkyway/solarsystemscope-8k.jpg', label: 'SolarSystemScope (8K)' },
 ];
 
 export function createScene(container) {
@@ -71,18 +72,25 @@ function createMilkyWay() {
   }
 }
 
-export function updateMilkyWayTexture(url) {
-  textureLoader.load(url, (newTexture) => {
-    newTexture.mapping = THREE.EquirectangularReflectionMapping;
-    newTexture.colorSpace = THREE.SRGBColorSpace;
-    newTexture.wrapS = THREE.RepeatWrapping;
-    newTexture.wrapT = THREE.RepeatWrapping;
-    newTexture.repeat.set(1, 1);
-    scene.background = newTexture;
-    scene.environment = newTexture;
-    scene.needsUpdate = true;
-    console.log('MilkyWay texture (' + url + ') loaded and applied');
-  });
+export function updateMilkyWayTexture(value) {
+  const oldTexture = scene.background;
+  if (value === 'none') {
+    scene.background = null;
+    scene.environment = null;
+  } else {
+    textureLoader.load(value, (newTexture) => {
+      newTexture.mapping = THREE.EquirectangularReflectionMapping;
+      newTexture.colorSpace = THREE.SRGBColorSpace;
+      newTexture.wrapS = THREE.RepeatWrapping;
+      newTexture.wrapT = THREE.RepeatWrapping;
+      newTexture.repeat.set(1, 1);
+      scene.background = newTexture;
+      scene.environment = newTexture;
+      console.log('MilkyWay texture (' + value + ') loaded and applied');
+    });
+  }
+  scene.needsUpdate = true;
+  if (oldTexture) oldTexture.dispose();
 }
 
 function logRendererInfos() {

@@ -19,6 +19,18 @@ export let moonMesh
 
 export let moonRotationDisabled = false
 
+export const MOON_MAIN_TEXTURES = [
+    { value: 'none', label: 'No texture' },
+    { value: 'assets/moon/nasa-2k.jpg', label: 'NASA texture (2K)' },
+    { value: 'assets/moon/nasa-4k.jpg', label: 'NASA texture (4K)' },    
+];
+
+export const MOON_BUMP_TEXTURES = [
+    { value: 'none', label: 'Nothing (no relief)' },
+    { value: 'assets/moon/bump-2k.jpg', label: 'NASA bump map (2K)' },
+    { value: 'assets/moon/bump-5k.jpg', label: 'NASA bump map (5K)' },    
+];
+
 const textureLoader = new THREE.TextureLoader();
 
 export function createMoon() {
@@ -33,25 +45,25 @@ export function createMoon() {
 
     moonMesh.receiveShadow = true;
 
-    textureLoader.load(
-        'assets/moon/nasa-4k.jpg',
-        (texture) => {
-            texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-            texture.minFilter = THREE.LinearMipMapLinearFilter;
-            moonMesh.material.map = texture;
-            moonMesh.material.needsUpdate = true;
-            console.log('Moon texture (4k) loaded and applied');
-        });
+    // textureLoader.load(
+    //     'assets/moon/nasa-4k.jpg',
+    //     (texture) => {
+    //         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    //         texture.minFilter = THREE.LinearMipMapLinearFilter;
+    //         moonMesh.material.map = texture;
+    //         moonMesh.material.needsUpdate = true;
+    //         console.log('Moon texture (4k) loaded and applied');
+    //     });
 
-    textureLoader.load(
-        'assets/moon/bump-5k.jpg',
-        (bumpTexture) => {
-            bumpTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-            material.bumpMap = bumpTexture;
-            material.bumpScale = 10;
-            material.needsUpdate = true;
-            console.log('Moon bump map (5k) loaded and applied');
-        });
+    // textureLoader.load(
+    //     'assets/moon/bump-5k.jpg',
+    //     (bumpTexture) => {
+    //         bumpTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    //         material.bumpMap = bumpTexture;
+    //         material.bumpScale = 10;
+    //         material.needsUpdate = true;
+    //         console.log('Moon bump map (5k) loaded and applied');
+    //     });
 
     const moonEntity = new Entity(ENTITY_TYPES.MOON, "Moon", moonMesh,  { trail: new Trail(true, "TRAIL_STYLE_WITH_SINGLE_LINES", '#74a9b2') });
     world.addEntity(moonEntity);
@@ -67,6 +79,41 @@ export function createMoon() {
     moonEntity.velocity = initialDirection.multiplyScalar(initialSpeed)
 
     return moonMesh;
+}
+
+export function updateMoonMainTexture(value) {
+    const oldTexture = moonMesh.material.map;
+    moonMesh.material.map = null;
+    moonMesh.material.needsUpdate = true;
+    if (value !== 'none') {
+        textureLoader.load(value, (newTexture) => {
+            newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            newTexture.minFilter = THREE.LinearMipMapLinearFilter;
+            newTexture.needsUpdate = true;
+            moonMesh.material.map = newTexture;
+            moonMesh.material.needsUpdate = true;
+            console.log('Moon main texture (' + value + ') loaded and applied');
+        });
+    }
+    if (oldTexture && oldTexture !== moonMesh.material.map) oldTexture.dispose();
+}
+
+export function updateMoonBumpTexture(value) {
+    const oldTexture = moonMesh.material.bumpMap;
+    moonMesh.material.bumpMap = null;
+    moonMesh.material.needsUpdate = true;
+    if (value !== 'none') {
+        textureLoader.load(value, (newTexture) => {
+            newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            moonMesh.material.bumpMap = newTexture;
+            moonMesh.material.bumpScale = 20;
+            moonMesh.material.needsUpdate = true;
+            console.log('Moon bump map (' + value + ') loaded and applied');
+        });
+    }
+    if (oldTexture && oldTexture !== moonMesh.material.bumpMap) {
+        oldTexture.dispose();
+    }
 }
 
 export function disableMoonRotation(value) {

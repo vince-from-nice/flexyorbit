@@ -14,7 +14,7 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
     numberInput.min = min;
     numberInput.max = max;
     numberInput.step = step;
-    numberInput.value = initial;  // garde la précision initiale
+    numberInput.value = initial;
     numberInput.classList.add('number-input');
     topRow.appendChild(numberInput);
 
@@ -26,7 +26,7 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
         const numValue = parseFloat(value);
         if (isNaN(numValue)) return;
 
-        if (this.dataset.realMin !== undefined) {  // Mode log détecté
+        if (this.dataset.realMin !== undefined) { 
             const realMin = parseFloat(this.dataset.realMin);
             const realMax = parseFloat(this.dataset.realMax);
 
@@ -36,11 +36,9 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
             }
             this.value = Math.max(0, Math.min(1, normalized));
         } else {
-            // Mode linéaire : clamp aux min/max du slider
             this.value = Math.max(parseFloat(this.min), Math.min(parseFloat(this.max), numValue));
         }
 
-        // Déclenche les events pour rafraîchissement (si besoin, comme dans updateSlider)
         this.dispatchEvent(new Event('input'));
         this.dispatchEvent(new Event('change'));
     };
@@ -55,7 +53,6 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
         slider.min = 0;
         slider.max = 1;
         slider.step = 0.0001;
-        // Protection contre log(0) ou valeurs invalides
         const norm = (initial > min && min > 0)
             ? Math.log(initial / min) / Math.log(max / min)
             : 0;
@@ -64,10 +61,9 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
         slider.min = min;
         slider.max = max;
         slider.step = step;
-        slider.value = initial;  // ← position exacte dès le départ
+        slider.value = initial;
     }
 
-    // Dynamic gradient
     function updateGradient() {
         const norm = (slider.value - slider.min) / (slider.max - slider.min);
         const percent = norm * 100;
@@ -75,8 +71,6 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
     }
     slider.addEventListener('input', updateGradient);
     updateGradient();
-
-    const snapToStep = (val) => Math.round(val / step) * step;
 
     const updateFromSlider = () => {
         const norm = (slider.value - slider.min) / (slider.max - slider.min);
@@ -86,12 +80,8 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
         } else {
             val = min + norm * (max - min);
         }
-
-        // Remplacer Math.round(val) par :
-        val = Math.round(val / step) * step;   // ← snap au pas réel (0.1, 0.01, 1...)
-
+        val = Math.round(val / step) * step;
         val = Math.max(min, Math.min(max, val));
-
         numberInput.value = val;
         onChange(val);
         updateGradient();
@@ -100,13 +90,9 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
     const updateFromNumber = () => {
         let val = parseFloat(numberInput.value);
         if (isNaN(val)) return;
-
-        // Remplacer Math.round(val) par :
-        val = Math.round(val / step) * step;   // ← même chose ici
-
+        val = Math.round(val / step) * step;
         val = Math.max(min, Math.min(max, val));
         numberInput.value = val;
-
         let norm;
         if (logarithmic) {
             norm = Math.log(val / min) / Math.log(max / min);
@@ -120,14 +106,11 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
 
     slider.addEventListener('input', updateFromSlider);
     numberInput.addEventListener('change', updateFromNumber);
-    // Optionnel : pour update live pendant la frappe
-    // numberInput.addEventListener('input', updateFromNumber);
 
     wrapper.appendChild(topRow);
     wrapper.appendChild(slider);
     container.appendChild(wrapper);
 
-    // Force une synchro initiale propre
     updateFromNumber();
 
     return [numberInput, slider];
