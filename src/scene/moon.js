@@ -45,26 +45,6 @@ export function createMoon() {
 
     moonMesh.receiveShadow = true;
 
-    // textureLoader.load(
-    //     'assets/moon/nasa-4k.jpg',
-    //     (texture) => {
-    //         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    //         texture.minFilter = THREE.LinearMipMapLinearFilter;
-    //         moonMesh.material.map = texture;
-    //         moonMesh.material.needsUpdate = true;
-    //         console.log('Moon texture (4k) loaded and applied');
-    //     });
-
-    // textureLoader.load(
-    //     'assets/moon/bump-5k.jpg',
-    //     (bumpTexture) => {
-    //         bumpTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    //         material.bumpMap = bumpTexture;
-    //         material.bumpScale = 10;
-    //         material.needsUpdate = true;
-    //         console.log('Moon bump map (5k) loaded and applied');
-    //     });
-
     const moonEntity = new Entity(ENTITY_TYPES.MOON, "Moon", moonMesh,  { trail: new Trail(true, "TRAIL_STYLE_WITH_SINGLE_LINES", '#74a9b2') });
     world.addEntity(moonEntity);
     scene.add(moonMesh);

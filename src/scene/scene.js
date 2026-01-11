@@ -64,12 +64,8 @@ function createAxis() {
 }
 
 function createMilkyWay() {
-  try {
-    updateMilkyWayTexture('assets/milkyway/solarsystemscope-4k.jpg')
-  } catch (err) {
-    console.error("Error loading Milwy Way :", err);
-    scene.background = new THREE.Color(0x050514);
-  }
+  scene.background = new THREE.Color(0x050514);
+  // Milky way texture is now loaded by interface init
 }
 
 export function updateMilkyWayTexture(value) {
@@ -90,7 +86,7 @@ export function updateMilkyWayTexture(value) {
     });
   }
   scene.needsUpdate = true;
-  if (oldTexture) oldTexture.dispose();
+  if (oldTexture && !oldTexture instanceof THREE.Color) oldTexture.dispose();
 }
 
 function logRendererInfos() {

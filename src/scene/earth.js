@@ -45,11 +45,6 @@ export function createEarth() {
 
     earth.receiveShadow = true;
 
-    // Texture are set from the interface init
-    // updateEarthMainTexture('assets/earth/bluemarble-5k.jpg');
-    // updateEarthBumpTexture('assets/earth/bump-4k.jpg');
-    // updateEarthRoughnessTexture('assets/earth/ocean-4k.png');
-
     scene.add(earth);
 }
 
