@@ -6,8 +6,8 @@ import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { EARTH_RADIUS, scaleFromKm, scaleToKm } from '../constants.js';
 import { camera, renderer } from '../scene/scene.js';
 import { earth } from '../scene/earth.js';
-import { moonMesh, MOON_RADIUS } from '../scene/moon.js';
-import { cannonGroup, cannonballMesh } from '../scene/cannon.js';
+import { MOON_RADIUS } from '../scene/moon.js';
+import { cannonGroup } from '../scene/cannon.js';
 
 export const CAMERA_MODES = [
     { value: 'orbit', label: 'Orbit controls (default)' },
@@ -29,11 +29,11 @@ let cameraCurrentTargetObject = null;
 let cameraCurrentTargetIndex = 0;
 let cameraTargetSelectRef = null;
 
-const CAMERA_ORBIT_ROTATE_SPEED_BASE = 0.3;
-const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN = 0.3;
+const CAMERA_ORBIT_ROTATE_SPEED_BASE = 0.6;
+const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN = 0.1;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX = 3.0;
 
-const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS + scaleFromKm(500);
+const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS + scaleFromKm(1000);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON = MOON_RADIUS + scaleFromKm(500);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromKm(0.01); // 10 meters
 
@@ -41,9 +41,9 @@ const CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH = EARTH_RADIUS * 3;
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON = MOON_RADIUS * 3;
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS = scaleFromKm(2000);
 
-const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS * 3
-const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON = MOON_RADIUS * 3
-const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.01) // 10 meters
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS * 5
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON = MOON_RADIUS * 5
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.1) // 100 meters
 
 let orbitControls = null;
 let flyControls = null;
@@ -103,9 +103,9 @@ function initFlyControls() {
 function adjustOrbitControlsSpeed() {
     const cameraDistance = camera.position.distanceTo(orbitControls.target);
     let ratioDistance;
-    if (['universe', 'earth'].includes(cameraCurrentTarget)) {
+    if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
         ratioDistance = CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH;
-    } else if (['moon'].includes(cameraCurrentTarget)) {
+    } else if (['Moon'].includes(cameraCurrentTarget)) {
         ratioDistance = CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON;
     } else {
         ratioDistance = CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS;
@@ -115,7 +115,7 @@ function adjustOrbitControlsSpeed() {
     if (scaleFactor > CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX) scaleFactor = CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX;
     orbitControls.rotateSpeed = CAMERA_ORBIT_ROTATE_SPEED_BASE * scaleFactor;
     //orbitControls.panSpeed = CAMERA_ORBIT_BASE_PAN_SPEED * scaleFactor;
-    false && console.log("orbit controls speed: "
+    true && console.log("orbit controls speed: "
         + " cameraDistance=" + scaleToKm(cameraDistance).toFixed(3) + "km"
         + " ratioDistance=" + scaleToKm(ratioDistance).toFixed(3) + "km"
         + " scaleFactor=" + scaleFactor.toFixed(2)
@@ -214,24 +214,12 @@ function repositionCameraInFrontOf(targetPos, targetType) {
         ? scaleFromKm(1.5)
         : scaleFromKm(800);
     let direction = camera.position.clone().sub(targetPos);
-    // Avoid division by zero if the camera is already exactly on the target
     if (direction.lengthSq() < 0.0001) {
         direction.set(0, 0, 1); // arbitrary direction
     }
     direction.normalize().multiplyScalar(baseOffset);
     camera.position.copy(targetPos).add(direction);
     camera.lookAt(targetPos);
-    // Some adjustments depending on the type of control
-    // if (cameraCurrentControls) {
-    //     if (cameraCurrentControls instanceof FirstPersonControls) {
-    //         cameraCurrentControls.lookAt(targetPos.x, targetPos.y, targetPos.z);
-    //     } else if (cameraCurrentControls instanceof PointerLockControls ||
-    //         cameraCurrentControls instanceof FlyControls) {
-    //         const dir = targetPos.clone().sub(camera.position).normalize();
-    //         const euler = new THREE.Euler().setFromVector3(dir, 'YXZ');
-    //         camera.quaternion.setFromEuler(euler);
-    //     }
-    // }
     cameraCurrentControls?.update?.(0);
 }
 

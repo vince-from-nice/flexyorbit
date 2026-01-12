@@ -80,11 +80,13 @@ function createInterface() {
 
     // Entity panel
     const entityPanel = addPanel(contentWrapper, 'Objects');
+    let cameraTargetSelect;
     entitySelectRef = addCustomSelect(entityPanel, null, null, [], null,
         name => { 
             currentEntityName = name;
             rebuildEntityPanel();
-            switchCameraTarget(name);
+            //switchCameraTarget(name);
+            if (cameraTargetSelect) cameraTargetSelect.value = name;
         }
     );
     entityPanelContainer = document.createElement('div');
@@ -135,12 +137,13 @@ function createInterface() {
 
     // Camera panel    
     const cameraPanel = addPanel(contentWrapper, 'Camera');
-    const cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
+    cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
         value => { switchCameraTarget(value); });
     registerCameraTargetSelect(cameraTargetSelect);
     const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
         value => { switchCameraMode(value); });
     registerCameraModeSelect(cameraModeSelect);
+    cameraTargetSelect.value = 'Earth';
 
     // Display panel 
     const displayPanel = addPanel(contentWrapper, 'Display');
