@@ -21,12 +21,12 @@ const HISTORY_MAX_SIZE = 10000;
 const HISTORY_DEFAULT_LIFETIME = 10; // seconds
 
 export class Trail {
-    constructor(enabled, style, color) {
+    constructor(enabled, style, color, lifetime = HISTORY_DEFAULT_LIFETIME) {
         this.enabled = enabled || false
         this.style = style || "TRAIL_STYLE_WITH_SINGLE_LINES";
         this.history = [];
         this.color = color || '#cb44c0';
-        this.lifetime = HISTORY_DEFAULT_LIFETIME;
+        this.lifetime = lifetime;
         this.model = null; // a mesh or an array of {mesh, time}
         this.updateCounter = 0
         this.stanceCounter = 0
@@ -55,8 +55,6 @@ export class Trail {
             scene.add(this.model);
         } else if (this.style === 'TRAIL_STYLE_WITH_THICK_LINES') {
             scene.remove(this.model);
-            this.model.geometry.dispose();
-            this.model.material.dispose();
             const geometry = new LineGeometry();
             const material = new LineMaterial({
                 color: this.color,

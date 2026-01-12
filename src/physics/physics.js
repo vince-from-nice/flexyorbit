@@ -23,8 +23,8 @@ export function animatePhysicalEntities(delta) {
 
       checkCollisionAndHandle(obj);
 
-      // Update orientation (cheat code ?)
-      obj.body.lookAt(0, 0, 0);
+      // Update orientation 
+      if (obj.name != 'moon') obj.body.lookAt(0, 0, 0); // cheat code, not torque computation !
 
       //console.log("Animate " + obj.name + " with velocity = " + scaleToKm(obj.velocity.length()).toFixed(3) + " km/s and position = " + printPos(obj.body.position));
     }

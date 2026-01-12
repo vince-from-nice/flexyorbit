@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { ENTITY_TYPES, Entity } from '../entity.js';
-import { Trail } from './trails.js';
 import { EARTH_RADIUS, EARTH_RADIUS_KM, GLOBAL_SCALE, GM, scaleFromKm } from '../constants.js';
 import { scene } from './scene.js';
 
@@ -123,23 +122,20 @@ export function createSatelliteMesh() {
   return group;
 }
 
-export function createSatellite(name, altitudeKm = 550, latitudeDeg = 0, longitudeDeg = 0, azimuthDeg = 90) {
+export function createSatellite(name, altitudeKm = 550, latitudeDeg = 0, longitudeDeg = 0, azimuthDeg = 90, trail = null) {
   const mesh = createSatelliteMesh();
 
-  // Position en unités scalées
   const radius = EARTH_RADIUS + scaleFromKm(altitudeKm);
   const latRad = THREE.MathUtils.degToRad(latitudeDeg);
   const lonRad = THREE.MathUtils.degToRad(longitudeDeg);
   const aziRad = THREE.MathUtils.degToRad(azimuthDeg);
 
-  // Position: conversion sphérique (lat/lon/alt) en cartésien
   const pos = new THREE.Vector3(
     radius * Math.cos(latRad) * Math.cos(lonRad),
     radius * Math.sin(latRad),
     radius * Math.cos(latRad) * Math.sin(lonRad)
   );
 
-  // Vitesse orbitale correcte (en km, puis scalée)
   const radiusKm = EARTH_RADIUS_KM + altitudeKm;
   const orbitalSpeedKmS = Math.sqrt(GM / radiusKm);
   const orbitalSpeed = scaleFromKm(orbitalSpeedKmS); 
@@ -163,7 +159,7 @@ export function createSatellite(name, altitudeKm = 550, latitudeDeg = 0, longitu
       dragCoefficient: 0.0002,
       isFreeFalling: true,
       velocity: velocity,
-      trail: new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES')
+      trail: trail
     }
   );
 

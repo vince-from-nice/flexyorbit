@@ -22,9 +22,9 @@ const entityWidgets = {};
 
 export function initControls() {
 
-    createInterface();
-
     initCameraControls();
+    
+    createInterface();
 
     initDraggings();
 }
@@ -81,7 +81,11 @@ function createInterface() {
     // Entity panel
     const entityPanel = addPanel(contentWrapper, 'Objects');
     entitySelectRef = addCustomSelect(entityPanel, null, null, [], null,
-        name => { currentEntityName = name; rebuildEntityPanel(); }
+        name => { 
+            currentEntityName = name;
+            rebuildEntityPanel();
+            switchCameraTarget(name);
+        }
     );
     entityPanelContainer = document.createElement('div');
     entityPanel.appendChild(entityPanelContainer);
