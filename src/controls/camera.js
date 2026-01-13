@@ -21,9 +21,7 @@ export let cameraCurrentControls = null;
 let cameraCurrentModeIndex = 0;
 let cameraModeSelectRef = null;
 
-export let CAMERA_TARGETS = [
-    //{ value: 'universe', label: 'Universe', object: null }
-];
+export let CAMERA_TARGETS = [];
 let cameraCurrentTarget = 'Earth';
 let cameraCurrentTargetObject = null;
 let cameraCurrentTargetIndex = 0;
@@ -39,7 +37,7 @@ const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromKm(0.01); // 10 meters
 
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH = EARTH_RADIUS * 3;
 const CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON = MOON_RADIUS * 3;
-const CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS = scaleFromKm(2000);
+const CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS = scaleFromKm(4000);
 
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS * 5
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON = MOON_RADIUS * 5
@@ -47,6 +45,10 @@ const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.1) // 100 meters
 
 let orbitControls = null;
 let flyControls = null;
+
+let isUserInteracting = false;
+
+const earthCenter = new THREE.Vector3(0, 0, 0);
 
 export function initCameraControls() {
     initOrbitControls();
@@ -90,6 +92,8 @@ function initOrbitControls() {
     orbitControls.enablePan = false;
 
     orbitControls.addEventListener('change', adjustOrbitControlsSpeed);
+    orbitControls.addEventListener('start', () => { isUserInteracting = true; });
+    orbitControls.addEventListener('end', () => { isUserInteracting = false; });
 }
 
 function initFlyControls() {
@@ -115,7 +119,7 @@ function adjustOrbitControlsSpeed() {
     if (scaleFactor > CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX) scaleFactor = CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX;
     orbitControls.rotateSpeed = CAMERA_ORBIT_ROTATE_SPEED_BASE * scaleFactor;
     //orbitControls.panSpeed = CAMERA_ORBIT_BASE_PAN_SPEED * scaleFactor;
-    true && console.log("orbit controls speed: "
+    false && console.log("orbit controls speed: "
         + " cameraDistance=" + scaleToKm(cameraDistance).toFixed(3) + "km"
         + " ratioDistance=" + scaleToKm(ratioDistance).toFixed(3) + "km"
         + " scaleFactor=" + scaleFactor.toFixed(2)
@@ -165,47 +169,43 @@ export function switchCameraTarget(newTarget) {
     const target = CAMERA_TARGETS.find(e => e.value === newTarget);
     cameraCurrentTargetObject = target?.object;
 
-    const position = getCurrentCameraTargetPosition();
+    if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
+        cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH;
+    } else if (['Moon'].includes(cameraCurrentTarget)) {
+        cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON;
+    } else {
+        cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS;
+    }
+
+    const newPosition = getCurrentCameraTargetPosition();
 
     if (['orbit', 'map'].includes(cameraCurrentMode) && cameraCurrentControls) {
-        cameraCurrentControls.target.copy(position);
-        repositionCameraAlignedWithEarthAndTarget(position, newTarget);
+        cameraCurrentControls.target.copy(newPosition);
+        repositionCameraAlignedWithEarthAndTarget(newPosition);
     } else {
-        repositionCameraInFrontOf(position, newTarget);
+        repositionCameraInFrontOf(newPosition, newTarget);
     }
 
     cameraCurrentControls.update();
 
     showTemporaryMessage("Camera target has changed to " + target?.label);
 
-    console.log("Camera target has switched to " + newTarget + " with position " + printPos(cameraCurrentControls.target));
+    //console.log("Camera target has switched to " + newTarget + " with position " + printPos(newPosition));
 }
 
 // Repositions camera so that Earth center, target and camera are on the same line
 function repositionCameraAlignedWithEarthAndTarget(targetPos) {
-    const earthCenter = new THREE.Vector3(0, 0, 0);
-    const targetAlt = targetPos.distanceTo(earthCenter);
-    let newDistance, newDirection;
+    let newDirection;
     if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
-        cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH;
-        newDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH;
-    } else if (['Moon'].includes(cameraCurrentTarget)) {
-        cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON;
-        newDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON;
-    } else {
-        cameraCurrentControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS;
-        newDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS;
-    }
-    // When the target is earth or universe a hard direction is used
-    if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
-        newDirection = new THREE.Vector3(0, 0, 1)
-        //newDirection = camera.position.clone().sub(earthCenter).normalize();
+        //newDirection = new THREE.Vector3(0, 0, 1); // When the target itself is earth (or universe) use an arbitratry direciton ?
+        newDirection = camera.position.clone().sub(earthCenter).normalize();
     } else {
         newDirection = targetPos.clone().sub(earthCenter).normalize();
     }
+    const newDistance = getCameraDistanceByTarget(targetPos)
     const newPosition = newDirection.multiplyScalar(newDistance);
-    camera.position.copy(newPosition);
-    camera.lookAt(earthCenter);
+    camera.position.lerp(newPosition, 0.05);
+    camera.lookAt(targetPos);
     //console.log(`Aligned camera → ${cameraCurrentTarget} → Earth center | cam dist=${scaleToKm(newDistance).toFixed(0)} km | target alt=${scaleToKm(targetAlt).toFixed(0)} km`);
 }
 
@@ -223,7 +223,7 @@ function repositionCameraInFrontOf(targetPos, targetType) {
     cameraCurrentControls?.update?.(0);
 }
 
-export function updateCameraTargetFollow(delta) {
+export function updateCameraToFollowTarget(delta) {
     if (!cameraCurrentControls) return;
     const targetPos = getCurrentCameraTargetPosition();
     const isLargeTarget = ['Universe', 'Earth'].includes(cameraCurrentTarget);
@@ -232,6 +232,9 @@ export function updateCameraTargetFollow(delta) {
     // For orbital mode : follow the target smoothly
     if (isOrbital) {
         cameraCurrentControls.target.lerp(targetPos, 0.12);
+        if (!isUserInteracting) {
+            repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target);
+        }
     }
     // For non orbital modes : classic chase camera 
     else {
@@ -240,37 +243,6 @@ export function updateCameraTargetFollow(delta) {
         // const desiredPos = targetPos.clone().add(currentDir.multiplyScalar(desiredDistance));
         // camera.position.lerp(desiredPos, 0.10);
         // camera.lookAt(targetPos);
-    }
-
-    // TOFIX: Follow target rotation
-    if (isOrbital && cameraCurrentTargetObject) {
-        // Update directly the quaternion doesn't work 
-        //console.log("Camera quaternion before: " + camera.quaternion.x + " " + camera.quaternion.y + " " + camera.quaternion.z + " " + camera.quaternion.w);
-        //camera.quaternion.copy(cameraCurrentTargetObject.quaternion);
-        //console.log("Camera quaternion after: " + camera.quaternion.x + " " + camera.quaternion.y + " " + camera.quaternion.z + " " + camera.quaternion.w);
-
-        // Update directly the rotation doesn't work 
-        // console.log("Camera rotation before: " + camera.rotation.x + " " + camera.rotation.y + " " + camera.rotation.z);
-        // camera.rotation.x = cameraCurrentTargetObject.rotation.x;
-        // camera.rotation.y = cameraCurrentTargetObject.rotation.y;
-        // camera.rotation.z = cameraCurrentTargetObject.rotation.z;
-        // console.log("Camera rotation after: " + camera.rotation.x + " " + camera.rotation.y + " " + camera.rotation.z);
-
-        // There is no fields or getters/setters for azimuthal and polar angles in OrbitControls ???
-        // console.log("Camera azimuthal and polar angles before: " + cameraCurrentControls.azimuthalAngle + " " + cameraCurrentControls.polarAngle);
-        // cameraCurrentControls.azimuthalAngle += cameraCurrentTargetObject.rotation.y * delta;
-        // cameraCurrentControls.polarAngle += cameraCurrentTargetObject.rotation.x * delta;
-        // console.log("Camera azimuthal and polar angles after: " + cameraCurrentControls.azimuthalAngle + " " + cameraCurrentControls.polarAngle);
-
-        // Try to set manually a new camera position
-        // const target = cameraCurrentControls.target;    
-        // const currentDistance = camera.position.distanceTo(target);
-        // const fromTargetToCam = camera.position.clone().sub(target);
-        // let quat = cameraCurrentTargetObject.quaternion.clone();
-        // //quat.invert();
-        // fromTargetToCam.applyQuaternion(quat);
-        // camera.position.copy(target).add(fromTargetToCam);
-        // camera.lookAt(target);
     }
 }
 
@@ -281,9 +253,21 @@ function getCurrentCameraTargetPosition() {
     return worldPos;
 }
 
+function getCameraDistanceByTarget(targetPos) {
+    if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
+        return CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH;
+    }
+    let targetAlt = targetPos.distanceTo(earthCenter);
+    if (['Moon'].includes(cameraCurrentTarget)) {
+        return targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON;
+    } else {
+        return targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS;
+    }
+}
+
 export function updateCamera(deltaTime) {
     cameraCurrentControls.update(deltaTime);
-    updateCameraTargetFollow(deltaTime);
+    updateCameraToFollowTarget(deltaTime);
 }
 
 export function refreshCameraTargets() {
