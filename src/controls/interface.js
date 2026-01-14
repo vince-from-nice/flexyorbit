@@ -31,7 +31,7 @@ export function initControls() {
     window.addEventListener('keydown', (e) => {
         if (e.code === 'KeyT' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
             const currentEntityIndex = entitySelectOptions.findIndex(e => e.value === currentEntityName);
-            const nextEntityIndex = currentEntityIndex < entitySelectOptions.length -1 ? currentEntityIndex + 1 : 0;
+            const nextEntityIndex = currentEntityIndex < entitySelectOptions.length - 1 ? currentEntityIndex + 1 : 0;
             entitySelectRef.value = entitySelectOptions[nextEntityIndex].value;
         }
     });
@@ -348,25 +348,64 @@ function rebuildEntityPanel() {
     entityWidgets.vz = addReadOnly(velocityPanel, 'Vz (km/s)', scaleToKm(entity.velocity.z).toFixed(3));
     entityWidgets.speed = addReadOnly(velocityPanel, 'Speed (km/s)', scaleToKm(entity.velocity.length()).toFixed(3));
 
-    addCheckbox(velocityPanel, 'Show velocity vector', false, v => {
-        // À implémenter plus tard (flèche 3D temporaire)
+    addCheckbox(velocityPanel, 'Show velocity vector', null, entity.vectors.showVelocity, v => {
+        entity.vectors.showVelocity = v;
     });
 
     // ── Acceleration panel ───────────────────────────────────────
     const accelerationPanel = addSubPanel(entityPanelContainer, 'Acceleration', false);
     const fmt = v => v.toExponential(2);
 
-    entityWidgets.totalAcc = addReadOnly(accelerationPanel, 'Total (km/s²)', fmt(scaleToKm(entity.accelerations.total.length())));
-    entityWidgets.gravAcc = addReadOnly(accelerationPanel, '→ Gravity (km/s²)', fmt(scaleToKm(entity.accelerations.gravity.length())));
-    entityWidgets.dragAcc = addReadOnly(accelerationPanel, '→ Drag (km/s²)', fmt(scaleToKm(entity.accelerations.friction.length())));
-    entityWidgets.engineAcc = addReadOnly(accelerationPanel, '→ Engine (km/s²)', fmt(scaleToKm(entity.accelerations.engine.length())));
+    const container = document.createElement('div');
+    Object.assign(container.style, {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '2px',
+        margin: '2px 0',
+        width: '100%'
+    });
+    accelerationPanel.appendChild(container);
 
-    addCheckbox(accelerationPanel, 'Show acceleration vector', false, v => { /* futur */ });
+    entityWidgets.totalAcc = addReadOnly(container, 'Total (km/s²)', fmt(scaleToKm(entity.accelerations.total.length())));
+
+    const makeRow = () => {
+        const row = document.createElement('div');
+        Object.assign(row.style, {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            minWidth: '100%',
+            boxSizing: 'border-box'
+        });
+        container.appendChild(row);
+        return row;
+    };
+
+    const gravRow = makeRow();
+    entityWidgets.gravAcc = addReadOnly(gravRow, '→ Gravity (km/s²)', fmt(scaleToKm(entity.accelerations.gravity.length())));
+    addCheckbox(gravRow, null, null, entity.vectors.showAccelerationForGravity, v => { entity.vectors.showAccelerationForGravity = v; });
+
+    const dragRow = makeRow();
+    entityWidgets.dragAcc = addReadOnly(dragRow, '→ Drag (km/s²)', fmt(scaleToKm(entity.accelerations.friction.length())));
+    addCheckbox(dragRow, null, null, entity.vectors.showAccelerationForDrag, v => { entity.vectors.showAccelerationForDrag = v; });
+
+    const engineRow = makeRow();
+    entityWidgets.engineAcc = addReadOnly(engineRow, '→ Engine (km/s²)', fmt(scaleToKm(entity.accelerations.engine.length())));
+    addCheckbox(engineRow, null, null, entity.vectors.showAccelerationForEngine, v => { entity.vectors.showAccelerationForEngine = v; });
+
+    const totalRow = makeRow();
+    const spacer = document.createElement('div');
+    spacer.style.width = '200px'; // fake space to align the global checkbox with others
+    spacer.style.visibility = 'hidden';
+    totalRow.style.marginTop = '10px';
+    totalRow.appendChild(spacer);
+    addCheckbox(totalRow, 'Show total acceleration vector', null, entity.vectors.showAcceleration, v => { entity.vectors.showAcceleration = v; });
 
     // ── Trail panel ───────────────────────────────────────────────
     const trailPanel = addSubPanel(entityPanelContainer, 'Trail display', false);
 
-    entityWidgets.trailEnabled = addCheckbox(trailPanel, 'Enabled', entity.trail?.enabled, entity.trail.enabled, enabled => {
+    entityWidgets.trailEnabled = addCheckbox(trailPanel, 'Enabled', null, entity.trail.enabled, enabled => {
         if (entity.trail) {
             entity.trail.enabled = enabled;
         }

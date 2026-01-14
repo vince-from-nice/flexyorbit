@@ -41,7 +41,7 @@ export function createSatelliteMesh() {
   function addGridToPanel(panel) {
     const gFront = new THREE.Group();
     const gBack = new THREE.Group();
-    const cs = 0.5;  
+    const cs = 1.0;  
     const halfW = 5; 
     const halfH = 2.5;
     for (let y = -halfH + cs / 2; y <= halfH - cs / 2; y += cs) {

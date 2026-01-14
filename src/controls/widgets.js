@@ -26,7 +26,7 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
         const numValue = parseFloat(value);
         if (isNaN(numValue)) return;
 
-        if (this.dataset.realMin !== undefined) { 
+        if (this.dataset.realMin !== undefined) {
             const realMin = parseFloat(this.dataset.realMin);
             const realMax = parseFloat(this.dataset.realMax);
 
@@ -116,37 +116,41 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
     return [numberInput, slider];
 }
 
-export function addCheckbox(parentEl, labelBefore, labelAfter, initialValue, onChange) {
-    const row = document.createElement("div");
-    row.className = "checkbox-wrapper";
+export function addCheckbox(parentEl, labelBefore = '', labelAfter = '', initialValue = false, onChange, inline = false) {
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = Boolean(initialValue);
+
+    checkbox.addEventListener("change", () => onChange(checkbox.checked));
+
+    const elements = [];
 
     if (labelBefore) {
-        const lblB = document.createElement("label");
-        lblB.textContent = labelBefore;
-        //lblB.className = "ui-checkbox-label-before";
-        row.appendChild(lblB);
+        const lbl = document.createElement("label");
+        lbl.textContent = labelBefore;
+        elements.push(lbl);
     }
 
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = Boolean(initialValue);
-
-    cb.addEventListener("change", () => {
-        onChange(cb.checked);
-    });
-
-    row.appendChild(cb);
+    elements.push(checkbox);
 
     if (labelAfter) {
-        const lblA = document.createElement("label");
-        lblA.textContent = labelAfter;
-        //lblA.className = "ui-checkbox-label-after";
-        row.appendChild(lblA);
+        const lbl = document.createElement("label");
+        lbl.textContent = labelAfter;
+        elements.push(lbl);
     }
 
-    parentEl.appendChild(row);
+    if (inline) {
+        const fragment = document.createDocumentFragment();
+        elements.forEach(el => fragment.appendChild(el));
+        parentEl.appendChild(fragment);
+    } else {
+        const wrapper = document.createElement("div");
+        wrapper.className = "checkbox-wrapper";
+        elements.forEach(el => wrapper.appendChild(el));
+        parentEl.appendChild(wrapper);
+    }
 
-    return cb;
+    return checkbox;
 }
 
 export function addCustomSelect(parentEl, labelBefore, labelAfter, options, initialValue, onChange) {

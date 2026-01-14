@@ -29,6 +29,10 @@ export function animatePhysicalEntities(delta) {
       //console.log("Animate " + obj.name + " with velocity = " + scaleToKm(obj.velocity.length()).toFixed(3) + " km/s and position = " + printPos(obj.body.position));
     }
 
+    if (obj.vectors) {
+      obj.vectors.update(obj);
+    }
+
     if (obj.trail) {
       obj.trail.update(obj);
     }

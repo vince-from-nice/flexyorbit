@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Vectors } from './scene/vectors.js';
 import { Trail } from './scene/trails.js';
 
 export const ENTITY_TYPES = {
@@ -28,17 +29,18 @@ export class Entity {
 
     this.velocity = options?.velocity || new THREE.Vector3();
 
-    // this.initialPosition = options?.initialPosition || this.body.position.clone();
-    // this.initialVelocity = options?.initialVelocity || this.velocity.clone();
-
-    this.trail = options?.trail || new Trail();
-
     this.accelerations = {
       total: new THREE.Vector3(),
       gravity: new THREE.Vector3(),
       friction: new THREE.Vector3(),
       engine: new THREE.Vector3()
     };
+
+    this.vectors = new Vectors();
+    // this.showVelocity = options?.showVelocity || false;
+    // this.showAcceleration = options?.showAcceleration || false;
+
+    this.trail = options?.trail || new Trail();
   }
 
   getBoundingBox() {
