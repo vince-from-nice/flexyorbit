@@ -18,7 +18,7 @@ let cannonLatDisplay, cannonLonDisplay, cannonAltDisplay, cannonAzDisplay, canno
 let cannonLatSlider, cannonLonSlider, cannonAltSlider, cannonAzSlider, cannonElSlider;
 
 let currentEntityName = 'Satellite-1', entityPanelContainer = null, entitySelectRef = null;
-const entityWidgets = {};
+const entityWidgets = {}, entitySelectOptions = [];;
 
 export function initControls() {
 
@@ -27,6 +27,14 @@ export function initControls() {
     createInterface();
 
     initDraggings();
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyT' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            const currentEntityIndex = entitySelectOptions.findIndex(e => e.value === currentEntityName);
+            const nextEntityIndex = currentEntityIndex < entitySelectOptions.length -1 ? currentEntityIndex + 1 : 0;
+            entitySelectRef.value = entitySelectOptions[nextEntityIndex].value;
+        }
+    });
 }
 
 function createInterface() {
@@ -81,7 +89,7 @@ function createInterface() {
     // Entity panel
     const entityPanel = addPanel(contentWrapper, 'Objects');
     let cameraTargetSelect;
-    entitySelectRef = addCustomSelect(entityPanel, null, null, [], null,
+    entitySelectRef = addCustomSelect(entityPanel, 'Select an object or press \'t\' to switch', null, [], null,
         name => {
             currentEntityName = name;
             rebuildEntityPanel();
@@ -419,15 +427,14 @@ export function updateEntityWidgets() {
 export function refreshEntitySelect() {
     if (!entitySelectRef) return;
 
-    let options = [];
     for (const entity of world.getPhysicalEntities()) {
-        options.push({ value: entity.name, label: entity.name })
+        entitySelectOptions.push({ value: entity.name, label: entity.name })
     }
 
-    entitySelectRef.updateOptions(options, currentEntityName);
+    entitySelectRef.updateOptions(entitySelectOptions, currentEntityName);
 
     if (!world.getEntityByName(currentEntityName)) {
-        currentEntityName = options[0]?.value || null;
+        currentEntityName = entitySelectOptions[0]?.value || null;
         rebuildEntityPanel();
     }
 }

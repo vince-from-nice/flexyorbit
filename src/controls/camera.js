@@ -70,8 +70,8 @@ export function initCameraControls() {
     });
 
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'KeyT' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            cameraCurrentTargetIndex = (cameraCurrentTargetIndex + 1) % CAMERA_TARGETS.length;
+        if (e.code === 'KeyE' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            cameraCurrentTargetIndex = 0;
             const nextTarget = CAMERA_TARGETS[cameraCurrentTargetIndex].value;
             cameraTargetSelectRef.value = nextTarget;
             if (cameraTargetSelectRef && cameraTargetSelectRef.value !== cameraCurrentTarget) {
