@@ -11,6 +11,14 @@ export function scaleFromKm(value) {
   return value / GLOBAL_SCALE;
 }
 
+export function scaleFromMeter(value) {
+  return scaleFromKm(value) / 1000;
+}
+
 export function scaleToKm(value) {
   return value * GLOBAL_SCALE;
+}
+
+export function scaleToMeter(value) {
+  return scaleToKm(value) * 1000;
 }

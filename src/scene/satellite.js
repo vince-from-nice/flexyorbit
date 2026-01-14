@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import { ENTITY_TYPES, Entity } from '../entity.js';
-import { EARTH_RADIUS, EARTH_RADIUS_KM, GLOBAL_SCALE, GM, scaleFromKm } from '../constants.js';
+import { EARTH_RADIUS, EARTH_RADIUS_KM, GLOBAL_SCALE, GM, scaleFromKm, scaleFromMeter } from '../constants.js';
 import { scene } from './scene.js';
 
 export function createSatelliteMesh() {
   const group = new THREE.Group();
-  group.scale.setScalar(10 / GLOBAL_SCALE);
+  group.scale.setScalar(10000); // Need to be seen from the space
 
   // Central cylindrical body
-  const bodyGeometry = new THREE.CylinderGeometry(1, 1, 6, 32);
+  const bodyGeometry = new THREE.CylinderGeometry(scaleFromMeter(1), scaleFromMeter(1), scaleFromMeter(6), 32);
   const bodyMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     metalness: 0.7,
@@ -20,7 +20,7 @@ export function createSatelliteMesh() {
   group.add(body);
 
   // Solar panels
-  const panelGeometry = new THREE.BoxGeometry(10, 5, 0.1);
+  const panelGeometry = new THREE.BoxGeometry(scaleFromMeter(10), scaleFromMeter(5), scaleFromMeter(0.1));
   const panelMaterial = new THREE.MeshStandardMaterial({
     color: 0x112244,
     metalness: 1.0,
@@ -29,39 +29,42 @@ export function createSatelliteMesh() {
     emissiveIntensity: 0.5,
   });
   const leftPanel = new THREE.Mesh(panelGeometry, panelMaterial);
-  leftPanel.position.set(-8, 0, 0);
+  leftPanel.position.set(scaleFromMeter(-8), 0, 0);
   leftPanel.castShadow = true;
   group.add(leftPanel);
-
   const rightPanel = leftPanel.clone();
-  rightPanel.position.set(8, 0, 0);
+  rightPanel.position.set(scaleFromMeter(8), 0, 0);
   group.add(rightPanel);
 
   // Grid on both sides of each panel
   const gridMaterial = new THREE.LineBasicMaterial({ color: 0xaaaaaa });
   function addGridToPanel(panel) {
-    const gridGroupFront = new THREE.Group();
-    const gridGroupBack = new THREE.Group();
-    const cellSize = 0.5;
-    for (let y = -2.5 + cellSize / 2; y < 2.5; y += cellSize) {
-      for (let x = -5 + cellSize / 2; x < 5; x += cellSize) {
-        const points = [
-          new THREE.Vector3(x - cellSize / 2, y - cellSize / 2, 0.06),
-          new THREE.Vector3(x + cellSize / 2, y - cellSize / 2, 0.06),
-          new THREE.Vector3(x + cellSize / 2, y + cellSize / 2, 0.06),
-          new THREE.Vector3(x - cellSize / 2, y + cellSize / 2, 0.06),
-          new THREE.Vector3(x - cellSize / 2, y - cellSize / 2, 0.06)
+    const gFront = new THREE.Group();
+    const gBack = new THREE.Group();
+    const cs = 0.5;  
+    const halfW = 5; 
+    const halfH = 2.5;
+    for (let y = -halfH + cs / 2; y <= halfH - cs / 2; y += cs) {
+      for (let x = -halfW + cs / 2; x <= halfW - cs / 2; x += cs) {
+        const p = [
+          new THREE.Vector3(x - cs / 2, y - cs / 2, 0.06),
+          new THREE.Vector3(x + cs / 2, y - cs / 2, 0.06),
+          new THREE.Vector3(x + cs / 2, y + cs / 2, 0.06),
+          new THREE.Vector3(x - cs / 2, y + cs / 2, 0.06),
+          new THREE.Vector3(x - cs / 2, y - cs / 2, 0.06)
         ];
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const linesFront = new THREE.Line(geometry, gridMaterial);
-        const linesBack = linesFront.clone();
-        linesBack.position.z = -0.12;
-        gridGroupFront.add(linesFront);
-        gridGroupBack.add(linesBack);
+        const geo = new THREE.BufferGeometry().setFromPoints(p);
+        const lf = new THREE.Line(geo, gridMaterial);
+        const lb = lf.clone();
+        lb.position.z = -0.12;
+        gFront.add(lf);
+        gBack.add(lb);
       }
     }
-    panel.add(gridGroupFront);
-    panel.add(gridGroupBack);
+    gFront.scale.setScalar(scaleFromMeter(1));
+    gBack.scale.setScalar(scaleFromMeter(1));
+    panel.add(gFront);
+    panel.add(gBack);
   }
   addGridToPanel(leftPanel);
   addGridToPanel(rightPanel);
@@ -72,11 +75,10 @@ export function createSatelliteMesh() {
     metalness: 0.8,
     roughness: 0.3,
   });
-
   function createArm(p1, p2) {
     const dir = p2.clone().sub(p1);
     const length = dir.length();
-    const armGeo = new THREE.CylinderGeometry(0.1, 0.1, length, 8);
+    const armGeo = new THREE.CylinderGeometry(scaleFromMeter(0.1), scaleFromMeter(0.1), length, 8);
     const arm = new THREE.Mesh(armGeo, armMaterial);
     arm.position.copy(p1.clone().add(dir.multiplyScalar(0.5)));
     arm.lookAt(p2);
@@ -85,16 +87,16 @@ export function createSatelliteMesh() {
   }
 
   // Left panel: single attachment on body → spreads to inner top/bottom corners of panel
-  const leftAttach = new THREE.Vector3(-1, 0, 0);
-  const leftInnerTop = new THREE.Vector3(-3, 2.4, 0);
-  const leftInnerBottom = new THREE.Vector3(-3, -2.4, 0);
+  const leftAttach = new THREE.Vector3(scaleFromMeter(-1), 0, 0);
+  const leftInnerTop = new THREE.Vector3(scaleFromMeter(-3), scaleFromMeter(2.4), 0);
+  const leftInnerBottom = new THREE.Vector3(scaleFromMeter(-3), scaleFromMeter(-2.4), 0);
   group.add(createArm(leftAttach, leftInnerTop));
   group.add(createArm(leftAttach, leftInnerBottom));
 
   // Right panel
-  const rightAttach = new THREE.Vector3(1, 0, 0);
-  const rightInnerTop = new THREE.Vector3(3, 2.4, 0);
-  const rightInnerBottom = new THREE.Vector3(3, -2.4, 0);
+  const rightAttach = new THREE.Vector3(scaleFromMeter(1), 0, 0);
+  const rightInnerTop = new THREE.Vector3(scaleFromMeter(3), scaleFromMeter(2.4), 0);
+  const rightInnerBottom = new THREE.Vector3(scaleFromMeter(3), scaleFromMeter(-2.4), 0);
   group.add(createArm(rightAttach, rightInnerTop));
   group.add(createArm(rightAttach, rightInnerBottom));
 
@@ -102,21 +104,17 @@ export function createSatelliteMesh() {
   const centralLight = new THREE.PointLight(0xffffff, 1.2, 0);
   centralLight.position.set(0, 0, 0);
   group.add(centralLight);
-
   const frontLight = new THREE.PointLight(0xffffff, 1.5, 0);
-  frontLight.position.set(0, 0, 3.5);
+  frontLight.position.set(0, 0, scaleFromMeter(3.5));
   group.add(frontLight);
-
   const backLight = new THREE.PointLight(0xffffff, 1.5, 0);
-  backLight.position.set(0, 0, -3.5);
+  backLight.position.set(0, 0, scaleFromMeter(-3.5));
   group.add(backLight);
-
   const sideLightLeft = new THREE.PointLight(0xffffff, 1.0, 0);
-  sideLightLeft.position.set(-8, 0, 0);
+  sideLightLeft.position.set(scaleFromMeter(-8), 0, 0);
   group.add(sideLightLeft);
-
   const sideLightRight = sideLightLeft.clone();
-  sideLightRight.position.set(8, 0, 0);
+  sideLightRight.position.set(scaleFromMeter(8), 0, 0);
   group.add(sideLightRight);
 
   return group;
@@ -138,7 +136,7 @@ export function createSatellite(name, altitudeKm = 550, latitudeDeg = 0, longitu
 
   const radiusKm = EARTH_RADIUS_KM + altitudeKm;
   const orbitalSpeedKmS = Math.sqrt(GM / radiusKm);
-  const orbitalSpeed = scaleFromKm(orbitalSpeedKmS); 
+  const orbitalSpeed = scaleFromKm(orbitalSpeedKmS);
 
   // Direction de la vitesse: basée sur azimuth dans le référentiel local tangentiel
   // Vecteurs locaux: "nord" (méridien), "est" (parallèle)

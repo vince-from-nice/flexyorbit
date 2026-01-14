@@ -1,12 +1,16 @@
 import * as THREE from 'three';
 import world from '../world.js';
 import { ENTITY_TYPES, Entity } from '../entity.js';
-import { EARTH_RADIUS, GLOBAL_SCALE, scaleFromKm } from '../constants.js';
+import { EARTH_RADIUS, scaleFromKm, scaleFromMeter } from '../constants.js';
 import { scene } from './scene.js';
 import { earth } from './earth.js';
 import { Trail } from './trails.js';
 
 export let cannonGroup, cannonballMesh;
+
+const CANNONBALL_RADIUS_METERS = 3;
+const CANNON_TUBE_LENGTH_METERS = 30;
+const CANNON_TUBE_RADIUS_METERS = 2;
 
 export let cannonParams = {
     lat: 43.53,
@@ -19,10 +23,10 @@ export let cannonParams = {
 
 export function createCannon() {
     cannonGroup = new THREE.Group();
-    cannonGroup.scale.setScalar(10 / GLOBAL_SCALE);
+    cannonGroup.scale.setScalar(10000); // Need to be seen from the space
 
     // Base
-    const baseGeometry = new THREE.BoxGeometry(20, 2, 20);
+    const baseGeometry = new THREE.BoxGeometry(scaleFromMeter(20), scaleFromMeter(2), scaleFromMeter(20));
     const baseMaterial = new THREE.MeshStandardMaterial({
         color: 0x555555,
         metalness: 0.7,
@@ -30,13 +34,13 @@ export function createCannon() {
     });
     const base = new THREE.Mesh(baseGeometry, baseMaterial);
     base.castShadow = true;
-    base.position.y = 1;
+    base.position.y = scaleFromMeter(1);
     cannonGroup.add(base);
 
     // Base corner lights
-    const boxSize = 2.5;
-    const halfBase = 10;
-    const baseThickness = 2;
+    const boxSize = scaleFromMeter(2.5);
+    const halfBase = scaleFromMeter(10);
+    const baseThickness = scaleFromMeter(2);
     const emissiveColor = 0xffaa55;
     const emissiveIntensity = 2.2;
     const glowBoxes = [];
@@ -64,8 +68,8 @@ export function createCannon() {
     });
 
     // Tube
-    const tubeLength = 30;
-    const tubeGeometry = new THREE.CylinderGeometry(2, 2.5, tubeLength, 32);
+    const tubeLength = scaleFromMeter(CANNON_TUBE_LENGTH_METERS);
+    const tubeGeometry = new THREE.CylinderGeometry(scaleFromMeter(CANNON_TUBE_RADIUS_METERS), scaleFromMeter(CANNON_TUBE_RADIUS_METERS) * 1.3, tubeLength, 32);
     const tubeMaterial = new THREE.MeshStandardMaterial({
         color: 0x777777,
         metalness: 0.9,
@@ -81,7 +85,7 @@ export function createCannon() {
     // Group for the elevation
     const elevationGroup = new THREE.Group();
     elevationGroup.add(tube);
-    elevationGroup.position.set(0, 4, 0);
+    elevationGroup.position.set(0, scaleFromMeter(4), 0);
     cannonGroup.add(elevationGroup);
 
     // Light on the tube
@@ -94,7 +98,7 @@ export function createCannon() {
     cannonGroup.userData.fireCounter = 0;
 
     // Compute and save cannonball initial position at the exact end of the tube
-    const initialPosition = new THREE.Vector3(0, 0, tubeLength + 3);
+    const initialPosition = new THREE.Vector3(0, 0, tubeLength + scaleFromMeter(3));
     cannonGroup.userData.elevationGroup.userData.cannonballInitialPosition = initialPosition;
 
     //createCannonball(cannonGroup, scaleFactor, tubeLength);
@@ -189,7 +193,7 @@ export function fireCannonball() {
 }
 
 function createCannonball(cannonGroup) {
-    const ballGeometry = new THREE.SphereGeometry(3, 32, 32);
+    const ballGeometry = new THREE.SphereGeometry(scaleFromMeter(CANNONBALL_RADIUS_METERS), 32, 32);
     const ballMaterial = new THREE.MeshStandardMaterial({
         color: 0x00ff00,
         emissive: 0x00ff00,

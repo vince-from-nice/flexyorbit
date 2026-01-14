@@ -215,7 +215,7 @@ function repositionCameraAlignedWithEarthAndTarget(targetPos, newDistance, force
     if (forceInstant) {
         camera.position.copy(newPosition);
     } else {
-        camera.position.lerp(newPosition, 0.12);
+        camera.position.lerp(newPosition, 0.1);
     }
     camera.lookAt(targetPos);
 }
@@ -243,7 +243,6 @@ export function updateCameraToFollowTarget(delta) {
     // For orbital mode : follow the target smoothly
     if (isOrbital) {
         cameraCurrentControls.target.copy(targetPos);
-        //cameraCurrentControls.target.lerp(targetPos, 0.12);
         if (!isUserInteracting) {
             const newDistance = camera.position.distanceTo(targetPos) + targetPos.distanceTo(earthCenter);
             repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, newDistance, false);

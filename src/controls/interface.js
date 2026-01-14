@@ -23,7 +23,7 @@ const entityWidgets = {};
 export function initControls() {
 
     initCameraControls();
-    
+
     createInterface();
 
     initDraggings();
@@ -82,7 +82,7 @@ function createInterface() {
     const entityPanel = addPanel(contentWrapper, 'Objects');
     let cameraTargetSelect;
     entitySelectRef = addCustomSelect(entityPanel, null, null, [], null,
-        name => { 
+        name => {
             currentEntityName = name;
             rebuildEntityPanel();
             //switchCameraTarget(name);
@@ -258,6 +258,37 @@ function rebuildEntityPanel() {
     addSlider(infosPanel, 'Mass (kg)', 1, 10000, entity.mass, v => entity.mass = v, 1, { logarithmic: true });
     addSlider(infosPanel, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, v => entity.dragCoefficient = v, 0.0001);
     //addReadOnly(basic, 'Cross-section (m²)', entity.crossSectionArea.toExponential(2));
+
+    // ────────────────── Scaling panel ─────────────────────────────────────
+    const scalingPanel = addSubPanel(entityPanelContainer, 'Scaling', false);
+    const currentScale = entity.body.scale;
+    const initialGlobal = (currentScale.x + currentScale.y + currentScale.z) / 3;
+    let xSlider, ySlider, zSlider;
+    addSlider(
+        scalingPanel, 'Global scale', 1, 100000, initialGlobal,
+        value => {
+            entity.body.scale.set(value, value, value);
+            if (xSlider) xSlider.setValue(value);
+            if (ySlider) ySlider.setValue(value);
+            if (zSlider) zSlider.setValue(value);
+        },
+        1,
+        { logarithmic: true }
+    );
+    addSlider(scalingPanel, 'Scale X', 1, 100000, currentScale.x,
+        value => { entity.body.scale.x = value; }, 1, { logarithmic: true }
+    );
+    xSlider = scalingPanel.querySelectorAll('input[type="range"]')[1];  // le 2e slider (index 1)
+
+    addSlider(scalingPanel, 'Scale Y', 1, 100000, currentScale.y,
+        value => { entity.body.scale.y = value; }, 1, { logarithmic: true }
+    );
+    ySlider = scalingPanel.querySelectorAll('input[type="range"]')[2];
+
+    addSlider(scalingPanel, 'Scale Z', 1, 100000, currentScale.z,
+        value => { entity.body.scale.z = value; }, 1, { logarithmic: true }
+    );
+    zSlider = scalingPanel.querySelectorAll('input[type="range"]')[3];
 
     // ── Position panel ────────────────────────────────────────────
     const positionPanel = addSubPanel(entityPanelContainer, 'Position', true);
