@@ -98,7 +98,7 @@ export function createCannon() {
     cannonGroup.userData.fireCounter = 0;
 
     // Compute and save cannonball initial position at the exact end of the tube
-    const initialPosition = new THREE.Vector3(0, 0, tubeLength + scaleFromMeter(3));
+    const initialPosition = new THREE.Vector3(0, 0, tubeLength + scaleFromMeter(0));
     cannonGroup.userData.elevationGroup.userData.cannonballInitialPosition = initialPosition;
 
     // A first update with the initial parameters

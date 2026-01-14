@@ -21,8 +21,9 @@ You can tweak every parameter using the HTML interface widgets, **but you can al
 
 ### Keyboard shortcuts
 - **Space** → fire the cannonball
-- **C** → switch camera mode
-- **T** → switch camera target
+- **C** → switch camera mode (orbit controls or fly controls)
+- **T** → switch camera target between objects
+- **E** → reset camera target to the Earth
 
 ### Camera modes
 - **OrbitControls / MapControls**  

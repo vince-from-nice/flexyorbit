@@ -15,10 +15,10 @@ export const TRAIL_STYLES = [
 
 const FRAMES_NBR_BETWEEN_UPDATES = 3;
 const UPDATES_NBR_BETWEEN_BARS = 4;
-const VERTICAL_BAR_THICKNESS = 50 // km
-const VERTICAL_BAR_FIXED_HEIGHT = 300 // km 
+const VERTICAL_BAR_THICKNESS_KM = 50
+const VERTICAL_BAR_FIXED_HEIGHT_KM = 300
 const HISTORY_MAX_SIZE = 10000;
-const HISTORY_DEFAULT_LIFETIME = 10; // seconds
+const HISTORY_DEFAULT_LIFETIME = 20; 
 
 export class Trail {
     constructor(enabled, style, color, lifetime = HISTORY_DEFAULT_LIFETIME) {
@@ -74,7 +74,7 @@ export class Trail {
     }
 
     update(obj) {
-        if (!this.enabled) return;
+        //if (!this.enabled) return;
 
         // No need to update trail on every frame
         if (this.updateCounter < FRAMES_NBR_BETWEEN_UPDATES) {
@@ -86,7 +86,7 @@ export class Trail {
 
         const now = Date.now() / 1000;
 
-        if (obj.isFreeFalling) {
+        if (this.enabled && obj.isFreeFalling) {
             this.history.push({
                 position: obj.body.position.clone(),
                 time: now
@@ -120,7 +120,7 @@ export class Trail {
                     const newBar = this.#createNewTrailBar(
                         this.history[this.history.length - 1].position,
                         this.history[this.history.length - 2].position,
-                        scaleFromKm(VERTICAL_BAR_THICKNESS), scaleFromKm(VERTICAL_BAR_FIXED_HEIGHT), true);
+                        scaleFromKm(VERTICAL_BAR_THICKNESS_KM), scaleFromKm(VERTICAL_BAR_FIXED_HEIGHT_KM), true);
                     scene.add(newBar);
                     this.model.push({ mesh: newBar, time: now });
                 }

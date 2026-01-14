@@ -376,7 +376,7 @@ input[type="checkbox"] {
 .custom-select-wrapper {
     display: flex;
     flex-direction: column;
-    margin: 8px 0;                
+    margin: 0 0 20px 0;                
 }
 
 .custom-select-label-before {

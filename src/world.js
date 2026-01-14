@@ -72,12 +72,12 @@ class World {
     // return this;
 
     // Add satellites
-    this.addEntity(createSatellite('Satellite-1', 550, 0, 0,  45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 10)));
-    this.addEntity(createSatellite('Satellite-2', 550, 0, 0, -45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 10)));
+    this.addEntity(createSatellite('Satellite-1', 550, 0, 0,  45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20)));
+    this.addEntity(createSatellite('Satellite-2', 550, 0, 0, -45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20)));
 
     // Add geostationary satellites
-    this.addEntity(createSatellite('GeostationarySat-1', 35786, 0, 0,  90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 30)));
-    this.addEntity(createSatellite('GeostationarySat-2', 35786, 0, 0,   0, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 30)));
+    this.addEntity(createSatellite('GeostationarySat-1', 35786, 0, 0,  90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50)));
+    this.addEntity(createSatellite('GeostationarySat-2', 35786, 0, 0,   0, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50)));
   }
 
   // pause() { this.isPaused = true; }
