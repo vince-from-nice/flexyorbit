@@ -101,8 +101,6 @@ export function createCannon() {
     const initialPosition = new THREE.Vector3(0, 0, tubeLength + scaleFromMeter(3));
     cannonGroup.userData.elevationGroup.userData.cannonballInitialPosition = initialPosition;
 
-    //createCannonball(cannonGroup, scaleFactor, tubeLength);
-
     // A first update with the initial parameters
     updateCannonWithParams();
 
@@ -204,6 +202,7 @@ function createCannonball(cannonGroup) {
     cannonballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
     cannonballMesh.castShadow = true;
     cannonballMesh.position.copy(cannonGroup.userData.elevationGroup.userData.cannonballInitialPosition);
+    cannonballMesh.scale.copy(cannonGroup.scale);
     cannonGroup.userData.elevationGroup.add(cannonballMesh);
     cannonGroup.userData.fireCounter++;
     const cannonballEntity = new Entity(ENTITY_TYPES.CANNONBALL,
