@@ -32,7 +32,8 @@ export const EARTH_ROUGHNESS_TEXTURES = [
 export function createEarth() {
     const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 128, 128);
 
-    const material = new THREE.MeshStandardMaterial({
+    // MeshStandardMaterial costs few fps in comparison with MeshPhongMaterial
+    const material = new THREE.MeshPhongMaterial({
         roughness: 0.85,
         metalness: 0.05,
         // To avoid z-buffer issues
@@ -91,7 +92,9 @@ export function updateEarthRoughnessTexture(value) {
         textureLoader.load(value, (newTexture) => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
             newTexture.encoding = THREE.sRGBEncoding;
-            earth.material.roughnessMap = newTexture;
+            // earth.material.roughnessMap = newTexture;
+            earth.material.specularMap = newTexture;
+            earth.material.specular = new THREE.Color(0x555555);
             // Insert custom roughness calculation : Thanks to https://franky-arkon-digital.medium.com/make-your-own-earth-in-three-js-8b875e281b1e
             // if the ocean map is white for the ocean, then we have to reverse the b&w values for roughness
             // We want the land to have 1.0 roughness, and the ocean to have a minimum of 0.5 roughness

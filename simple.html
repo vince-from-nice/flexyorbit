@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js Earth - Textured + Lighting + FPS</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; }
+        #fps { 
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            color: white; 
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 18px;
+            background: rgba(0,0,0,0.5);
+            padding: 6px 12px;
+            border-radius: 6px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="fps">0 fps</div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // === Setup scène ===
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // === Contrôles ===
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 1.5;
+        controls.maxDistance = 20;
+
+        // === Terre ===
+        const geometry = new THREE.SphereGeometry(1, 128, 128);
+
+        // Texture (à placer dans le même dossier ou sous-dossier assets/earth/)
+        const textureLoader = new THREE.TextureLoader();
+        const earthTexture = textureLoader.load('assets/earth/bluemarble-5k.jpg');
+
+        const material = new THREE.MeshPhongMaterial({
+            map: earthTexture,
+            shininess: 10,
+            specular: new THREE.Color(0x333333)
+        });
+
+        const earth = new THREE.Mesh(geometry, material);
+        scene.add(earth);
+
+        // === Éclairage ===
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        sunLight.position.set(5, 3, 5);
+        scene.add(sunLight);
+
+        // Optionnel : petite lumière de remplissage bleue pour plus de réalisme
+        const fillLight = new THREE.DirectionalLight(0x88aaff, 0.4);
+        fillLight.position.set(-4, 2, -3);
+        scene.add(fillLight);
+
+        // === Position caméra initiale ===
+        camera.position.set(0, 0, 3.5);
+
+        // === FPS counter ===
+        const fpsElement = document.getElementById('fps');
+        let frameCount = 0;
+        let lastTime = 0;
+        const clock = new THREE.Clock();
+
+        // === Boucle d'animation ===
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            controls.update();
+
+            // Rotation lente de la Terre (optionnel)
+            earth.rotation.y += 0.15 * delta;
+
+            // Calcul FPS toutes les ~0.8 secondes
+            frameCount++;
+            if (clock.elapsedTime - lastTime >= 0.8) {
+                const fps = Math.round(frameCount / (clock.elapsedTime - lastTime));
+                fpsElement.textContent = fps + ' fps';
+                frameCount = 0;
+                lastTime = clock.elapsedTime;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // === Resize ===
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

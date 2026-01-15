@@ -44,8 +44,9 @@ function createRenderer(container) {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.logarithmicDepthBuffer = true; // always usefull even the unit is km ?
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  //renderer.shadowMap.type = THREE.PCFShadowMap;
+  //renderer.shadowMap.type = THREE.BasicShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  //renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
   logRendererInfos();
 }

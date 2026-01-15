@@ -20,9 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initControls();
 
   function animate() {
-    // Protect huge delta when browser is inactive
-    const deltaTime = Math.min(clock.getDelta(), 1/30);
-    
     frameCount++;
     if (clock.elapsedTime - lastTime >= 0.8) {
       const fps = Math.round(frameCount / (clock.elapsedTime - lastTime));
@@ -30,6 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
       frameCount = 0;
       lastTime = clock.elapsedTime;
     }
+
+    // Protect huge delta when browser is inactive
+    const deltaTime = Math.min(clock.getDelta(), 1 / 30);
 
     if (!timePaused) {
       animateEarthAndMonth(deltaTime * timeAcceleration);
