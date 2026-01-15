@@ -6,6 +6,11 @@ import { initControls, timePaused, timeAcceleration, updateEntityWidgets } from 
 import { updateCamera } from './controls/camera.js';
 import { animatePhysicalEntities } from './physics/physics.js';
 
+const clock = new THREE.Clock();
+const fpsElement = document.getElementById('fps');
+let frameCount = 0;
+let lastTime = 0;
+
 document.addEventListener('DOMContentLoaded', () => {
 
   createScene(document.body);
@@ -14,11 +19,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initControls();
 
-  const clock = new THREE.Clock();
-
   function animate() {
     // Protect huge delta when browser is inactive
     const deltaTime = Math.min(clock.getDelta(), 1/30);
+    
+    frameCount++;
+    if (clock.elapsedTime - lastTime >= 0.8) {
+      const fps = Math.round(frameCount / (clock.elapsedTime - lastTime));
+      fpsElement.textContent = fps + ' fps';
+      frameCount = 0;
+      lastTime = clock.elapsedTime;
+    }
 
     if (!timePaused) {
       animateEarthAndMonth(deltaTime * timeAcceleration);
