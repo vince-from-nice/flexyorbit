@@ -24,7 +24,7 @@ export function createSun() {
     textureLoader.load('assets/sun/solarsystemscope-1k.jpg', (sunTexture) => {
         sunTexture.colorSpace = THREE.SRGBColorSpace;
 
-        const sunGeometry = new THREE.SphereGeometry(SUN_RADIUS, 64, 64);
+        const sunGeometry = new THREE.SphereGeometry(SUN_RADIUS, 8, 8);
 
         const sunMaterial = new THREE.MeshStandardMaterial({
             map: sunTexture,

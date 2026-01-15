@@ -466,6 +466,7 @@ export function updateEntityWidgets() {
 export function refreshEntitySelect() {
     if (!entitySelectRef) return;
 
+    entitySelectOptions.length = 0;
     for (const entity of world.getPhysicalEntities()) {
         entitySelectOptions.push({ value: entity.name, label: entity.name })
     }

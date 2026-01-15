@@ -6,10 +6,10 @@ const ACCELERATION_SCALE = 50000;
 
 export class Vectors {
     constructor() {
-        this.showVelocity = false;
+        this.showVelocity = true;
         this.showAcceleration = false;
-        this.showAccelerationForGravity = false;
-        this.showAccelerationForDrag = false;
+        this.showAccelerationForGravity = true;
+        this.showAccelerationForDrag = true;
         this.showAccelerationForEngine = false;
         this.velocityArrow = null;
         this.accelerationArrow = null;
@@ -90,6 +90,5 @@ export class Vectors {
             scene.remove(this.accelerationForEngineArrow);
             this.accelerationForEngineArrow = null;
         }
-        
     }
 }

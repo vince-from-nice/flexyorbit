@@ -17,6 +17,7 @@ export function checkCollisionAndHandle(obj) {
 
     obj.isFreeFalling = false;
     obj.velocity.set(0, 0, 0);
+    obj.accelerations.friction.set(0, 0, 0);
 
     // World position
     const surfaceWorldPos = new THREE.Vector3()
