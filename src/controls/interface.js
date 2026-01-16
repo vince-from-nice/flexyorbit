@@ -1,7 +1,7 @@
 import world from '../world.js';
 import { scaleToKm } from '../constants.js';
 import { cartesianToPolar, polarToCartesian, normalizeLongitude } from '../utils.js';
-import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis } from '../scene/scene.js';
+import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis, updateGrid } from '../scene/scene.js';
 import { updateCannonWithParams, fireCannonball, cannonParams } from '../scene/cannon.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
 import { EARTH_MAIN_TEXTURES, EARTH_BUMP_TEXTURES, EARTH_ROUGHNESS_TEXTURES, updateEarthMainTexture, updateEarthBumpTexture, updateEarthRoughnessTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
@@ -188,14 +188,33 @@ function createInterface() {
     addCustomSelect(moonPanel, 'Moon bump texture', null, MOON_BUMP_TEXTURES, defaultMoonBumpTexture,
         value => { updateMoonBumpTexture(value); });
     updateMoonBumpTexture(defaultMoonBumpTexture);
-    // Miscellaneous sub panel
-    const miscPanel = addSubPanel(displayPanel, 'Miscellaneous', false);
-    addCheckbox(miscPanel, null, 'Display referential axes', false, value => {
-        displayAxis(value);
-    });
-    addCustomSelect(miscPanel, 'Milky Way background', null, MILKYWAY_TEXTURES, defaultMilkyWayTexture,
+    // Universe sub panel
+    const universePanel = addSubPanel(displayPanel, 'Universe', false);
+    addCustomSelect(universePanel, 'Milky Way background', null, MILKYWAY_TEXTURES, defaultMilkyWayTexture,
         value => { updateMilkyWayTexture(value); });
     updateMilkyWayTexture(defaultMilkyWayTexture);
+    addCheckbox(universePanel, 'Display referential axes', '', false, value => {
+        displayAxis(value);
+    });
+    //const gridPanel = addSubPanel(universePanel, 'Grid', false);
+    const spacer = document.createElement('div');
+    spacer.style.height = '12px'; 
+    universePanel.appendChild(spacer);
+    const gridShowCheckbox = addCheckbox(universePanel, 'Display space grid', '', false, value => {
+        updateGrid(value, parseFloat(gridSizeDisplay.value), parseFloat(gridResDisplay.value));
+    });
+    let gridSizeDisplay, gridSizeSlider;
+    [gridSizeDisplay, gridSizeSlider] = addSlider(universePanel, 'Size (km)', 10000, 1000000, 1000000, value => {
+        if (gridShowCheckbox.checked) {
+            updateGrid(true, value, parseFloat(gridResDisplay.value));
+        }
+    }, 10000, { logarithmic: false });
+    let gridResDisplay, gridResSlider;
+    [gridResDisplay, gridResSlider] = addSlider(universePanel, 'Resolution (km)', 1000, 100000, 100000, value => {
+        if (gridShowCheckbox.checked) {
+            updateGrid(true, parseFloat(gridSizeDisplay.value), value);
+        }
+    }, 1000, { logarithmic: false });
 
     // Fire control panel
     const firePanel = addPanel(contentWrapper, 'Fire control');

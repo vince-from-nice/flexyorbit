@@ -6,7 +6,7 @@ import { createAtmosphere } from './atmosphere.js';
 import { createMoon, moonMesh, moonRotationDisabled, MOON_ANGULAR_VELOCITY } from './moon.js';
 import { createCannon } from './cannon.js';
 
-export let scene, camera, renderer, axesGroup;
+export let scene, camera, renderer, axesGroup, gridMesh;
 
 const loadingManager = new THREE.LoadingManager();
 const textureLoader = new THREE.TextureLoader(loadingManager);
@@ -51,19 +51,6 @@ function createRenderer(container) {
   logRendererInfos();
 }
 
-function createAxis() {
-  const AXIS_LENGTH = EARTH_RADIUS * 3;
-  const origin = new THREE.Vector3(0, 0, 0);
-  const headLength = AXIS_LENGTH * 0.1;
-  const headWidth = headLength * 0.5;
-  axesGroup = new THREE.Group();
-  axesGroup.add(new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, AXIS_LENGTH, 0xff0000, headLength, headWidth));
-  axesGroup.add(new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), origin, AXIS_LENGTH, 0x00ff00, headLength, headWidth));
-  axesGroup.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), origin, AXIS_LENGTH, 0x0000ff, headLength, headWidth));
-  // Not display it by default
-  //scene.add(axesGroup);
-}
-
 function createMilkyWay() {
   scene.background = new THREE.Color(0x050514);
   // Milky way texture is now loaded by interface init
@@ -88,6 +75,65 @@ export function updateMilkyWayTexture(value) {
   }
   scene.needsUpdate = true;
   if (oldTexture && !oldTexture instanceof THREE.Color) oldTexture.dispose();
+}
+
+function createAxis() {
+  const AXIS_LENGTH = EARTH_RADIUS * 3;
+  const origin = new THREE.Vector3(0, 0, 0);
+  const headLength = AXIS_LENGTH * 0.1;
+  const headWidth = headLength * 0.5;
+  axesGroup = new THREE.Group();
+  axesGroup.add(new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, AXIS_LENGTH, 0xff0000, headLength, headWidth));
+  axesGroup.add(new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), origin, AXIS_LENGTH, 0x00ff00, headLength, headWidth));
+  axesGroup.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), origin, AXIS_LENGTH, 0x0000ff, headLength, headWidth));
+  //scene.add(axesGroup); // Not display it by default
+}
+
+function createGrid(size_km = 1000000, res_km = 10000, color = '#333333') {
+  const size = scaleFromKm(size_km);
+  const step = scaleFromKm(res_km);
+  const halfSize = size / 2;
+  const vertices = [];
+  // Lines parallel to X-axis
+  for (let y = -halfSize; y <= halfSize; y += step) {
+    for (let z = -halfSize; z <= halfSize; z += step) {
+      vertices.push(-halfSize, y, z);
+      vertices.push(halfSize, y, z);
+    }
+  }
+  // Lines parallel to Y-axis
+  for (let x = -halfSize; x <= halfSize; x += step) {
+    for (let z = -halfSize; z <= halfSize; z += step) {
+      vertices.push(x, -halfSize, z);
+      vertices.push(x, halfSize, z);
+    }
+  }
+  // Lines parallel to Z-axis
+  for (let x = -halfSize; x <= halfSize; x += step) {
+    for (let y = -halfSize; y <= halfSize; y += step) {
+      vertices.push(x, y, -halfSize);
+      vertices.push(x, y, halfSize);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  const material = new THREE.LineBasicMaterial({ color: color });
+  const grid = new THREE.LineSegments(geometry, material);
+  grid.name = 'spaceGrid';
+  return grid;
+}
+
+export function updateGrid(show, size_km, res_km) {
+  if (gridMesh) {
+    scene.remove(gridMesh);
+    gridMesh.geometry.dispose();
+    gridMesh.material.dispose();
+    gridMesh = null;
+  }
+  if (show) {
+    gridMesh = createGrid(size_km, res_km);
+    scene.add(gridMesh);
+  }
 }
 
 function logRendererInfos() {
