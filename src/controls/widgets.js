@@ -39,8 +39,9 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
             this.value = Math.max(parseFloat(this.min), Math.min(parseFloat(this.max), numValue));
         }
 
-        this.dispatchEvent(new Event('input'));
-        this.dispatchEvent(new Event('change'));
+        //this.dispatchEvent(new Event('input'));
+        //this.dispatchEvent(new Event('change'));
+        //this.updateGradient();
     };
 
     const logarithmic = options.logarithmic || false;
@@ -64,13 +65,13 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
         slider.value = initial;
     }
 
-    function updateGradient() {
-        const norm = (slider.value - slider.min) / (slider.max - slider.min);
-        const percent = norm * 100;
-        slider.style.background = `linear-gradient(to right, #00aaff ${percent}%, #444 ${percent}%)`;
-    }
-    slider.addEventListener('input', updateGradient);
-    updateGradient();
+    // function updateGradient() {
+    //     const norm = (slider.value - slider.min) / (slider.max - slider.min);
+    //     const percent = norm * 100;
+    //     slider.style.background = `linear-gradient(to right, #00aaff ${percent}%, #444 ${percent}%)`;
+    // }
+    // slider.addEventListener('input', updateGradient);
+    // updateGradient();
 
     const updateFromSlider = () => {
         const norm = (slider.value - slider.min) / (slider.max - slider.min);
@@ -84,7 +85,7 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
         val = Math.max(min, Math.min(max, val));
         numberInput.value = val;
         onChange(val);
-        updateGradient();
+        // updateGradient();
     };
 
     const updateFromNumber = () => {
@@ -101,7 +102,7 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
         }
         slider.value = slider.min + norm * (slider.max - slider.min);
         onChange(val);
-        updateGradient();
+        // updateGradient();
     };
 
     slider.addEventListener('input', updateFromSlider);
