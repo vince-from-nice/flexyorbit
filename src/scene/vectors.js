@@ -6,7 +6,7 @@ const ACCELERATION_SCALE = 50000;
 
 export class Vectors {
     constructor() {
-        this.showVelocity = true;
+        this.showVelocity = false;
         this.showAcceleration = false;
         this.showAccelerationForGravity = true;
         this.showAccelerationForDrag = true;

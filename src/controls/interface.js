@@ -167,7 +167,7 @@ function createInterface() {
         defaultEarthRoughnessTexture = 'none';
         defaultMoonMainTexture = 'assets/moon/nasa-2k.jpg';
         defaultMoonBumpTexture = 'none';
-        defaultMilkyWayTexture = 'none';
+        defaultMilkyWayTexture = 'assets/milkyway/solarsystemscope-4k.jpg';
     }
     // Earth sub panel
     const earthPanel = addSubPanel(displayPanel, 'Earth', false);
