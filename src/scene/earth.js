@@ -4,9 +4,13 @@ import { scene, renderer } from './scene.js';
 
 export let earth;
 
-export let earthRotationDisabled = false;
+export const earthSettings = {
+    segments: { width: 128, height: 64 },
+    heightScale: 1.0,
+    useDisplacement: false,
+};
 
-const textureLoader = new THREE.TextureLoader();
+export let earthRotationDisabled = false;
 
 export const EARTH_ANGULAR_VELOCITY = 2 * Math.PI / 86164;  // Earth rotation in rad/s (real period is ~23h56m4s)
 
@@ -29,8 +33,10 @@ export const EARTH_ROUGHNESS_TEXTURES = [
     { value: 'assets/earth/ocean-4k.png', label: 'Earth ocean map (4K)' },
 ];
 
+const textureLoader = new THREE.TextureLoader();
+
 export function createEarth() {
-    const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 128, 128);
+    const geometry = new THREE.SphereGeometry(EARTH_RADIUS, earthSettings.segments.width, earthSettings.segments.height);
 
     // MeshStandardMaterial costs few fps in comparison with MeshPhongMaterial
     const material = new THREE.MeshPhongMaterial({
@@ -47,6 +53,24 @@ export function createEarth() {
     earth.receiveShadow = true;
 
     scene.add(earth);
+}
+
+export function updateEarthSegments(width, height) {
+    if (width === earthSettings.segments.width && height === earthSettings.segments.height) return;
+    const oldGeometry = earth.geometry;
+    earth.geometry = new THREE.SphereGeometry(
+        EARTH_RADIUS,
+        Math.max(32, width),
+        Math.max(16, height || width / 2)
+    );
+    if (earth.material.displacementMap) {
+        earth.material.displacementMap.needsUpdate = true;
+    }
+    if (earth.material.normalMap) {
+        earth.material.normalMap.needsUpdate = true;
+    }
+    oldGeometry.dispose();
+    earthSettings.segments = { width, height };
 }
 
 export function updateEarthMainTexture(value) {
@@ -66,20 +90,25 @@ export function updateEarthMainTexture(value) {
     if (oldTexture && oldTexture !== earth.material.map) oldTexture.dispose();
 }
 
-export function updateEarthBumpTexture(value) {
-    const oldTexture = earth.material.bumpMap;
+export function updateEarthHeightTexture(value) {
+    const oldTexture = earth.material.bumpMap || earth.material.displacementMap;
     earth.material.bumpMap = null;
+    earth.material.displacementMap = null;
     earth.material.needsUpdate = true;
     if (value !== 'none') {
-        textureLoader.load(value, (newTexture) => {
+        textureLoader.load(value, newTexture => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-            earth.material.bumpMap = newTexture;
-            earth.material.bumpScale = 20;
+            if (earthSettings.useDisplacement) {
+                earth.material.displacementMap = newTexture;
+                earth.material.displacementScale = earthSettings.heightScale;
+            } else {
+                earth.material.bumpMap = newTexture;
+                earth.material.bumpScale = 20;
+            }
             earth.material.needsUpdate = true;
-            console.log('Earth bump map (' + value + ') loaded and applied');
         });
     }
-    if (oldTexture && oldTexture !== earth.material.bumpMap) {
+    if (oldTexture && oldTexture !== earth.material.bumpMap && oldTexture !== earth.material.displacementMap) {
         oldTexture.dispose();
     }
 }
@@ -114,7 +143,7 @@ export function updateEarthRoughnessTexture(value) {
             console.log('Earth roughness map (' + value + ') loaded and applied');
         });
     }
-    if (oldTexture && oldTexture !== earth.material.bumpMap) {
+    if (oldTexture && oldTexture !== earth.material.roughnessMap) {
         oldTexture.dispose();
     }
 }
@@ -122,3 +151,4 @@ export function updateEarthRoughnessTexture(value) {
 export function disableEarthRotation(value) {
     earthRotationDisabled = value;
 }
+

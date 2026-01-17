@@ -4,7 +4,10 @@ import { cartesianToPolar, polarToCartesian, normalizeLongitude } from '../utils
 import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis, updateGrid } from '../scene/scene.js';
 import { updateCannonWithParams, fireCannonball, cannonParams } from '../scene/cannon.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
-import { EARTH_MAIN_TEXTURES, EARTH_BUMP_TEXTURES, EARTH_ROUGHNESS_TEXTURES, updateEarthMainTexture, updateEarthBumpTexture, updateEarthRoughnessTexture, earthRotationDisabled, disableEarthRotation } from '../scene/earth.js';
+import {
+    EARTH_MAIN_TEXTURES, EARTH_BUMP_TEXTURES, EARTH_ROUGHNESS_TEXTURES, updateEarthMainTexture, updateEarthRoughnessTexture,
+    updateEarthHeightTexture, earthRotationDisabled, disableEarthRotation, earthSettings, updateEarthSegments
+} from '../scene/earth.js';
 import { MOON_MAIN_TEXTURES, MOON_BUMP_TEXTURES, updateMoonMainTexture, updateMoonBumpTexture, disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect } from './camera.js'
@@ -156,15 +159,15 @@ function createInterface() {
     // Display panel 
     const displayPanel = addPanel(contentWrapper, 'Display');
     let defaultEarthMainTexture = 'assets/earth/bluemarble-5k.jpg';
-    let defaultEarthBumpTexture = 'assets/earth/bump-4k.jpg';
     let defaultEarthRoughnessTexture = 'assets/earth/ocean-4k.png';
+    let defaultEarthBumpTexture = 'assets/earth/bump-4k.jpg';
     let defaultMoonMainTexture = 'assets/moon/nasa-4k.jpg';
     let defaultMoonBumpTexture = 'assets/moon/bump-5k.jpg';
     let defaultMilkyWayTexture = 'assets/milkyway/solarsystemscope-8k.jpg';
     if (isMobile) {
         defaultEarthMainTexture = 'assets/earth/bluemarble-5k.jpg';
-        defaultEarthBumpTexture = 'none';
         defaultEarthRoughnessTexture = 'none';
+        defaultEarthBumpTexture = 'none';
         defaultMoonMainTexture = 'assets/moon/nasa-2k.jpg';
         defaultMoonBumpTexture = 'none';
         defaultMilkyWayTexture = 'assets/milkyway/solarsystemscope-4k.jpg';
@@ -174,12 +177,24 @@ function createInterface() {
     addCustomSelect(earthPanel, 'Earth main texture', null, EARTH_MAIN_TEXTURES, defaultEarthMainTexture,
         value => { updateEarthMainTexture(value); });
     updateEarthMainTexture(defaultEarthMainTexture);
-    addCustomSelect(earthPanel, 'Earth bump texture', null, EARTH_BUMP_TEXTURES, defaultEarthBumpTexture,
-        value => { updateEarthBumpTexture(value); });
-    updateEarthBumpTexture(defaultEarthBumpTexture);
     addCustomSelect(earthPanel, 'Earth roughness texture', null, EARTH_ROUGHNESS_TEXTURES, defaultEarthRoughnessTexture,
         value => { updateEarthRoughnessTexture(value); });
     updateEarthRoughnessTexture(defaultEarthRoughnessTexture);
+    const earthHeightTextureSelect = addCustomSelect(earthPanel, 'Earth height texture', null, EARTH_BUMP_TEXTURES, defaultEarthBumpTexture,
+        value => { updateEarthHeightTexture(value); });
+    updateEarthHeightTexture(defaultEarthBumpTexture);
+    addCheckbox(earthPanel, 'Use as displacement (BETA)', '', false, value => {
+        earthSettings.useDisplacement = value;
+        updateEarthHeightTexture(earthHeightTextureSelect.value);
+    });
+    addSlider(earthPanel, 'Height scale', 0.1, 100, earthSettings.heightScale, value => {
+        earthSettings.heightScale = value;
+        updateEarthHeightTexture(earthHeightTextureSelect.value);
+    }, 1);
+    const earthSegmentsSlider = addSlider(earthPanel, 'Sphere segments (width)', 32, 2048, earthSettings.segments.width, val => {
+        updateEarthSegments(val, Math.round(val / 2));
+    }, 32);
+    earthSegmentsSlider.value = earthSettings.segments.width;
     // Moon sub panel
     const moonPanel = addSubPanel(displayPanel, 'Moon', false);
     addCustomSelect(moonPanel, 'Moon main texture', null, MOON_MAIN_TEXTURES, defaultMoonMainTexture,
@@ -198,7 +213,7 @@ function createInterface() {
     });
     //const gridPanel = addSubPanel(universePanel, 'Grid', false);
     const spacer = document.createElement('div');
-    spacer.style.height = '12px'; 
+    spacer.style.height = '12px';
     universePanel.appendChild(spacer);
     const gridShowCheckbox = addCheckbox(universePanel, 'Display space grid', '', false, value => {
         updateGrid(value, parseFloat(gridSizeDisplay.value), parseFloat(gridResDisplay.value));

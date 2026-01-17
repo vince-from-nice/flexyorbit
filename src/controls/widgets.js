@@ -1,4 +1,9 @@
 export function addSlider(container, labelText, min, max, initial, onChange, step = 1, options = {}) {
+    min = Number(min);
+    max = Number(max);
+    initial = Number(initial);
+    step = Number(step) || 1;
+
     const wrapper = document.createElement('div');
     wrapper.classList.add('slider-wrapper');
 
@@ -100,7 +105,7 @@ export function addSlider(container, labelText, min, max, initial, onChange, ste
         } else {
             norm = (val - min) / (max - min);
         }
-        slider.value = slider.min + norm * (slider.max - slider.min);
+        slider.value = Number(slider.min) + norm * (Number(slider.max) - Number(slider.min));
         onChange(val);
         // updateGradient();
     };
