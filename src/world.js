@@ -28,6 +28,8 @@ class World {
 
     // Add asteroids
     this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-Moon', 'Moon', 2000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#2d29a2', 50));
+    // const e = this.getEntityByName('Asteroid-Moon');
+    // e.velocity = e.velocity.multiplyScalar(0.5);
   }
 
   addEntity(entity) {
@@ -107,6 +109,11 @@ class World {
       .add(eastDir.clone().multiplyScalar(Math.sin(aziRad))).normalize();
 
     const velocity = velDir.multiplyScalar(orbitalSpeed);
+
+    // Add reference body velocity if not Earth
+    if (isMoon && refEntity) {
+      velocity.add(refEntity.velocity.clone());
+    }
 
     // Create mesh according to type
     let mesh;

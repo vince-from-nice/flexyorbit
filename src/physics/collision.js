@@ -1,58 +1,72 @@
 import * as THREE from 'three';
-
-import { EARTH_RADIUS, GLOBAL_SCALE } from '../constants.js';
-
+import { EARTH_RADIUS, scaleFromKm } from '../constants.js';
 import { scene } from '../scene/scene.js';
 import { earth } from '../scene/earth.js';
+import { moonMesh, MOON_RADIUS } from '../scene/moon.js';
 
-export const COLLISION_THRESHOLD_SCALED = 1 / GLOBAL_SCALE; // km scaled
+export const COLLISION_THRESHOLD_SCALED = scaleFromKm(1);
 
 export function checkCollisionAndHandle(obj) {
-  const worldPos = new THREE.Vector3();
-  obj.body.getWorldPosition(worldPos);
+  // Skip self-collision for the Moon entity
+  if (obj.name === 'Moon') return false;
+  
+  const worldPosition = new THREE.Vector3();
+  obj.body.getWorldPosition(worldPosition);
 
-  const distanceToCenter = worldPos.length();
+  // Distance to Earth center (origin)
+  const distEarth = worldPosition.length();
+  const hitEarth = distEarth <= EARTH_RADIUS + COLLISION_THRESHOLD_SCALED;
 
-  if (distanceToCenter <= EARTH_RADIUS + COLLISION_THRESHOLD_SCALED) {
+  // Distance to Moon center
+  const moonCenter = moonMesh.position; 
+  const vecToMoon = moonCenter.clone().sub(worldPosition);
+  const distMoon = vecToMoon.length();
+  const hitMoon = distMoon <= MOON_RADIUS + COLLISION_THRESHOLD_SCALED;
 
-    obj.isFreeFalling = false;
-    obj.velocity.set(0, 0, 0);
-    obj.accelerations.friction.set(0, 0, 0);
+  if (!hitEarth && !hitMoon) return false;
 
-    // World position
-    const surfaceWorldPos = new THREE.Vector3()
-      .copy(obj.body.getWorldPosition(new THREE.Vector3()))
-      .normalize()
-      .multiplyScalar(EARTH_RADIUS + COLLISION_THRESHOLD_SCALED);
+  // First hit
+  const hitMoonFirst = hitMoon && (!hitEarth || distMoon < distEarth);
+  const target = hitMoonFirst ? moonMesh : earth;
+  const targetRadius = hitMoonFirst ? MOON_RADIUS : EARTH_RADIUS;
+  const targetCenter = hitMoonFirst ? moonCenter : new THREE.Vector3();
 
-    // Changing parent after world position fetching
-    if (obj.body.parent !== earth) {
-      scene.remove(obj);
-      earth.add(obj.body);
-    }
+  // Calculate the surface position of the impact (more accurate than just using the current position)
+  const direction = worldPosition.clone().sub(targetCenter).normalize();
+  const surfaceWorldPos = targetCenter.clone().add(
+    direction.multiplyScalar(targetRadius + COLLISION_THRESHOLD_SCALED)
+  );
 
-    // Explicit conversion from world to earth
-    earth.worldToLocal(surfaceWorldPos);
+  // Stop mouvement
+  obj.isFreeFalling = false;
+  obj.velocity.set(0, 0, 0);
+  obj.accelerations.friction.set(0, 0, 0);
 
-    obj.body.position.copy(surfaceWorldPos);
-
-    // Change body color
-    if (obj.body instanceof THREE.Group) {
-      obj.body.children.forEach(child => {
-        if (child.material) {
-          child.material.color.set(0x1a1a1a);
-          child.material.emissive.set(0x000000);
-        }
-      })
-    } else {
-      obj.body.material.color.set(0x1a1a1a);
-      obj.body.material.emissive.set(0x000000);
-    }
-
-    console.log(obj.name + " has impacted !");
-
-    return true;
+  // Reparenting
+  if (obj.body.parent !== target) {
+    scene.remove(obj.body);
+    target.add(obj.body);
   }
 
-  return false;
+  // Passage en coordonnées locales du corps cible
+  target.worldToLocal(surfaceWorldPos);
+  obj.body.position.copy(surfaceWorldPos);
+
+  // Darken
+  const darken = (m) => {
+    if (m.material) {
+      m.material.color.set(0x1a1a1a);
+      if (m.material.emissive) m.material.emissive.set(0x000000);
+    }
+  };
+
+  if (obj.body instanceof THREE.Group) {
+    obj.body.traverse(c => c.isMesh && darken(c));
+  } else if (obj.body.isMesh) {
+    darken(obj.body);
+  }
+
+  console.log(`${obj.name} impacted ${hitMoonFirst ? 'Moon' : 'Earth'}!`);
+
+  return true;
 }
