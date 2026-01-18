@@ -9,7 +9,7 @@ export function animatePhysicalEntities(delta) {
   for (const obj of world.getPhysicalEntities()) {
     if (obj?.isFreeFalling) {
 
-      obj.accelerations.gravity = getGravitationalAcceleration(obj.body.position);
+      obj.accelerations.gravity = getGravitationalAcceleration(obj);
 
       obj.accelerations.friction = getDragAcceleration(obj);
 

@@ -1,17 +1,40 @@
 import * as THREE from 'three';
 
-import { GLOBAL_SCALE, EARTH_RADIUS} from '../constants.js';
+import { EARTH_RADIUS, scaleFromMeter } from '../constants.js';
 
-export const G_SURFACE = 9.81 / 1000 / GLOBAL_SCALE // Nedd to scale the value of 9.81 m/s²
+import { MOON_RADIUS } from '../scene/moon.js';
 
-export function getGravitationalAcceleration(position) {
-  const r = position.length()
-  if (r < 0.01) return new THREE.Vector3();
+import world from '../world.js';
 
-  // Newton said a = G × M / r² but a = g₀ × (R / r)² is more easy
-  const magnitude = G_SURFACE * (EARTH_RADIUS * EARTH_RADIUS) / (r * r);
+export const G_EARTH_SURFACE = scaleFromMeter(9.81);
 
-  const direction = position.clone().normalize().negate();
+export const G_MOON_SURFACE = scaleFromMeter(1.625);
 
-  return direction.multiplyScalar(magnitude);
+
+export function getGravitationalAcceleration(entity) {
+  const accel = new THREE.Vector3();
+  const position = entity.body.position;
+
+  // Earth gravity 
+  const rEarth = position.length();
+  if (rEarth > 0.01) {
+    // Newton said a = G × M / r² but a = g₀ × (R / r)² is more easy
+    const magnitude = G_EARTH_SURFACE * (EARTH_RADIUS * EARTH_RADIUS) / (rEarth * rEarth);
+    const direction = position.clone().normalize().negate();
+    accel.add(direction.multiplyScalar(magnitude));
+  }
+
+  // Moon gravity
+  const moon = world.getEntityByName('Moon');
+  if (moon && moon !== entity) {
+    const diff = moon.body.position.clone().sub(position);
+    const rMoon = diff.length();
+    if (rMoon > 0.01) {
+      const magnitude = G_MOON_SURFACE * (MOON_RADIUS * MOON_RADIUS) / (rMoon * rMoon);
+      const direction = diff.normalize();
+      accel.add(direction.multiplyScalar(magnitude));
+    }
+  }
+
+  return accel;
 }
