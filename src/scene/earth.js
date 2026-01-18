@@ -26,7 +26,7 @@ export const EARTH_NIGHT_TEXTURES = [
     { value: 'none', label: 'Nothing (no city lightning)' },
     { value: 'assets/earth/night-4k.jpg', label: 'Earth night map (4K)' },
     { value: 'assets/earth/night-8k.jpg', label: 'Earth night map (8K)' },
-    { value: 'assets/earth/night-16k.jpg', label: 'Earth night map (16K)' },
+    { value: 'assets/earth/night-13k.jpg', label: 'Earth night map (13K)' },
 ];
 
 export const EARTH_ROUGHNESS_TEXTURES = [
@@ -45,15 +45,12 @@ const textureLoader = new THREE.TextureLoader();
 export function createEarth() {
     const geometry = new THREE.SphereGeometry(EARTH_RADIUS, earthSettings.segments.width, earthSettings.segments.height);
 
-    // MeshStandardMaterial costs few fps in comparison with MeshPhongMaterial
     const material = new THREE.MeshStandardMaterial({
         roughness: 0.85,
         metalness: 0.05,
-        // roughness and metalness don't exist for MeshPhongMaterial (only shininess)
-        //shininess: 10, 
         emissiveMap: null,
-        emissive: new THREE.Color(0xffffff),
-        emissiveIntensity: 1.2,
+        emissive: new THREE.Color(0xffffaa),
+        emissiveIntensity: 1.4,
         // To avoid z-buffer issues
         side: THREE.FrontSide,
         depthWrite: true,
@@ -72,66 +69,56 @@ export function createEarth() {
 export function updateEarthMainTexture(value) {
     const oldTexture = earth.material.map;
     earth.material.map = null;
-    earth.material.needsUpdate = true;
     if (value !== 'none') {
         textureLoader.load(value, (newTexture) => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
             newTexture.minFilter = THREE.LinearMipMapLinearFilter;
-            newTexture.needsUpdate = true;
             earth.material.map = newTexture;
-            earth.material.needsUpdate = true;
             console.log('Earth main texture (' + value + ') loaded and applied');
         });
     }
     if (oldTexture && oldTexture !== earth.material.map) oldTexture.dispose();
+    earth.material.needsUpdate = true;
 }
 
 export function updateEarthNightTexture(value) {
-    const material = earth.material;
-    const oldTexture = material.emissiveMap;
+    const oldTexture = earth.material.emissiveMap;
     if (value === 'none') {
-        material.emissiveMap = null;
-        material.emissiveIntensity = 0.0; // or keep value ?
+        earth.material.emissiveMap = null;
+        earth.material.emissiveIntensity = 0.0; // or keep value ?
     } else {
         textureLoader.load(value, (newTexture) => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
             newTexture.minFilter = THREE.LinearMipMapLinearFilter;
             newTexture.colorSpace = THREE.SRGBColorSpace;
-            material.emissiveMap = newTexture;
-            material.emissiveIntensity = 1.5;
-            material.needsUpdate = true;
+            earth.material.emissiveMap = newTexture;
+            earth.material.emissiveIntensity = 1.5;
             console.log('Earth night texture (' + value + ') loaded and applied');
         });
     }
     if (oldTexture) oldTexture.dispose();
+    earth.material.needsUpdate = true;
 }
 
 export function updateEarthRoughnessTexture(value) {
     const oldTexture = earth.material.roughnessMap;
     earth.material.roughnessMap = null;
-    earth.material.needsUpdate = true;
     if (value !== 'none') {
         textureLoader.load(value, (newTexture) => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
             newTexture.encoding = THREE.sRGBEncoding;
-            // roughnessMap is for MeshStandardMaterial, use specularMap for MeshPhongMaterial
-            // earth.material.specularMap = newTexture;
-            // earth.material.specular = new THREE.Color(0x555555);
             earth.material.roughnessMap = newTexture;
-            earth.material.needsUpdate = true;
             console.log('Earth roughness map (' + value + ') loaded and applied');
         });
     }
-    if (oldTexture && oldTexture !== earth.material.roughnessMap) {
-        oldTexture.dispose();
-    }
+    if (oldTexture && oldTexture !== earth.material.roughnessMap) oldTexture.dispose();
+    earth.material.needsUpdate = true;
 }
 
 export function updateEarthHeightTexture(value) {
     const oldTexture = earth.material.bumpMap || earth.material.displacementMap;
     earth.material.bumpMap = null;
     earth.material.displacementMap = null;
-    earth.material.needsUpdate = true;
     if (value !== 'none') {
         textureLoader.load(value, newTexture => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -142,12 +129,12 @@ export function updateEarthHeightTexture(value) {
                 earth.material.bumpMap = newTexture;
                 earth.material.bumpScale = 20;
             }
-            earth.material.needsUpdate = true;
         });
     }
     if (oldTexture && oldTexture !== earth.material.bumpMap && oldTexture !== earth.material.displacementMap) {
         oldTexture.dispose();
     }
+    earth.material.needsUpdate = true;
 }
 
 export function updateEarthSegments(width, height) {
@@ -169,8 +156,7 @@ export function updateEarthSegments(width, height) {
 }
 
 function patchEarthMaterialShader() {
-    const material = earth.material;
-    material.onBeforeCompile = (shader) => {
+    earth.material.onBeforeCompile = (shader) => {
         // Insert custom roughness calculation : Thanks to https://franky-arkon-digital.medium.com/make-your-own-earth-in-three-js-8b875e281b1e
         // if the ocean map is white for the ocean, then we have to reverse the b&w values for roughness
         // We want the land to have 1.0 roughness, and the ocean to have a minimum of 0.5 roughness
@@ -204,7 +190,7 @@ function patchEarthMaterialShader() {
         // console.log(fragmentShader);
         // console.log("======================================");
     };
-    material.needsUpdate = true;
+    earth.material.needsUpdate = true;
 }
 
 export function disableEarthRotation(value) {
