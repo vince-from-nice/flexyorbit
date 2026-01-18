@@ -63,9 +63,6 @@ export function initCameraControls() {
             cameraCurrentModeIndex = (cameraCurrentModeIndex + 1) % CAMERA_MODES.length;
             const nextMode = CAMERA_MODES[cameraCurrentModeIndex].value;
             cameraModeSelectRef.value = nextMode;
-            if (cameraModeSelectRef && cameraModeSelectRef.value !== cameraCurrentMode) {
-                cameraModeSelectRef.value = cameraCurrentMode;
-            }
         }
     });
 
@@ -74,9 +71,6 @@ export function initCameraControls() {
             cameraCurrentTargetIndex = 0;
             const nextTarget = CAMERA_TARGETS[cameraCurrentTargetIndex].value;
             cameraTargetSelectRef.value = nextTarget;
-            if (cameraTargetSelectRef && cameraTargetSelectRef.value !== cameraCurrentTarget) {
-                cameraTargetSelectRef.value = cameraCurrentTarget;
-            }
         }
     });
 }

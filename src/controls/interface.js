@@ -39,6 +39,14 @@ export function initControls() {
             entitySelectRef.value = entitySelectOptions[nextEntityIndex].value;
         }
     });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyR' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            const currentEntityIndex = entitySelectOptions.findIndex(e => e.value === currentEntityName);
+            const nextEntityIndex = currentEntityIndex > 0 ? currentEntityIndex - 1 : entitySelectOptions.length - 1;
+            entitySelectRef.value = entitySelectOptions[nextEntityIndex].value;
+        }
+    });
 }
 
 function createInterface() {
@@ -160,7 +168,7 @@ function createInterface() {
     // Display panel 
     const displayPanel = addPanel(contentWrapper, 'Display');
     let defaultEarthMainTexture = 'assets/earth/bluemarble-5k.jpg';
-    let defaultEarthNightTexture = 'assets/earth/night-8k.jpg';
+    let defaultEarthNightTexture = 'assets/earth/night-4k.jpg';
     let defaultEarthRoughnessTexture = 'assets/earth/ocean-4k.png';
     let defaultEarthBumpTexture = 'assets/earth/bump-4k.jpg';
     let defaultMoonMainTexture = 'assets/moon/nasa-4k.jpg';
