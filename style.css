@@ -245,7 +245,7 @@ body {
 }
 
 /* ==========================================================================
-   LABELS
+   LABELS & LINKS
    ========================================================================== */
 
 label {
@@ -254,10 +254,6 @@ label {
     font-size: 12px;              
     color: #aaccff;
 }
-
-/* ==========================================================================
-   LINKS
-   ========================================================================== */
 
 a {
     color: #eee;          
@@ -277,34 +273,9 @@ a:visited {
     color: #eee;
 }
 
-/* ==========================================================================
-   INPUTS
-   ========================================================================== */
-
-/* WebKit (Chrome, Edge, etc.) : espace supplémentaire autour des flèches */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-    margin-left: 8px !important;
-    opacity: 1;
-}
-
-/* Firefox : push le texte à gauche pour créer un espace visuel */
-input[type="number"] {
-    text-indent: 4px;
-    padding-right: 20px !important;
-}
-
-input[type="range"]::-webkit-slider-thumb,
-input[type="range"]::-moz-range-thumb {
-    background: #00dfff;
-}
-
-input[type="checkbox"] {
-    accent-color: #00dfff;
-}
 
 /* ==========================================================================
-   SLIDERS
+   SLIDERS & INPUTS
    ========================================================================== */
 
 /* Range slider full width */
@@ -331,12 +302,12 @@ input[type="checkbox"] {
 }
 
 .slider-top-row input[type="number"] {
-    width: 78px;                    
+    width: 80px;                    
     text-align: right;
     background: rgba(40, 60, 90, 0.7);
     border: 1px solid #00aaff88;
     color: #fff;
-    padding: 4px 16px 4px 8px;       
+    padding: 4px 4px 4px 4px; 
     border-radius: 4px;
     font-size: 12px;                 
 }
