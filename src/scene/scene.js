@@ -20,15 +20,15 @@ export const MILKYWAY_TEXTURES = [
 
 export function createScene(container) {
   scene = new THREE.Scene();
-  scene.add(new THREE.AmbientLight(0x404040, 0.4));
+  scene.add(new THREE.AmbientLight(0x404040, 0.1));
   createRenderer(container);
   createCamera();
   createAxis();
   createMilkyWay();
+  createSun();
   createEarth();
   createAtmosphere();
   createMoon();
-  createSun();
   createCannon();
   //reateNewCannonballTrail();
 }

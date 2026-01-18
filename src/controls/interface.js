@@ -5,8 +5,9 @@ import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis, updateGrid } fro
 import { updateCannonWithParams, fireCannonball, cannonParams } from '../scene/cannon.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
 import {
-    EARTH_MAIN_TEXTURES, EARTH_BUMP_TEXTURES, EARTH_ROUGHNESS_TEXTURES, updateEarthMainTexture, updateEarthRoughnessTexture,
-    updateEarthHeightTexture, earthRotationDisabled, disableEarthRotation, earthSettings, updateEarthSegments
+    EARTH_MAIN_TEXTURES, EARTH_NIGHT_TEXTURES, EARTH_ROUGHNESS_TEXTURES, EARTH_BUMP_TEXTURES,
+    updateEarthMainTexture, updateEarthNightTexture, updateEarthRoughnessTexture, updateEarthHeightTexture,
+    earthSettings, updateEarthSegments, earthRotationDisabled, disableEarthRotation
 } from '../scene/earth.js';
 import { MOON_MAIN_TEXTURES, MOON_BUMP_TEXTURES, updateMoonMainTexture, updateMoonBumpTexture, disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
@@ -159,6 +160,7 @@ function createInterface() {
     // Display panel 
     const displayPanel = addPanel(contentWrapper, 'Display');
     let defaultEarthMainTexture = 'assets/earth/bluemarble-5k.jpg';
+    let defaultEarthNightTexture = 'assets/earth/night-8k.jpg';
     let defaultEarthRoughnessTexture = 'assets/earth/ocean-4k.png';
     let defaultEarthBumpTexture = 'assets/earth/bump-4k.jpg';
     let defaultMoonMainTexture = 'assets/moon/nasa-4k.jpg';
@@ -166,6 +168,7 @@ function createInterface() {
     let defaultMilkyWayTexture = 'assets/milkyway/solarsystemscope-8k.jpg';
     if (isMobile) {
         defaultEarthMainTexture = 'assets/earth/bluemarble-5k.jpg';
+        defaultEarthNightTexture = 'assets/earth/night-4k.jpg';
         defaultEarthRoughnessTexture = 'none';
         defaultEarthBumpTexture = 'none';
         defaultMoonMainTexture = 'assets/moon/nasa-2k.jpg';
@@ -177,6 +180,9 @@ function createInterface() {
     addCustomSelect(earthPanel, 'Earth main texture', null, EARTH_MAIN_TEXTURES, defaultEarthMainTexture,
         value => { updateEarthMainTexture(value); });
     updateEarthMainTexture(defaultEarthMainTexture);
+    addCustomSelect(earthPanel, 'Earth night texture', null, EARTH_NIGHT_TEXTURES, defaultEarthNightTexture,
+        value => { updateEarthNightTexture(value); });
+    updateEarthNightTexture(defaultEarthNightTexture);
     addCustomSelect(earthPanel, 'Earth roughness texture', null, EARTH_ROUGHNESS_TEXTURES, defaultEarthRoughnessTexture,
         value => { updateEarthRoughnessTexture(value); });
     updateEarthRoughnessTexture(defaultEarthRoughnessTexture);
