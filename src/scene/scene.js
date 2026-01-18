@@ -3,7 +3,7 @@ import { EARTH_RADIUS, scaleFromKm } from '../constants.js';
 import { SUN_DISTANCE, createSun } from './sun.js';
 import { createEarth, earth, earthRotationDisabled, EARTH_ANGULAR_VELOCITY } from './earth.js';
 import { createAtmosphere } from './atmosphere.js';
-import { createMoon, moonMesh, moonRotationDisabled, MOON_ANGULAR_VELOCITY } from './moon.js';
+import { moonMesh, moonRotationDisabled, MOON_ANGULAR_VELOCITY } from './moon.js';
 import { createCannon } from './cannon.js';
 
 export let scene, camera, renderer, axesGroup, gridMesh;
@@ -28,7 +28,7 @@ export function createScene(container) {
   createSun();
   createEarth();
   createAtmosphere();
-  createMoon();
+  //createMoon();
   createCannon();
   //reateNewCannonballTrail();
 }

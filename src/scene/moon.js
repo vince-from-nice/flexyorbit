@@ -5,8 +5,8 @@ import { ENTITY_TYPES, Entity } from '../entity.js';
 import { scene, renderer } from './scene.js';
 import { Trail } from './trails.js';
 
-const MOON_RADIUS_KM = 1737
-const MOON_DISTANCE_KM = 384400
+export const MOON_RADIUS_KM = 1737
+export const MOON_DISTANCE_KM = 384400
 
 export const MOON_RADIUS = MOON_RADIUS_KM / GLOBAL_SCALE
 export const MOON_DISTANCE = MOON_DISTANCE_KM / GLOBAL_SCALE
@@ -33,7 +33,7 @@ export const MOON_BUMP_TEXTURES = [
 
 const textureLoader = new THREE.TextureLoader();
 
-export function createMoon() {
+export function createMoonMesh() {
     const geometry = new THREE.SphereGeometry(MOON_RADIUS, 128, 128);
 
     const material = new THREE.MeshStandardMaterial({
@@ -44,19 +44,6 @@ export function createMoon() {
     moonMesh = new THREE.Mesh(geometry, material);
 
     moonMesh.receiveShadow = true;
-
-    const moonEntity = new Entity(ENTITY_TYPES.MOON, "Moon", moonMesh,  { trail: new Trail(true, "TRAIL_STYLE_WITH_SINGLE_LINES", '#74a9b2') });
-    world.addEntity(moonEntity);
-    scene.add(moonMesh);
-
-    moonMesh.position.set(0, 0, -MOON_DISTANCE);
-    //moon.position.set(1000, 1000, -2000);
-
-    moonEntity.isFreeFalling = true;
-    const initialDirection = new THREE.Vector3(-1, 0, 0);
-    const initialSpeed = scaleFromKm(MOON_ORBITAL_SPEED_AVG_KMS)
-    //const initialSpeed = scaleFromKm(0);
-    moonEntity.velocity = initialDirection.multiplyScalar(initialSpeed)
 
     return moonMesh;
 }
