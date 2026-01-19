@@ -67,58 +67,66 @@ export function createEarth() {
 }
 
 export function updateEarthMainTexture(value) {
-    const oldTexture = earth.material.map;
-    earth.material.map = null;
     if (value !== 'none') {
         textureLoader.load(value, (newTexture) => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
             newTexture.minFilter = THREE.LinearMipMapLinearFilter;
+            const oldTexture = earth.material.map;
             earth.material.map = newTexture;
+            if (oldTexture && oldTexture !== earth.material.map) oldTexture.dispose();
+            earth.material.needsUpdate = true;
             console.log('Earth main texture (' + value + ') loaded and applied');
         });
+    } else {
+        const oldTexture = earth.material.map;
+        if (oldTexture) oldTexture.dispose();
+        earth.material.map = null;
+        earth.material.needsUpdate = true;
     }
-    if (oldTexture && oldTexture !== earth.material.map) oldTexture.dispose();
-    earth.material.needsUpdate = true;
 }
 
 export function updateEarthNightTexture(value) {
-    const oldTexture = earth.material.emissiveMap;
-    if (value === 'none') {
-        earth.material.emissiveMap = null;
-        earth.material.emissiveIntensity = 0.0; // or keep value ?
-    } else {
+    if (value !== 'none') {
         textureLoader.load(value, (newTexture) => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
             newTexture.minFilter = THREE.LinearMipMapLinearFilter;
             newTexture.colorSpace = THREE.SRGBColorSpace;
             earth.material.emissiveMap = newTexture;
             earth.material.emissiveIntensity = 1.5;
+            const oldTexture = earth.material.emissiveMap;
+            if (oldTexture && oldTexture !== earth.material.emissiveMap) oldTexture.dispose();
+            earth.material.needsUpdate = true;
             console.log('Earth night texture (' + value + ') loaded and applied');
         });
+    } else {
+        const oldTexture = earth.material.emissiveMap;
+        if (oldTexture) oldTexture.dispose();
+        earth.material.emissiveMap = null;
+        earth.material.emissiveIntensity = 0.0;
+        earth.material.needsUpdate = true;
     }
-    if (oldTexture) oldTexture.dispose();
-    earth.material.needsUpdate = true;
 }
 
 export function updateEarthRoughnessTexture(value) {
-    const oldTexture = earth.material.roughnessMap;
-    earth.material.roughnessMap = null;
     if (value !== 'none') {
         textureLoader.load(value, (newTexture) => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
             newTexture.encoding = THREE.sRGBEncoding;
             earth.material.roughnessMap = newTexture;
+            const oldTexture = earth.material.roughnessMap;
+            if (oldTexture && oldTexture !== earth.material.roughnessMap) oldTexture.dispose();
+            earth.material.needsUpdate = true;
             console.log('Earth roughness map (' + value + ') loaded and applied');
         });
+    } else {
+        const oldTexture = earth.material.roughnessMap;
+        if (oldTexture) oldTexture.dispose();
+        earth.material.roughnessMap = null;
+        earth.material.needsUpdate = true;
     }
-    if (oldTexture && oldTexture !== earth.material.roughnessMap) oldTexture.dispose();
-    earth.material.needsUpdate = true;
 }
 
 export function updateEarthHeightTexture(value) {
-    const oldTexture = earth.material.bumpMap || earth.material.displacementMap;
-    earth.material.bumpMap = null;
-    earth.material.displacementMap = null;
     if (value !== 'none') {
         textureLoader.load(value, newTexture => {
             newTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -129,12 +137,19 @@ export function updateEarthHeightTexture(value) {
                 earth.material.bumpMap = newTexture;
                 earth.material.bumpScale = 20;
             }
+            const oldTexture = earth.material.bumpMap || earth.material.displacementMap;
+            if (oldTexture && oldTexture !== earth.material.bumpMap && oldTexture !== earth.material.displacementMap) {
+                oldTexture.dispose();
+            }
+            earth.material.needsUpdate = true;
         });
+    } else {
+        const oldTexture = earth.material.bumpMap || earth.material.displacementMap;
+        if (oldTexture) oldTexture.dispose();
+        earth.material.bumpMap = null;
+        earth.material.displacementMap = null;
+        earth.material.needsUpdate = true;
     }
-    if (oldTexture && oldTexture !== earth.material.bumpMap && oldTexture !== earth.material.displacementMap) {
-        oldTexture.dispose();
-    }
-    earth.material.needsUpdate = true;
 }
 
 export function updateEarthSegments(width, height) {
