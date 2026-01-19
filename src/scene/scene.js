@@ -20,7 +20,7 @@ export const MILKYWAY_TEXTURES = [
 
 export function createScene(container) {
   scene = new THREE.Scene();
-  scene.add(new THREE.AmbientLight(0x404040, 0.1));
+  scene.add(new THREE.AmbientLight(0x404040, 0.0));
   createRenderer(container);
   createCamera();
   createAxis();
@@ -28,9 +28,7 @@ export function createScene(container) {
   createSun();
   createEarth();
   createAtmosphere();
-  //createMoon();
   createCannon();
-  //reateNewCannonballTrail();
 }
 
 function createCamera() {
@@ -94,21 +92,18 @@ function createGrid(size_km = 1000000, res_km = 10000, color = '#333333') {
   const step = scaleFromKm(res_km);
   const halfSize = size / 2;
   const vertices = [];
-  // Lines parallel to X-axis
   for (let y = -halfSize; y <= halfSize; y += step) {
     for (let z = -halfSize; z <= halfSize; z += step) {
       vertices.push(-halfSize, y, z);
       vertices.push(halfSize, y, z);
     }
   }
-  // Lines parallel to Y-axis
   for (let x = -halfSize; x <= halfSize; x += step) {
     for (let z = -halfSize; z <= halfSize; z += step) {
       vertices.push(x, -halfSize, z);
       vertices.push(x, halfSize, z);
     }
   }
-  // Lines parallel to Z-axis
   for (let x = -halfSize; x <= halfSize; x += step) {
     for (let y = -halfSize; y <= halfSize; y += step) {
       vertices.push(x, y, -halfSize);

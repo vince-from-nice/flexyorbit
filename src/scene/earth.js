@@ -197,7 +197,7 @@ function patchEarthMaterialShader() {
                 #endif
 
                 // Modulate emissive to show only on shadow side
-                float mixFactor = 1.0 - smoothstep(-0.15, 0.05, NdotL);  // 1.0 = full night, 0.0 = day
+                float mixFactor = 1.0 - smoothstep(-0.4, 0.080, NdotL);  // 1.0 = full night, 0.0 = day
                 totalEmissiveRadiance *= mixFactor;
             #endif`);
         // const fragmentShader = shader.fragmentShader.substring(shader.fragmentShader.length - 10000);
