@@ -5,6 +5,7 @@ import { scene } from './scene/scene.js';
 import { Trail } from './scene/trails.js';
 import { createMoonMesh, MOON_RADIUS, MOON_RADIUS_KM, MOON_DISTANCE_KM } from './scene/moon.js';
 import { createSatelliteMesh } from './scene/satellite.js';
+import { createAsteroidMesh } from './scene/asteroid.js';
 import { refreshEntitySelect } from './controls/interface.js';
 import { refreshCameraTargets } from './controls/camera.js'
 
@@ -125,11 +126,7 @@ class World {
         mesh = createSatelliteMesh();
         break;
       case ENTITY_TYPES.ASTEROID:
-        mesh = new THREE.Mesh(
-          // TODO real mesh for asteroid
-          new THREE.SphereGeometry(scaleFromKm(100), 16, 16),
-          new THREE.MeshStandardMaterial({ color: '#aaa' })
-        );
+        mesh = createAsteroidMesh();
         break;
       default:
         throw new Error(`Unsupported entity type: ${type}`);
