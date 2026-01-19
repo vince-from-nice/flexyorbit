@@ -1,4 +1,4 @@
-export function addSlider(container, labelText, min, max, initial, onChange, step = 1, options = {}) {
+export function addSlider(container, labelText, min, max, initial, step, onChange, options = {}) {
     min = Number(min);
     max = Number(max);
     initial = Number(initial);

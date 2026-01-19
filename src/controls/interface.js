@@ -85,9 +85,9 @@ function createInterface() {
         timeButton.textContent = timePaused ? 'Resume' : 'Stop';
     });
     timePanel.appendChild(timeButton);
-    addSlider(timePanel, 'Time acceleration', 1, 100000, timeAcceleration, value => {
+    addSlider(timePanel, 'Time acceleration', 1, 100000, timeAcceleration, 1.0, value => {
         timeAcceleration = value;
-    }, 1.0, { logarithmic: true });
+    }, { logarithmic: true });
     addCheckbox(timePanel, 'Disable Earth & Moon rotation', '', earthRotationDisabled, value => {
         disableEarthRotation(value);
         disableMoonRotation(value);
@@ -118,55 +118,53 @@ function createInterface() {
         entityPanel.parentElement.open = false;
     }
 
-    // Atmosphere panel
-    const atmoshpereGroupDiv = addPanel(contentWrapper, 'Atmosphere');
-    addSlider(atmoshpereGroupDiv, 'Height (km)', 0, 600, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
-        setAtmosphereHeight(value);
-    }, 5);
-    addSlider(atmoshpereGroupDiv, 'Density at sea level (kg/m³)', 0.0, 2.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
-        setAtmosphereDensity(value);
-    }, 0.01);
-    // addSlider(atmoshpereGroupDiv, 'Opacity', 0.0, 1.0, 0.7, value => {
-    //     setAtmosphereOpacity(value);
-    // }, 0.1);
-    // addSlider(atmoshpereGroupDiv, 'PowFactor', 0.0, 10.0, 2.0, value => {
-    //     setAtmosphereParam1(value);
-    // }, 0.1);
-    // addSlider(atmoshpereGroupDiv, 'Multiplier', 0.0, 10.0, 5.0, value => {
-    //     setAtmosphereParam2(value);
-    // }, 0.1);
-
     // Cannon panel
     const cannonPanel = addPanel(contentWrapper, 'Cannon');
-    [cannonLatDisplay, cannonLatSlider] = addSlider(cannonPanel, 'Latitude (°)', -90, 90, cannonParams.lat, value => {
+    cannonPanel.parentElement.open = true;
+
+    // Cannon position sub panel
+    const cannonPositionPanel = addSubPanel(cannonPanel, 'Position', false);
+    [cannonLatDisplay, cannonLatSlider] = addSlider(cannonPositionPanel, 'Latitude (°)', -90, 90, cannonParams.lat, 0.1, value => {
         cannonParams.lat = value;
         updateCannonWithParams();
-    }, 0.1);
-    [cannonLonDisplay, cannonLonSlider] = addSlider(cannonPanel, 'Longitude (°)', -180, 180, cannonParams.lon, value => {
+    });
+    [cannonLonDisplay, cannonLonSlider] = addSlider(cannonPositionPanel, 'Longitude (°)', -180, 180, cannonParams.lon, 0.1, value => {
         cannonParams.lon = value;
         updateCannonWithParams();
-    }, 0.1);
-    [cannonAltDisplay, cannonAltSlider] = addSlider(cannonPanel, 'Altitude (km)', 0, 3000, cannonParams.altitude, value => {
+    });
+    [cannonAltDisplay, cannonAltSlider] = addSlider(cannonPositionPanel, 'Altitude (km)', 0, 3000, cannonParams.altitude, 1, value => {
         cannonParams.altitude = value;
         updateCannonWithParams();
-    }, 1);
-    [cannonAzDisplay, cannonAzSlider] = addSlider(cannonPanel, 'Azimuth (°)', 0, 360, cannonParams.azimuth, value => {
+    });
+    [cannonAzDisplay, cannonAzSlider] = addSlider(cannonPositionPanel, 'Azimuth (°)', 0, 360, cannonParams.azimuth, 1, value => {
         cannonParams.azimuth = value;
         updateCannonWithParams();
-    }, 1);
+    });
 
-    // Camera panel    
-    const cameraPanel = addPanel(contentWrapper, 'Camera');
-    cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
-        value => { switchCameraTarget(value); });
-    registerCameraTargetSelect(cameraTargetSelect);
-    const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
-        value => { switchCameraMode(value); });
-    registerCameraModeSelect(cameraModeSelect);
-    cameraTargetSelect.value = 'Earth';
+    // Canon fire sub panel
+    const cannonFirePanel = addSubPanel(cannonPanel, 'Fire control', true);
+    [cannonElDisplay, cannonElSlider] = addSlider(cannonFirePanel, 'Elevation (°)', 0, 90, cannonParams.elevation, 1, value => {
+        cannonParams.elevation = value;
+        updateCannonWithParams();
+    });
+    addSlider(cannonFirePanel, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, 0.01, value => {
+        cannonParams.speed = value;
+    });
+    const fireButton = document.createElement('button');
+    fireButton.textContent = 'Fire the cannonball !';
+    fireButton.classList.add('fire-button');
+    fireButton.addEventListener('click', () => {
+        fireCannonball();
+    });
+    window.addEventListener('keydown', (e) => {
+        if (e.key == " " || e.code == "Space") {
+            fireCannonball();
+        }
+    });
+    cannonFirePanel.appendChild(fireButton);
 
-    // Display panel 
-    const displayPanel = addPanel(contentWrapper, 'Display');
+    // Settings panel 
+    const settingsPanel = addPanel(contentWrapper, 'Settings');
     let defaultEarthMainTexture = 'assets/earth/bluemarble-5k.jpg';
     let defaultEarthNightTexture = 'assets/earth/night-4k.jpg';
     let defaultEarthRoughnessTexture = 'assets/earth/ocean-4k.png';
@@ -183,8 +181,37 @@ function createInterface() {
         defaultMoonBumpTexture = 'none';
         defaultMilkyWayTexture = 'assets/milkyway/solarsystemscope-4k.jpg';
     }
+
+    // Camera sub panel    
+    const cameraPanel = addSubPanel(settingsPanel, 'Camera', false);
+    cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
+        value => { switchCameraTarget(value); });
+    registerCameraTargetSelect(cameraTargetSelect);
+    const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
+        value => { switchCameraMode(value); });
+    registerCameraModeSelect(cameraModeSelect);
+    cameraTargetSelect.value = 'Earth';
+
+    // Atmosphere sub panel
+    const atmoshperePanel = addSubPanel(settingsPanel, 'Atmosphere', false);
+    addSlider(atmoshperePanel, 'Height (km)', 0, 600, 5, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
+        setAtmosphereHeight(value);
+    });
+    addSlider(atmoshperePanel, 'Density at sea level (kg/m³)', 0.0, 2.0, 0.01, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
+        setAtmosphereDensity(value);
+    });
+    // addSlider(atmoshpereGroupDiv, 'Opacity', 0.0, 1.0, 0.7, value => {
+    //     setAtmosphereOpacity(value);
+    // }, 0.1);
+    // addSlider(atmoshpereGroupDiv, 'PowFactor', 0.0, 10.0, 2.0, value => {
+    //     setAtmosphereParam1(value);
+    // }, 0.1);
+    // addSlider(atmoshpereGroupDiv, 'Multiplier', 0.0, 10.0, 5.0, value => {
+    //     setAtmosphereParam2(value);
+    // }, 0.1);
+
     // Earth sub panel
-    const earthPanel = addSubPanel(displayPanel, 'Earth', false);
+    const earthPanel = addSubPanel(settingsPanel, 'Earth textures', false);
     addCustomSelect(earthPanel, 'Main texture', null, EARTH_MAIN_TEXTURES, defaultEarthMainTexture,
         value => { updateEarthMainTexture(value); });
     updateEarthMainTexture(defaultEarthMainTexture);
@@ -201,24 +228,26 @@ function createInterface() {
         earthSettings.useDisplacement = value;
         updateEarthHeightTexture(earthHeightTextureSelect.value);
     });
-    addSlider(earthPanel, 'Height scale', 0.1, 100, earthSettings.heightScale, value => {
+    addSlider(earthPanel, 'Height scale', 0.1, 100, earthSettings.heightScale, 1, value => {
         earthSettings.heightScale = value;
         updateEarthHeightTexture(earthHeightTextureSelect.value);
-    }, 1);
-    const earthSegmentsSlider = addSlider(earthPanel, 'Sphere segments (width)', 32, 2048, earthSettings.segments.width, val => {
+    });
+    const earthSegmentsSlider = addSlider(earthPanel, 'Sphere segments (width)', 32, 2048, earthSettings.segments.width, 32, val => {
         updateEarthSegments(val, Math.round(val / 2));
-    }, 32);
+    });
     earthSegmentsSlider.value = earthSettings.segments.width;
+
     // Moon sub panel
-    const moonPanel = addSubPanel(displayPanel, 'Moon', false);
+    const moonPanel = addSubPanel(settingsPanel, 'Moon textures', false);
     addCustomSelect(moonPanel, 'Main texture', null, MOON_MAIN_TEXTURES, defaultMoonMainTexture,
         value => { updateMoonMainTexture(value); });
     updateMoonMainTexture(defaultMoonMainTexture);
     addCustomSelect(moonPanel, 'Bump texture', null, MOON_BUMP_TEXTURES, defaultMoonBumpTexture,
         value => { updateMoonBumpTexture(value); });
     updateMoonBumpTexture(defaultMoonBumpTexture);
+
     // Universe sub panel
-    const universePanel = addSubPanel(displayPanel, 'Universe', false);
+    const universePanel = addSubPanel(settingsPanel, 'Universe', false);
     addCustomSelect(universePanel, 'Milky Way background', null, MILKYWAY_TEXTURES, defaultMilkyWayTexture,
         value => { updateMilkyWayTexture(value); });
     updateMilkyWayTexture(defaultMilkyWayTexture);
@@ -233,40 +262,17 @@ function createInterface() {
         updateGrid(value, parseFloat(gridSizeDisplay.value), parseFloat(gridResDisplay.value));
     });
     let gridSizeDisplay, gridSizeSlider;
-    [gridSizeDisplay, gridSizeSlider] = addSlider(universePanel, 'Size (km)', 10000, 1000000, 1000000, value => {
+    [gridSizeDisplay, gridSizeSlider] = addSlider(universePanel, 'Size (km)', 10000, 1000000, 1000000, 10000, value => {
         if (gridShowCheckbox.checked) {
             updateGrid(true, value, parseFloat(gridResDisplay.value));
         }
-    }, 10000, { logarithmic: false });
+    }, { logarithmic: false });
     let gridResDisplay, gridResSlider;
-    [gridResDisplay, gridResSlider] = addSlider(universePanel, 'Resolution (km)', 1000, 100000, 100000, value => {
+    [gridResDisplay, gridResSlider] = addSlider(universePanel, 'Resolution (km)', 1000, 100000, 100000, 1000, value => {
         if (gridShowCheckbox.checked) {
             updateGrid(true, parseFloat(gridSizeDisplay.value), value);
         }
-    }, 1000, { logarithmic: false });
-
-    // Fire control panel
-    const firePanel = addPanel(contentWrapper, 'Fire control');
-    [cannonElDisplay, cannonElSlider] = addSlider(firePanel, 'Elevation (°)', 0, 90, cannonParams.elevation, value => {
-        cannonParams.elevation = value;
-        updateCannonWithParams();
-    }, 1);
-    addSlider(firePanel, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, value => {
-        cannonParams.speed = value;
-    }, 0.01);
-    const fireButton = document.createElement('button');
-    fireButton.textContent = 'Fire the cannonball !';
-    fireButton.classList.add('fire-button');
-    fireButton.addEventListener('click', () => {
-        fireCannonball();
-    });
-    window.addEventListener('keydown', (e) => {
-        if (e.key == " " || e.code == "Space") {
-            fireCannonball();
-        }
-    });
-    firePanel.parentElement.open = true;
-    firePanel.appendChild(fireButton);
+    }, { logarithmic: false });
 }
 
 export function updateCannonWidgets() {
@@ -311,8 +317,8 @@ function rebuildEntityPanel() {
     addReadOnly(infosPanel, 'Type', entity.type);
     entityWidgets.status = addReadOnly(infosPanel, 'Status', entity.isFreeFalling ? 'Flying' : 'Crashed', entity.isFreeFalling ? 'rgba(37, 233, 40, 1)' : '#f44');
     addEditableText(infosPanel, 'Description', entity.description, v => entity.description = v);
-    addSlider(infosPanel, 'Mass (kg)', 1, 10000, entity.mass, v => entity.mass = v, 1, { logarithmic: true });
-    addSlider(infosPanel, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, v => entity.dragCoefficient = v, 0.0001);
+    addSlider(infosPanel, 'Mass (kg)', 1, 10000, entity.mass, 1, v => entity.mass = v, { logarithmic: true });
+    addSlider(infosPanel, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, 0.0001, v => entity.dragCoefficient = v);
     //addReadOnly(basic, 'Cross-section (m²)', entity.crossSectionArea.toExponential(2));
 
     // ────────────────── Scaling panel ─────────────────────────────────────
@@ -321,28 +327,27 @@ function rebuildEntityPanel() {
     const initialGlobal = (currentScale.x + currentScale.y + currentScale.z) / 3;
     let xSlider, ySlider, zSlider;
     addSlider(
-        scalingPanel, 'Global scale', 1, 100000, initialGlobal,
+        scalingPanel, 'Global scale', 1, 100000, initialGlobal, 1,
         value => {
             entity.body.scale.set(value, value, value);
             if (xSlider) xSlider.setValue(value);
             if (ySlider) ySlider.setValue(value);
             if (zSlider) zSlider.setValue(value);
         },
-        1,
         { logarithmic: true }
     );
-    addSlider(scalingPanel, 'Scale X', 1, 100000, currentScale.x,
-        value => { entity.body.scale.x = value; }, 1, { logarithmic: true }
+    addSlider(scalingPanel, 'Scale X', 1, 100000, currentScale.x, 1,
+        value => { entity.body.scale.x = value; }, { logarithmic: true }
     );
     xSlider = scalingPanel.querySelectorAll('input[type="range"]')[1];  // le 2e slider (index 1)
 
-    addSlider(scalingPanel, 'Scale Y', 1, 100000, currentScale.y,
-        value => { entity.body.scale.y = value; }, 1, { logarithmic: true }
+    addSlider(scalingPanel, 'Scale Y', 1, 100000, currentScale.y, 1,
+        value => { entity.body.scale.y = value; }, { logarithmic: true }
     );
     ySlider = scalingPanel.querySelectorAll('input[type="range"]')[2];
 
-    addSlider(scalingPanel, 'Scale Z', 1, 100000, currentScale.z,
-        value => { entity.body.scale.z = value; }, 1, { logarithmic: true }
+    addSlider(scalingPanel, 'Scale Z', 1, 100000, currentScale.z, 1,
+        value => { entity.body.scale.z = value; }, { logarithmic: true }
     );
     zSlider = scalingPanel.querySelectorAll('input[type="range"]')[3];
 
@@ -353,9 +358,9 @@ function rebuildEntityPanel() {
     const pos = entity.body.position;
     const polar = cartesianToPolar(pos);
     //polar.lon = normalizeLongitude(polar.lon - (earth.rotation.y * 180 / Math.PI));
-    entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, updateEntityLat, 0.1);
-    entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, updateEntityLon, 0.1);
-    entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 1, 500000, polar.alt, updateEntityAlt, 1, { logarithmic: true });
+    entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, 0.1, updateEntityLat);
+    entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, 0.1, updateEntityLon);
+    entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 1, 500000, polar.alt, 1, updateEntityAlt, { logarithmic: true });
 
     const worldGroup = addSubPanel(positionPanel, 'World coords', true);
     entityWidgets.posX = addReadOnly(worldGroup, 'X (km)', scaleToKm(pos.x).toFixed(0));
@@ -474,7 +479,7 @@ function rebuildEntityPanel() {
         entity.trail.updateTrailColor(colorInput.value);
     };
     trailPanel.appendChild(colorInput);
-    addSlider(trailPanel, 'Lifetime (seconds)', 0, 100, entity.trail.lifetime, v => entity.trail.lifetime = v, 1);
+    addSlider(trailPanel, 'Lifetime (seconds)', 0, 100, entity.trail.lifetime, 1, v => entity.trail.lifetime = v);
 }
 
 export function updateEntityWidgets() {
