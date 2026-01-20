@@ -194,10 +194,10 @@ function createInterface() {
 
     // Atmosphere sub panel
     const atmoshperePanel = addSubPanel(settingsPanel, 'Atmosphere', false);
-    addSlider(atmoshperePanel, 'Height (km)', 0, 600, 5, ATMOSPHERE_REGULAR_HEIGHT_KM, value => {
+    addSlider(atmoshperePanel, 'Height (km)', 0, 600, ATMOSPHERE_REGULAR_HEIGHT_KM, 5, value => {
         setAtmosphereHeight(value);
     });
-    addSlider(atmoshperePanel, 'Density at sea level (kg/m³)', 0.0, 2.0, 0.01, ATMOSPHERE_REGULAR_DENSITY_SURFACE, value => {
+    addSlider(atmoshperePanel, 'Density at sea level (kg/m³)', 0.0, 2.0, ATMOSPHERE_REGULAR_DENSITY_SURFACE, 0.01, value => {
         setAtmosphereDensity(value);
     });
     // addSlider(atmoshpereGroupDiv, 'Opacity', 0.0, 1.0, 0.7, value => {
