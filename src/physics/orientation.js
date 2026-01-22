@@ -8,7 +8,7 @@ export function updateEntityOrientation(obj, deltaTime) {
     // vector (i.e., towards the center of the Earth or possibly the Moon).
     if (obj.type === ENTITY_TYPES.SATELLITE) {
         const accel = obj.accelerations.total;
-        if (accel.lengthSq() > 1e-8) {
+        if (accel.lengthSq() > 0) {
             const targetPos = obj.body.position.clone().add(accel.clone().normalize());
             obj.body.lookAt(targetPos);
         }
@@ -18,7 +18,7 @@ export function updateEntityOrientation(obj, deltaTime) {
     // the thrust of the engines), but we still drift its orientation in the same direction as its velocity vector.
     else if (obj.type === ENTITY_TYPES.SPACESHIP) {
         const velocity = obj.velocity;
-        if (velocity.lengthSq() > 1e-8) {
+        if (velocity.lengthSq() > 0) {
             const currentForward = new THREE.Vector3(0, 0, 1).applyQuaternion(obj.body.quaternion);
             const targetDir = velocity.clone().normalize();
             const cross = currentForward.clone().cross(targetDir);

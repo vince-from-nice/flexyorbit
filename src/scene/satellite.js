@@ -101,16 +101,16 @@ export function createSatelliteMesh() {
   group.add(createArm(rightAttach, rightInnerBottom));
 
   // Lights
-  const centralLight = new THREE.PointLight(0xffffff, 1.2, 0);
+  const centralLight = new THREE.PointLight(0xffffff, 0.02, 0);
   centralLight.position.set(0, 0, 0);
   group.add(centralLight);
-  const frontLight = new THREE.PointLight(0xffffff, 1.5, 0);
+  const frontLight = new THREE.PointLight(0xffffff, 0.03, 0);
   frontLight.position.set(0, 0, scaleFromMeter(3.5));
   group.add(frontLight);
-  const backLight = new THREE.PointLight(0xffffff, 1.5, 0);
+  const backLight = new THREE.PointLight(0xffffff, 0.03, 0);
   backLight.position.set(0, 0, scaleFromMeter(-3.5));
   group.add(backLight);
-  const sideLightLeft = new THREE.PointLight(0xffffff, 1.0, 0);
+  const sideLightLeft = new THREE.PointLight(0xffffff, 0.02, 0);
   sideLightLeft.position.set(scaleFromMeter(-8), 0, 0);
   group.add(sideLightLeft);
   const sideLightRight = sideLightLeft.clone();

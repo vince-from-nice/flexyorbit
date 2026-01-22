@@ -8,16 +8,16 @@ export async function createSpaceshipMesh() {
   const group = new THREE.Group();
 
   const loader = new GLTFLoader();
-  const gltf = await loader.loadAsync('/assets/spaceships/LowPoly Spaceship/scene.gltf');
+  const gltf = await loader.loadAsync('/assets/spaceships/LowPoly/scene.gltf');
   const object = gltf.scene;
 
   // const objLoader = new OBJLoader();
   // const mtlLoader = new MTLLoader();
-  //const materials = await mtlLoader.loadAsync('/assets/spaceships/LowPoly SpaceShip/SpaceShip.mtl');  
-  //const materials = await mtlLoader.loadAsync('/assets/spaceships/Star Sparrow/SpaceShip.mtl');  
+  //const materials = await mtlLoader.loadAsync('/assets/spaceships/LowPoly/SpaceShip.mtl');  
+  //const materials = await mtlLoader.loadAsync('/assets/spaceships/Star/SpaceShip.mtl');  
   //objLoader.setMaterials(materials);
-  //const object = await objLoader.loadAsync('/assets/spaceships/LowPoly SpaceShip/SpaceShip.obj');
-  // const object = await objLoader.loadAsync('/assets/spaceships/Star Sparrow/StarSparrow01.obj');
+  //const object = await objLoader.loadAsync('/assets/spaceships/LowPoly/SpaceShip.obj');
+  // const object = await objLoader.loadAsync('/assets/spaceships/StarSparrow/StarSparrow01.obj');
 
   object.traverse((child) => {
     if (child.isMesh) {
@@ -36,7 +36,7 @@ export async function createSpaceshipMesh() {
   // Rotate 
   object.rotation.y = - Math.PI;
 
-  object.scale.setScalar(3);
+  object.scale.setScalar(0.03);
 
   group.add(object);
 
