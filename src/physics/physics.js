@@ -4,8 +4,9 @@ import { printPos } from '../utils.js';
 import { getGravitationalAcceleration } from './gravitation.js';
 import { getDragAcceleration } from './friction.js';
 import { checkCollisionAndHandle } from './collision.js';
+import { updateEntityOrientation } from './orientation.js';
 
-export function animatePhysicalEntities(delta) {
+export function animatePhysicalEntities(deltaTime) {
   for (const obj of world.getPhysicalEntities()) {
     if (obj?.isFreeFalling) {
 
@@ -16,15 +17,14 @@ export function animatePhysicalEntities(delta) {
       obj.accelerations.total = obj.accelerations.gravity.clone().add(obj.accelerations.friction);
 
       // v += a * dt
-      obj.velocity.addScaledVector(obj.accelerations.total, delta);
+      obj.velocity.addScaledVector(obj.accelerations.total, deltaTime);
 
       // pos += v * dt
-      obj.body.position.addScaledVector(obj.velocity, delta);
+      obj.body.position.addScaledVector(obj.velocity, deltaTime);
 
       checkCollisionAndHandle(obj);
 
-      // Update orientation 
-      if (obj.name != 'moon') obj.body.lookAt(0, 0, 0); // cheat code, not torque computation !
+      updateEntityOrientation(obj, deltaTime);
 
       //console.log("Animate " + obj.name + " with velocity = " + scaleToKm(obj.velocity.length()).toFixed(3) + " km/s and position = " + printPos(obj.body.position));
     }
@@ -38,4 +38,3 @@ export function animatePhysicalEntities(delta) {
     }
   };
 }
-

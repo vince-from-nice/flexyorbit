@@ -6,6 +6,7 @@ import { Trail } from './scene/trails.js';
 import { createMoonMesh, MOON_RADIUS, MOON_RADIUS_KM, MOON_DISTANCE_KM } from './scene/moon.js';
 import { createSatelliteMesh } from './scene/satellite.js';
 import { createAsteroidMesh } from './scene/asteroid.js';
+import { createSpaceshipMesh } from './scene/spaceship.js';
 import { refreshEntitySelect } from './controls/interface.js';
 import { refreshCameraTargets } from './controls/camera.js'
 
@@ -28,9 +29,11 @@ class World {
     this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#2', 'Earth', 35786, 0, 0, -90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50));
 
     // Add asteroids
-    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-Moon', 'Moon', 2000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#2d29a2', 50));
-    // const e = this.getEntityByName('Asteroid-Moon');
-    // e.velocity = e.velocity.multiplyScalar(0.5);
+    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithEarth', 'Earth', 6000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
+    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithMoon', 'Moon', 2000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
+
+    // Add spaceships
+    this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', 'Earth', 5000, 0, 0, 70, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#173bbc', 50));
   }
 
   addEntity(entity) {
@@ -73,7 +76,7 @@ class World {
     }
   }
 
-  createAndAddEntity(type, name, referenceBody = 'Earth',
+  async createAndAddEntity(type, name, referenceBody = 'Earth',
     altitudeKm = 550, latitudeDeg = 0, longitudeDeg = 0, azimuthDeg = 90,
     trail = null, options = {}) {
     const isMoon = referenceBody === 'Moon';
@@ -128,15 +131,28 @@ class World {
       case ENTITY_TYPES.ASTEROID:
         mesh = createAsteroidMesh();
         break;
+      case ENTITY_TYPES.SPACESHIP:
+        mesh = await createSpaceshipMesh();
+        break;
       default:
         throw new Error(`Unsupported entity type: ${type}`);
     }
 
     mesh.position.copy(pos);
 
+    // Orient body to face velocity direction
+    if (velocity.lengthSq() > 0.0001) {
+      const targetQuat = new THREE.Quaternion();
+      targetQuat.setFromUnitVectors(
+        new THREE.Vector3(0, 0, 1),
+        velocity.clone().normalize()
+      );
+      mesh.quaternion.copy(targetQuat);
+    }
+
     const entity = new Entity(type, name, mesh, {
       mass: options.mass ?? 1000,
-      dragCoefficient: isMoon ? 0 : 0.0002, // no drag on Moon
+      dragCoefficient: isMoon ? 0 : 0.0002,
       isFreeFalling: true,
       velocity,
       trail,
