@@ -1,9 +1,3 @@
-import world from '../world.js';
-import { scaleToKm } from '../constants.js';
-import { cartesianToPolar, polarToCartesian, normalizeLongitude } from '../utils.js';
-import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis, updateGrid } from '../scene/scene.js';
-import { updateCannonWithParams, fireCannonball, cannonParams } from '../scene/cannon.js';
-import { TRAIL_STYLES } from '../scene/trails.js';
 import {
     EARTH_MAIN_TEXTURES, EARTH_NIGHT_TEXTURES, EARTH_ROUGHNESS_TEXTURES, EARTH_BUMP_TEXTURES,
     updateEarthMainTexture, updateEarthNightTexture, updateEarthRoughnessTexture, updateEarthHeightTexture,
@@ -11,42 +5,24 @@ import {
 } from '../scene/earth.js';
 import { MOON_MAIN_TEXTURES, MOON_BUMP_TEXTURES, updateMoonMainTexture, updateMoonBumpTexture, disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
-import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect } from './camera.js'
+import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis, updateGrid } from '../scene/scene.js';
+import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, changeCameraTarget, registerCameraModeSelect, registerCameraTargetSelect } from './camera.js'
 import { initDraggings } from './dragging.js'
-import { addSlider, addCheckbox, addCustomSelect, addPanel, addSubPanel, addReadOnly, addEditableText } from './widgets.js'
+import { addSlider, addCheckbox, addCustomSelect, addPanel, addSubPanel } from './widgets.js'
+import { createCannonWidgets } from './ui_cannon.js';
+import { createEntityWidgets } from './ui_entity.js';
+import { createSpaceshipWidgets } from './ui_spaceship.js';
 
 export let timePaused = false;
 export let timeAcceleration = 100;
 
-let cannonLatDisplay, cannonLonDisplay, cannonAltDisplay, cannonAzDisplay, cannonElDisplay;
-let cannonLatSlider, cannonLonSlider, cannonAltSlider, cannonAzSlider, cannonElSlider;
-
-let currentEntityName = 'Satellite-1', entityPanelContainer = null, entitySelectRef = null;
-const entityWidgets = {}, entitySelectOptions = [];;
-
 export function initControls() {
-
-    initCameraControls();
 
     createInterface();
 
+    initCameraControls();
+
     initDraggings();
-
-    window.addEventListener('keydown', (e) => {
-        if (e.code === 'KeyT' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            const currentEntityIndex = entitySelectOptions.findIndex(e => e.value === currentEntityName);
-            const nextEntityIndex = currentEntityIndex < entitySelectOptions.length - 1 ? currentEntityIndex + 1 : 0;
-            entitySelectRef.value = entitySelectOptions[nextEntityIndex].value;
-        }
-    });
-
-    window.addEventListener('keydown', (e) => {
-        if (e.code === 'KeyR' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            const currentEntityIndex = entitySelectOptions.findIndex(e => e.value === currentEntityName);
-            const nextEntityIndex = currentEntityIndex > 0 ? currentEntityIndex - 1 : entitySelectOptions.length - 1;
-            entitySelectRef.value = entitySelectOptions[nextEntityIndex].value;
-        }
-    });
 }
 
 function createInterface() {
@@ -100,18 +76,7 @@ function createInterface() {
 
     // Entity panel
     const entityPanel = addPanel(contentWrapper, 'Objects');
-    let cameraTargetSelect;
-    entitySelectRef = addCustomSelect(entityPanel, 'Select an object or press \'t\' to switch', null, [], null,
-        name => {
-            currentEntityName = name;
-            rebuildEntityPanel();
-            //switchCameraTarget(name);
-            if (cameraTargetSelect) cameraTargetSelect.value = name;
-        }
-    );
-    entityPanelContainer = document.createElement('div');
-    entityPanel.appendChild(entityPanelContainer);
-    refreshEntitySelect();
+    createEntityWidgets(entityPanel);
     if (isMobile) {
         entityPanel.parentElement.open = false;
     } else {
@@ -121,47 +86,12 @@ function createInterface() {
     // Cannon panel
     const cannonPanel = addPanel(contentWrapper, 'Cannon');
     cannonPanel.parentElement.open = true;
+    createCannonWidgets(cannonPanel);
 
-    // Cannon position sub panel
-    const cannonPositionPanel = addSubPanel(cannonPanel, 'Position', false);
-    [cannonLatDisplay, cannonLatSlider] = addSlider(cannonPositionPanel, 'Latitude (°)', -90, 90, cannonParams.lat, 0.1, value => {
-        cannonParams.lat = value;
-        updateCannonWithParams();
-    });
-    [cannonLonDisplay, cannonLonSlider] = addSlider(cannonPositionPanel, 'Longitude (°)', -180, 180, cannonParams.lon, 0.1, value => {
-        cannonParams.lon = value;
-        updateCannonWithParams();
-    });
-    [cannonAltDisplay, cannonAltSlider] = addSlider(cannonPositionPanel, 'Altitude (km)', 0, 3000, cannonParams.altitude, 1, value => {
-        cannonParams.altitude = value;
-        updateCannonWithParams();
-    });
-    [cannonAzDisplay, cannonAzSlider] = addSlider(cannonPositionPanel, 'Azimuth (°)', 0, 360, cannonParams.azimuth, 1, value => {
-        cannonParams.azimuth = value;
-        updateCannonWithParams();
-    });
-
-    // Canon fire sub panel
-    const cannonFirePanel = addSubPanel(cannonPanel, 'Fire control', true);
-    [cannonElDisplay, cannonElSlider] = addSlider(cannonFirePanel, 'Elevation (°)', 0, 90, cannonParams.elevation, 1, value => {
-        cannonParams.elevation = value;
-        updateCannonWithParams();
-    });
-    addSlider(cannonFirePanel, 'Muzzle speed (km/s)', 0, 15, cannonParams.speed, 0.01, value => {
-        cannonParams.speed = value;
-    });
-    const fireButton = document.createElement('button');
-    fireButton.textContent = 'Fire the cannonball !';
-    fireButton.classList.add('fire-button');
-    fireButton.addEventListener('click', () => {
-        fireCannonball();
-    });
-    window.addEventListener('keydown', (e) => {
-        if (e.key == " " || e.code == "Space") {
-            fireCannonball();
-        }
-    });
-    cannonFirePanel.appendChild(fireButton);
+    // Spaceship panel
+    const spaceshipPanel = addPanel(contentWrapper, 'Spaceship');
+    spaceshipPanel.parentElement.open = false;
+    createSpaceshipWidgets(spaceshipPanel);
 
     // Settings panel 
     const settingsPanel = addPanel(contentWrapper, 'Settings');
@@ -184,13 +114,13 @@ function createInterface() {
 
     // Camera sub panel    
     const cameraPanel = addSubPanel(settingsPanel, 'Camera', false);
-    cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
+    const cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
         value => { switchCameraTarget(value); });
     registerCameraTargetSelect(cameraTargetSelect);
     const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
         value => { switchCameraMode(value); });
     registerCameraModeSelect(cameraModeSelect);
-    cameraTargetSelect.value = 'Earth';
+    //changeCameraTarget('Earth');
 
     // Atmosphere sub panel
     const atmoshperePanel = addSubPanel(settingsPanel, 'Atmosphere', false);
@@ -275,259 +205,3 @@ function createInterface() {
     }, { logarithmic: false });
 }
 
-export function updateCannonWidgets() {
-    if (cannonLatDisplay && cannonLatSlider) {
-        cannonLatDisplay.value = cannonParams.lat.toFixed(1);
-        cannonLatSlider.value = cannonParams.lat.toFixed(1);
-        cannonLatSlider.dispatchEvent(new Event('input'));
-    }
-    if (cannonLonDisplay && cannonLonSlider) {
-        cannonLonDisplay.value = cannonParams.lon.toFixed(1);
-        cannonLonSlider.value = cannonParams.lon.toFixed(1);
-        cannonLonSlider.dispatchEvent(new Event('input'));
-    }
-    if (cannonAltDisplay && cannonAltSlider) {
-        cannonAltDisplay.value = cannonParams.altitude.toFixed(0);
-        cannonAltSlider.value = cannonParams.altitude.toFixed(0);
-        cannonAltSlider.dispatchEvent(new Event('input'));
-    }
-    if (cannonAzDisplay && cannonAzSlider) {
-        cannonAzDisplay.value = cannonParams.azimuth.toFixed(0);
-        cannonAzSlider.value = cannonParams.azimuth.toFixed(0);
-        cannonAzSlider.dispatchEvent(new Event('input'));
-    }
-    if (cannonElDisplay && cannonElSlider) {
-        cannonElDisplay.value = cannonParams.elevation.toFixed(0);
-        cannonElSlider.value = cannonParams.elevation.toFixed(0);
-        cannonElSlider.dispatchEvent(new Event('input'));
-    }
-}
-
-function rebuildEntityPanel() {
-    entityPanelContainer.innerHTML = '';
-    if (!currentEntityName) return;
-
-    const entity = world.getEntityByName(currentEntityName);
-    if (!entity) return;
-
-    entityWidgets.current = entity;
-
-    // ── Infos panel ───────────────────────────────────────────────
-    const infosPanel = addSubPanel(entityPanelContainer, 'Infos', false);
-    addReadOnly(infosPanel, 'Type', entity.type);
-    entityWidgets.status = addReadOnly(infosPanel, 'Status', entity.isFreeFalling ? 'Flying' : 'Crashed', entity.isFreeFalling ? 'rgba(37, 233, 40, 1)' : '#f44');
-    addEditableText(infosPanel, 'Description', entity.description, v => entity.description = v);
-    addSlider(infosPanel, 'Mass (kg)', 1, 10000, entity.mass, 1, v => entity.mass = v, { logarithmic: true });
-    addSlider(infosPanel, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, 0.0001, v => entity.dragCoefficient = v);
-    //addReadOnly(basic, 'Cross-section (m²)', entity.crossSectionArea.toExponential(2));
-
-    // ────────────────── Scaling panel ─────────────────────────────────────
-    const scalingPanel = addSubPanel(entityPanelContainer, 'Scaling', false);
-    const currentScale = entity.body.scale;
-    const initialGlobal = (currentScale.x + currentScale.y + currentScale.z) / 3;
-    let xSlider, ySlider, zSlider;
-    addSlider(
-        scalingPanel, 'Global scale', 1, 100000, initialGlobal, 1,
-        value => {
-            entity.body.scale.set(value, value, value);
-            if (xSlider) xSlider.setValue(value);
-            if (ySlider) ySlider.setValue(value);
-            if (zSlider) zSlider.setValue(value);
-        },
-        { logarithmic: true }
-    );
-    addSlider(scalingPanel, 'Scale X', 1, 100000, currentScale.x, 1,
-        value => { entity.body.scale.x = value; }, { logarithmic: true }
-    );
-    xSlider = scalingPanel.querySelectorAll('input[type="range"]')[1];  // le 2e slider (index 1)
-
-    addSlider(scalingPanel, 'Scale Y', 1, 100000, currentScale.y, 1,
-        value => { entity.body.scale.y = value; }, { logarithmic: true }
-    );
-    ySlider = scalingPanel.querySelectorAll('input[type="range"]')[2];
-
-    addSlider(scalingPanel, 'Scale Z', 1, 100000, currentScale.z, 1,
-        value => { entity.body.scale.z = value; }, { logarithmic: true }
-    );
-    zSlider = scalingPanel.querySelectorAll('input[type="range"]')[3];
-
-    // ── Position panel ────────────────────────────────────────────
-    const positionPanel = addSubPanel(entityPanelContainer, 'Position', true);
-
-    const polarGroup = addSubPanel(positionPanel, 'Earth coords', true);
-    const pos = entity.body.position;
-    const polar = cartesianToPolar(pos);
-    //polar.lon = normalizeLongitude(polar.lon - (earth.rotation.y * 180 / Math.PI));
-    entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, 0.1, updateEntityLat);
-    entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, 0.1, updateEntityLon);
-    entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 1, 500000, polar.alt, 1, updateEntityAlt, { logarithmic: true });
-
-    const worldGroup = addSubPanel(positionPanel, 'World coords', true);
-    entityWidgets.posX = addReadOnly(worldGroup, 'X (km)', scaleToKm(pos.x).toFixed(0));
-    entityWidgets.posY = addReadOnly(worldGroup, 'Y (km)', scaleToKm(pos.y).toFixed(0));
-    entityWidgets.posZ = addReadOnly(worldGroup, 'Z (km)', scaleToKm(pos.z).toFixed(0));
-
-    function updateEntityLat(value) {
-        const entity = entityWidgets.current;
-        if (!entity) return;
-        const polar = cartesianToPolar(entity.body.position);
-        polar.lat = value;
-        //polar.lon = normalizeLongitude(polar.lon + (earth.rotation.y * 180 / Math.PI) % 360);
-        entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
-    }
-
-    function updateEntityLon(value) {
-        const entity = entityWidgets.current;
-        if (!entity) return;
-        const polar = cartesianToPolar(entity.body.position);
-        polar.lon = value;
-        //polar.lon = normalizeLongitude(value + (earth.rotation.y * 180 / Math.PI) % 360);
-        entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
-    }
-
-    function updateEntityAlt(value) {
-        const entity = entityWidgets.current;
-        if (!entity) return;
-        const polar = cartesianToPolar(entity.body.position);
-        polar.alt = value;
-        //polar.lon = normalizeLongitude(polar.lon + (earth.rotation.y * 180 / Math.PI) % 360);
-        entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
-    }
-
-    // ── Velocity panel ────────────────────────────────────────────
-    const velocityPanel = addSubPanel(entityPanelContainer, 'Velocity', false);
-    entityWidgets.vx = addReadOnly(velocityPanel, 'Vx (km/s)', scaleToKm(entity.velocity.x).toFixed(3));
-    entityWidgets.vy = addReadOnly(velocityPanel, 'Vy (km/s)', scaleToKm(entity.velocity.y).toFixed(3));
-    entityWidgets.vz = addReadOnly(velocityPanel, 'Vz (km/s)', scaleToKm(entity.velocity.z).toFixed(3));
-    entityWidgets.speed = addReadOnly(velocityPanel, 'Speed (km/s)', scaleToKm(entity.velocity.length()).toFixed(3));
-
-    addCheckbox(velocityPanel, 'Show velocity vector', null, entity.vectors.showVelocity, v => {
-        entity.vectors.showVelocity = v;
-    });
-
-    // ── Acceleration panel ───────────────────────────────────────
-    const accelerationPanel = addSubPanel(entityPanelContainer, 'Acceleration', false);
-    const fmt = v => v.toExponential(2);
-
-    const container = document.createElement('div');
-    Object.assign(container.style, {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '2px',
-        margin: '2px 0',
-        width: '100%'
-    });
-    accelerationPanel.appendChild(container);
-
-    entityWidgets.totalAcc = addReadOnly(container, 'Total (km/s²)', fmt(scaleToKm(entity.accelerations.total.length())));
-
-    const makeRow = () => {
-        const row = document.createElement('div');
-        Object.assign(row.style, {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-            minWidth: '100%',
-            boxSizing: 'border-box'
-        });
-        container.appendChild(row);
-        return row;
-    };
-
-    const gravRow = makeRow();
-    entityWidgets.gravAcc = addReadOnly(gravRow, '→ Gravity (km/s²)', fmt(scaleToKm(entity.accelerations.gravity.length())));
-    addCheckbox(gravRow, null, null, entity.vectors.showAccelerationForGravity, v => { entity.vectors.showAccelerationForGravity = v; });
-
-    const dragRow = makeRow();
-    entityWidgets.dragAcc = addReadOnly(dragRow, '→ Drag (km/s²)', fmt(scaleToKm(entity.accelerations.friction.length())));
-    addCheckbox(dragRow, null, null, entity.vectors.showAccelerationForDrag, v => { entity.vectors.showAccelerationForDrag = v; });
-
-    const engineRow = makeRow();
-    entityWidgets.engineAcc = addReadOnly(engineRow, '→ Engine (km/s²)', fmt(scaleToKm(entity.accelerations.engine.length())));
-    addCheckbox(engineRow, null, null, entity.vectors.showAccelerationForEngine, v => { entity.vectors.showAccelerationForEngine = v; });
-
-    const totalRow = makeRow();
-    const spacer = document.createElement('div');
-    spacer.style.width = '200px'; // fake space to align the global checkbox with others
-    spacer.style.visibility = 'hidden';
-    totalRow.style.marginTop = '10px';
-    totalRow.appendChild(spacer);
-    addCheckbox(totalRow, 'Show total acceleration vector', null, entity.vectors.showAcceleration, v => { entity.vectors.showAcceleration = v; });
-
-    // ── Trail panel ───────────────────────────────────────────────
-    const trailPanel = addSubPanel(entityPanelContainer, 'Trail display', false);
-
-    entityWidgets.trailEnabled = addCheckbox(trailPanel, 'Enabled', null, entity.trail.enabled, enabled => {
-        if (entity.trail) {
-            entity.trail.enabled = enabled;
-        }
-    });
-
-    entityWidgets.trailStyle = addCustomSelect(
-        trailPanel,
-        'Style and color',
-        null,
-        TRAIL_STYLES,
-        entity.trail.style,
-        newStyle => entity.trail.updateTrailStyle(newStyle)
-    );
-    const colorInput = document.createElement('input');
-    colorInput.type = 'color';
-    colorInput.value = entity.trail.color;
-    colorInput.onchange = () => {
-        entity.trail.updateTrailColor(colorInput.value);
-    };
-    trailPanel.appendChild(colorInput);
-    addSlider(trailPanel, 'Lifetime (seconds)', 0, 100, entity.trail.lifetime, 1, v => entity.trail.lifetime = v);
-}
-
-export function updateEntityWidgets() {
-    if (!currentEntityName) return;
-    const e = world.getEntityByName(currentEntityName);
-    if (!e) return;
-
-    entityWidgets.status.textContent = e.isFreeFalling ? 'Flying' : 'Crashed';
-    entityWidgets.status.style.color = e.isFreeFalling ? 'rgba(37, 233, 40, 1)' : '#f44';
-
-    // Position
-    const pos = e.body.position;
-    entityWidgets.posX.textContent = scaleToKm(pos.x).toFixed(0);
-    entityWidgets.posY.textContent = scaleToKm(pos.y).toFixed(0);
-    entityWidgets.posZ.textContent = scaleToKm(pos.z).toFixed(0);
-    const polarPos = cartesianToPolar(pos);
-    entityWidgets.lat[0].value = polarPos.lat.toFixed(1);
-    entityWidgets.lon[0].value = polarPos.lon.toFixed(1);
-    entityWidgets.alt[0].value = polarPos.alt.toFixed(0);
-    entityWidgets.lat[1].value = polarPos.lat.toFixed(1);
-    entityWidgets.lon[1].value = polarPos.lon.toFixed(1);
-    entityWidgets.alt[1].setValue(polarPos.alt);
-
-    // Speed
-    entityWidgets.vx.textContent = scaleToKm(e.velocity.x).toFixed(3);
-    entityWidgets.vy.textContent = scaleToKm(e.velocity.y).toFixed(3);
-    entityWidgets.vz.textContent = scaleToKm(e.velocity.z).toFixed(3);
-    entityWidgets.speed.textContent = scaleToKm(e.velocity.length()).toFixed(3);
-
-    // Accelerations
-    const s = scaleToKm;
-    entityWidgets.totalAcc.textContent = s(e.accelerations.total.length()).toExponential(2);
-    entityWidgets.gravAcc.textContent = s(e.accelerations.gravity.length()).toExponential(2);
-    entityWidgets.dragAcc.textContent = s(e.accelerations.friction.length()).toExponential(2);
-}
-
-export function refreshEntitySelect() {
-    if (!entitySelectRef) return;
-
-    entitySelectOptions.length = 0;
-    for (const entity of world.getPhysicalEntities()) {
-        entitySelectOptions.push({ value: entity.name, label: entity.name })
-    }
-
-    entitySelectRef.updateOptions(entitySelectOptions, currentEntityName);
-
-    if (!world.getEntityByName(currentEntityName)) {
-        currentEntityName = entitySelectOptions[0]?.value || null;
-        rebuildEntityPanel();
-    }
-}

@@ -7,7 +7,7 @@ import { createMoonMesh, MOON_RADIUS, MOON_RADIUS_KM, MOON_DISTANCE_KM } from '.
 import { createSatelliteMesh } from './scene/satellite.js';
 import { createAsteroidMesh } from './scene/asteroid.js';
 import { createSpaceshipMesh } from './scene/spaceship.js';
-import { refreshEntitySelect } from './controls/interface.js';
+import { refreshEntitySelect } from './controls/ui_entity.js';
 import { refreshCameraTargets } from './controls/camera.js'
 
 class World {
@@ -29,8 +29,8 @@ class World {
     this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#2', 'Earth', 35786, 0, 0, -90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50));
 
     // Add asteroids
-    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithEarth', 'Earth', 6000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
     this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithMoon', 'Moon', 2000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
+    //this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithEarth', 'Earth', 6000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
 
     // Add spaceships
     this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', 'Earth', 5000, 0, 0, 70, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#173bbc', 50));

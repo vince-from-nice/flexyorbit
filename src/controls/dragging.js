@@ -3,7 +3,7 @@ import { camera, renderer } from '../scene/scene.js';
 import { cannonGroup, cannonParams, updateCannonWithParams } from '../scene/cannon.js';
 import { earth } from '../scene/earth.js';
 import { cameraCurrentControls } from './camera.js';
-import { updateCannonWidgets } from './interface.js';
+import { updateCannonWidgets } from '././ui_cannon.js';
 
 let isDraggingCannon = false;
 let dragButton = -1; // 0 = left, 2 = right

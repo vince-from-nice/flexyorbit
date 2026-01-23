@@ -24,7 +24,6 @@ let cameraModeSelectRef = null;
 export let CAMERA_TARGETS = [];
 let cameraCurrentTarget = 'Earth';
 let cameraCurrentTargetObject = null;
-let cameraCurrentTargetIndex = 0;
 let cameraTargetSelectRef = null;
 
 const CAMERA_ORBIT_ROTATE_SPEED_BASE = 0.6;
@@ -68,9 +67,7 @@ export function initCameraControls() {
 
     window.addEventListener('keydown', (e) => {
         if (e.code === 'KeyE' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            cameraCurrentTargetIndex = 0;
-            const nextTarget = CAMERA_TARGETS[cameraCurrentTargetIndex].value;
-            cameraTargetSelectRef.value = nextTarget;
+            cameraTargetSelectRef.value = CAMERA_TARGETS[0].value;
         }
     });
 }
@@ -157,6 +154,7 @@ export function switchCameraMode(type) {
 }
 
 export function switchCameraTarget(newTarget) {
+    if (!cameraCurrentControls) return;
     cameraCurrentTarget = newTarget;
 
     const target = CAMERA_TARGETS.find(e => e.value === newTarget);
@@ -272,6 +270,12 @@ export function refreshCameraTargets() {
         CAMERA_TARGETS.push({ value: entity.name, label: entity.name, object: entity.body });
     }
     if (cameraTargetSelectRef) cameraTargetSelectRef.updateOptions(CAMERA_TARGETS);
+}
+
+export function changeCameraTarget(targetName) {
+    if (cameraTargetSelectRef) {
+        cameraTargetSelectRef.value = targetName;
+    }
 }
 
 export function registerCameraTargetSelect(selectElement) {

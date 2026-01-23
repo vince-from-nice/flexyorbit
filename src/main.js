@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import world from './world.js';
 import { createScene, camera, renderer, scene, animateEarthAndMonth } from './scene/scene.js';
 import { Trail } from './scene/trails.js';
-import { initControls, timePaused, timeAcceleration, updateEntityWidgets } from './controls/interface.js';
+import { initControls, timePaused, timeAcceleration } from './controls/interface.js';
 import { updateCamera } from './controls/camera.js';
+import { updateEntityWidgets } from './controls/ui_entity.js';
 import { animatePhysicalEntities } from './physics/physics.js';
 
 const clock = new THREE.Clock();
