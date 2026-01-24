@@ -27,6 +27,10 @@ export class Entity {
 
     this.isFreeFalling = options?.isFreeFalling || false;
 
+    this.thrusting = false;
+
+    this.thrustPower = 0.5;
+
     this.velocity = options?.velocity || new THREE.Vector3();
 
     this.accelerations = {

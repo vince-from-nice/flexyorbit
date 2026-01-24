@@ -8,7 +8,8 @@ import { createSatelliteMesh } from './scene/satellite.js';
 import { createAsteroidMesh } from './scene/asteroid.js';
 import { createSpaceshipMesh } from './scene/spaceship.js';
 import { refreshEntitySelect } from './controls/ui_entity.js';
-import { refreshCameraTargets } from './controls/camera.js'
+import { refreshCameraTargets, selectCameraTarget } from './controls/camera.js'
+import { refreshSpaceshipSelect } from './controls/ui_spaceship.js';
 
 class World {
   constructor() {
@@ -18,7 +19,7 @@ class World {
     // this.timeScale = 1.0;
   }
 
-  init() {
+  async init() {
     // Add the Moon
     this.createAndAddEntity(ENTITY_TYPES.MOON, 'Moon', 'Earth', MOON_DISTANCE_KM, 0, 0, 90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#74a9b2', 60));
 
@@ -33,7 +34,10 @@ class World {
     //this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithEarth', 'Earth', 6000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
 
     // Add spaceships
-    this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', 'Earth', 5000, 0, 0, 70, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#173bbc', 50));
+    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', 'Earth', 5000, 0, 0, 70, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#173bbc', 50));
+
+    // Reset camera target to the Earth once all entities has been loaded
+    selectCameraTarget('Earth');
   }
 
   addEntity(entity) {
@@ -50,6 +54,7 @@ class World {
 
     refreshEntitySelect();
     refreshCameraTargets();
+    refreshSpaceshipSelect();
 
     return true;
   }

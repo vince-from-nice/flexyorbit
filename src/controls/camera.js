@@ -26,7 +26,7 @@ let cameraCurrentTarget = 'Earth';
 let cameraCurrentTargetObject = null;
 let cameraTargetSelectRef = null;
 
-const CAMERA_ORBIT_ROTATE_SPEED_BASE = 0.6;
+const CAMERA_ORBIT_ROTATE_SPEED_BASE = 0.8;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN = 0.1;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX = 3.0;
 
@@ -272,7 +272,7 @@ export function refreshCameraTargets() {
     if (cameraTargetSelectRef) cameraTargetSelectRef.updateOptions(CAMERA_TARGETS);
 }
 
-export function changeCameraTarget(targetName) {
+export function selectCameraTarget(targetName) {
     if (cameraTargetSelectRef) {
         cameraTargetSelectRef.value = targetName;
     }

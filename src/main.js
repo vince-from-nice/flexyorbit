@@ -2,9 +2,7 @@ import * as THREE from 'three';
 import world from './world.js';
 import { createScene, camera, renderer, scene, animateEarthAndMonth } from './scene/scene.js';
 import { Trail } from './scene/trails.js';
-import { initControls, timePaused, timeAcceleration } from './controls/interface.js';
-import { updateCamera } from './controls/camera.js';
-import { updateEntityWidgets } from './controls/ui_entity.js';
+import { initControls, timePaused, timeAcceleration, updateInterface } from './controls/interface.js';
 import { animatePhysicalEntities } from './physics/physics.js';
 
 const clock = new THREE.Clock();
@@ -21,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initControls();
 
   function animate() {
+    // FPS counter
     frameCount++;
     if (clock.elapsedTime - lastTime >= 0.8) {
       const fps = Math.round(frameCount / (clock.elapsedTime - lastTime));
@@ -37,9 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
       animatePhysicalEntities(deltaTime * timeAcceleration);
     }
 
-    updateEntityWidgets();
-
-    updateCamera(deltaTime * timeAcceleration);
+    updateInterface(deltaTime * timeAcceleration);
 
     renderer.render(scene, camera);
   }

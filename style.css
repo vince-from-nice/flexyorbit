@@ -460,7 +460,7 @@ button:hover {
 /* Fire cannonball button */
 .fire-button {
     display: block;
-    width: 90%;
+    width: 100%;
     margin: 16px auto;               
     padding: 12px;                   
     font-size: 16px;               

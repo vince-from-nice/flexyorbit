@@ -10,7 +10,7 @@ export class Vectors {
         this.showAcceleration = false;
         this.showAccelerationForGravity = true;
         this.showAccelerationForDrag = true;
-        this.showAccelerationForEngine = false;
+        this.showAccelerationForEngine = true;
         this.velocityArrow = null;
         this.accelerationArrow = null;
         this.accelerationForGravityArrow = null;

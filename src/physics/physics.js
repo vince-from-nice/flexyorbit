@@ -5,6 +5,7 @@ import { getGravitationalAcceleration } from './gravitation.js';
 import { getDragAcceleration } from './friction.js';
 import { checkCollisionAndHandle } from './collision.js';
 import { updateEntityOrientation } from './orientation.js';
+import { getEngineAcceleration } from './engine.js';
 
 export function animatePhysicalEntities(deltaTime) {
   for (const obj of world.getPhysicalEntities()) {
@@ -14,7 +15,11 @@ export function animatePhysicalEntities(deltaTime) {
 
       obj.accelerations.friction = getDragAcceleration(obj);
 
-      obj.accelerations.total = obj.accelerations.gravity.clone().add(obj.accelerations.friction);
+      obj.accelerations.engine = getEngineAcceleration(obj);
+      
+      obj.accelerations.total = obj.accelerations.gravity.clone()
+        .add(obj.accelerations.friction)
+        .add(obj.accelerations.engine);
 
       // v += a * dt
       obj.velocity.addScaledVector(obj.accelerations.total, deltaTime);

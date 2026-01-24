@@ -6,12 +6,12 @@ import {
 import { MOON_MAIN_TEXTURES, MOON_BUMP_TEXTURES, updateMoonMainTexture, updateMoonBumpTexture, disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
 import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis, updateGrid } from '../scene/scene.js';
-import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, changeCameraTarget, registerCameraModeSelect, registerCameraTargetSelect } from './camera.js'
+import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect, selectCameraTarget, updateCamera } from './camera.js'
 import { initDraggings } from './dragging.js'
 import { addSlider, addCheckbox, addCustomSelect, addPanel, addSubPanel } from './widgets.js'
 import { createCannonWidgets } from './ui_cannon.js';
-import { createEntityWidgets } from './ui_entity.js';
-import { createSpaceshipWidgets } from './ui_spaceship.js';
+import { createEntityWidgets, selectEntity, updateEntityWidgets } from './ui_entity.js';
+import { createSpaceshipWidgets, updateSpaceshiptWidgets } from './ui_spaceship.js';
 
 export let timePaused = false;
 export let timeAcceleration = 100;
@@ -82,10 +82,11 @@ function createInterface() {
     } else {
         entityPanel.parentElement.open = false;
     }
+    //selectEntity('Spaceship-Delta1');
 
     // Cannon panel
     const cannonPanel = addPanel(contentWrapper, 'Cannon');
-    cannonPanel.parentElement.open = true;
+    cannonPanel.parentElement.open = false;
     createCannonWidgets(cannonPanel);
 
     // Spaceship panel
@@ -120,7 +121,7 @@ function createInterface() {
     const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
         value => { switchCameraMode(value); });
     registerCameraModeSelect(cameraModeSelect);
-    //changeCameraTarget('Earth');
+    //selectCameraTarget('Earth');
 
     // Atmosphere sub panel
     const atmoshperePanel = addSubPanel(settingsPanel, 'Atmosphere', false);
@@ -203,5 +204,11 @@ function createInterface() {
             updateGrid(true, parseFloat(gridSizeDisplay.value), value);
         }
     }, { logarithmic: false });
+}
+
+export function updateInterface(deltaTime) {
+    updateEntityWidgets();
+    updateSpaceshiptWidgets();
+    updateCamera(deltaTime);
 }
 

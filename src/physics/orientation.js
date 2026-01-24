@@ -17,6 +17,7 @@ export function updateEntityOrientation(obj, deltaTime) {
     // For spaceships, it's primarily the user who directly chooses the orientation (in order to direct 
     // the thrust of the engines), but we still drift its orientation in the same direction as its velocity vector.
     else if (obj.type === ENTITY_TYPES.SPACESHIP) {
+        return;
         const velocity = obj.velocity;
         if (velocity.lengthSq() > 0) {
             const currentForward = new THREE.Vector3(0, 0, 1).applyQuaternion(obj.body.quaternion);

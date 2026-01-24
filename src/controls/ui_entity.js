@@ -3,9 +3,9 @@ import { scaleToKm } from '../constants.js';
 import { cartesianToPolar, polarToCartesian } from '../utils.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
 import { addSlider, addCheckbox, addCustomSelect, addSubPanel, addReadOnly, addEditableText } from './widgets.js'
-import { changeCameraTarget } from './camera.js'
+import { selectCameraTarget } from './camera.js'
 
-let currentEntityName = 'Satellite-1', entityPanelContainer = null, entitySelectRef = null;
+let currentEntityName = null, entityPanelContainer = null, entitySelectRef = null;
 const entityWidgets = {}, entitySelectOptions = [];;
 
 export function createEntityWidgets(entityPanel) {
@@ -13,7 +13,7 @@ export function createEntityWidgets(entityPanel) {
         name => {
             currentEntityName = name;
             rebuildEntityPanel();
-            changeCameraTarget(name);
+            selectCameraTarget(name);
         }
     );
 
@@ -35,8 +35,6 @@ export function createEntityWidgets(entityPanel) {
 
     entityPanelContainer = document.createElement('div');
     entityPanel.appendChild(entityPanelContainer);
-
-    refreshEntitySelect();
 }
 
 export function rebuildEntityPanel() {
@@ -55,7 +53,6 @@ export function rebuildEntityPanel() {
     addEditableText(infosPanel, 'Description', entity.description, v => entity.description = v);
     addSlider(infosPanel, 'Mass (kg)', 1, 10000, entity.mass, 1, v => entity.mass = v, { logarithmic: true });
     addSlider(infosPanel, 'Drag coeff.', 0.0001, 0.01, entity.dragCoefficient, 0.0001, v => entity.dragCoefficient = v);
-    //addReadOnly(basic, 'Cross-section (m²)', entity.crossSectionArea.toExponential(2));
 
     // ────────────────── Scaling panel ─────────────────────────────────────
     const scalingPanel = addSubPanel(entityPanelContainer, 'Scaling', false);
@@ -75,7 +72,7 @@ export function rebuildEntityPanel() {
     addSlider(scalingPanel, 'Scale X', 1, 100000, currentScale.x, 1,
         value => { entity.body.scale.x = value; }, { logarithmic: true }
     );
-    xSlider = scalingPanel.querySelectorAll('input[type="range"]')[1];  // le 2e slider (index 1)
+    xSlider = scalingPanel.querySelectorAll('input[type="range"]')[1];
 
     addSlider(scalingPanel, 'Scale Y', 1, 100000, currentScale.y, 1,
         value => { entity.body.scale.y = value; }, { logarithmic: true }
@@ -93,7 +90,6 @@ export function rebuildEntityPanel() {
     const polarGroup = addSubPanel(positionPanel, 'Earth coords', true);
     const pos = entity.body.position;
     const polar = cartesianToPolar(pos);
-    //polar.lon = normalizeLongitude(polar.lon - (earth.rotation.y * 180 / Math.PI));
     entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, 0.1, updateEntityLat);
     entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, 0.1, updateEntityLon);
     entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 1, 500000, polar.alt, 1, updateEntityAlt, { logarithmic: true });
@@ -108,7 +104,6 @@ export function rebuildEntityPanel() {
         if (!entity) return;
         const polar = cartesianToPolar(entity.body.position);
         polar.lat = value;
-        //polar.lon = normalizeLongitude(polar.lon + (earth.rotation.y * 180 / Math.PI) % 360);
         entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
     }
 
@@ -117,7 +112,6 @@ export function rebuildEntityPanel() {
         if (!entity) return;
         const polar = cartesianToPolar(entity.body.position);
         polar.lon = value;
-        //polar.lon = normalizeLongitude(value + (earth.rotation.y * 180 / Math.PI) % 360);
         entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
     }
 
@@ -126,7 +120,6 @@ export function rebuildEntityPanel() {
         if (!entity) return;
         const polar = cartesianToPolar(entity.body.position);
         polar.alt = value;
-        //polar.lon = normalizeLongitude(polar.lon + (earth.rotation.y * 180 / Math.PI) % 360);
         entity.body.position.copy(polarToCartesian(polar.lat, polar.lon, polar.alt));
     }
 
@@ -250,20 +243,24 @@ export function updateEntityWidgets() {
     entityWidgets.totalAcc.textContent = s(e.accelerations.total.length()).toExponential(2);
     entityWidgets.gravAcc.textContent = s(e.accelerations.gravity.length()).toExponential(2);
     entityWidgets.dragAcc.textContent = s(e.accelerations.friction.length()).toExponential(2);
+    entityWidgets.engineAcc.textContent = s(e.accelerations.engine.length()).toExponential(2);
 }
 
 export function refreshEntitySelect() {
     if (!entitySelectRef) return;
-
     entitySelectOptions.length = 0;
     for (const entity of world.getPhysicalEntities()) {
         entitySelectOptions.push({ value: entity.name, label: entity.name })
     }
-
     entitySelectRef.updateOptions(entitySelectOptions, currentEntityName);
-
     if (!world.getEntityByName(currentEntityName)) {
         currentEntityName = entitySelectOptions[0]?.value || null;
         rebuildEntityPanel();
+    }
+}
+
+export function selectEntity(entityName) {
+    if (entitySelectRef) {
+        entitySelectRef.value = entityName;
     }
 }

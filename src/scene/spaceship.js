@@ -19,6 +19,8 @@ export async function createSpaceshipMesh() {
   //const object = await objLoader.loadAsync('/assets/spaceships/LowPoly/SpaceShip.obj');
   // const object = await objLoader.loadAsync('/assets/spaceships/StarSparrow/StarSparrow01.obj');
 
+  console.log("Spaceship mesh has been loaded");
+
   object.traverse((child) => {
     if (child.isMesh) {
       child.castShadow = true;
