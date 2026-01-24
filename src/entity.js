@@ -27,7 +27,7 @@ export class Entity {
 
     this.isFreeFalling = options?.isFreeFalling || false;
 
-    this.thrusting = false;
+    this.thrustDirection = 0;
 
     this.thrustPower = 0.5;
 

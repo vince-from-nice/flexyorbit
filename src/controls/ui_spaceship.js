@@ -48,19 +48,77 @@ export function createSpaceshipWidgets(spaceshipPanel) {
         if (selectedSpaceship) selectedSpaceship.thrustPower = v / 100;
     });
 
-    const thrustBtn = document.createElement('button');
-    thrustBtn.textContent = 'Hold to Thrust';
-    thrustBtn.style.marginTop = '8px';
-    thrustBtn.addEventListener('mousedown', () => {
-        if (false && timeAcceleration !== 1) {
-            showTemporaryMessage('Set time accel to ×1 first');
-            return;
+    // Container flex qui prend toute la largeur
+    const thrustRow = document.createElement('div');
+    thrustRow.style.display = 'flex';
+    thrustRow.style.gap = '10px';               // espace visible et agréable entre les deux
+    thrustRow.style.marginTop = '10px';
+    thrustRow.style.alignItems = 'center';
+    thrustRow.style.width = '100%';
+
+    // Bouton principal (Front) → prend plus de place
+    const frontBtn = document.createElement('button');
+    frontBtn.textContent = 'Front thrust';
+    frontBtn.style.flex = '1.4';                // plus large que le back
+    frontBtn.style.padding = '8px 12px';
+    frontBtn.style.fontSize = '13px';
+    frontBtn.style.minWidth = '0';              // permet au flex de vraiment répartir
+
+    // Bouton reverse (Back) → un peu plus petit
+    const backBtn = document.createElement('button');
+    backBtn.textContent = 'Back thrust';
+    backBtn.style.flex = '1';                   // plus petit que front
+    backBtn.style.padding = '8px 10px';
+    backBtn.style.fontSize = '12px';
+    backBtn.style.minWidth = '0';
+
+    thrustRow.appendChild(frontBtn);
+    thrustRow.appendChild(backBtn);
+    spaceshipPanel.appendChild(thrustRow);
+
+    frontBtn.addEventListener('mousedown', () => {
+        if (selectedSpaceship) {
+            selectedSpaceship.thrustDirection = 1;
+            frontBtn.classList.add('thrust-active');
+            backBtn.classList.remove('thrust-active');
         }
-        if (selectedSpaceship) selectedSpaceship.thrusting = true;
     });
-    thrustBtn.addEventListener('mouseup', () => { if (selectedSpaceship) selectedSpaceship.thrusting = false; });
-    thrustBtn.addEventListener('mouseleave', () => { if (selectedSpaceship) selectedSpaceship.thrusting = false; });
-    enginePanel.appendChild(thrustBtn);
+
+    frontBtn.addEventListener('mouseup', () => {
+        if (selectedSpaceship) {
+            selectedSpaceship.thrustDirection = 0;
+            frontBtn.classList.remove('thrust-active');
+        }
+    });
+
+    frontBtn.addEventListener('mouseleave', () => {
+        if (selectedSpaceship && selectedSpaceship.thrustDirection === 1) {
+            selectedSpaceship.thrustDirection = 0;
+            frontBtn.classList.remove('thrust-active');
+        }
+    });
+
+    backBtn.addEventListener('mousedown', () => {
+        if (selectedSpaceship) {
+            selectedSpaceship.thrustDirection = -1;
+            backBtn.classList.add('thrust-active');
+            frontBtn.classList.remove('thrust-active');
+        }
+    });
+
+    backBtn.addEventListener('mouseup', () => {
+        if (selectedSpaceship) {
+            selectedSpaceship.thrustDirection = 0;
+            backBtn.classList.remove('thrust-active');
+        }
+    });
+
+    backBtn.addEventListener('mouseleave', () => {
+        if (selectedSpaceship && selectedSpaceship.thrustDirection === -1) {
+            selectedSpaceship.thrustDirection = 0;
+            backBtn.classList.remove('thrust-active');
+        }
+    });
 
     document.addEventListener('keydown', e => {
         if (!selectedSpaceship || document.activeElement?.tagName === 'INPUT') return;
@@ -69,11 +127,24 @@ export function createSpaceshipWidgets(spaceshipPanel) {
         switch (e.key) {
             case '4': euler.y += THREE.MathUtils.degToRad(δ); changed = true; break;
             case '6': euler.y -= THREE.MathUtils.degToRad(δ); changed = true; break;
-            case '8': euler.x += THREE.MathUtils.degToRad(δ); changed = true; break;
-            case '2': euler.x -= THREE.MathUtils.degToRad(δ); changed = true; break;
+            case '8': euler.x -= THREE.MathUtils.degToRad(δ); changed = true; break;
+            case '5': euler.x += THREE.MathUtils.degToRad(δ); changed = true; break;
             case '7': euler.z -= THREE.MathUtils.degToRad(δ); changed = true; break;
             case '9': euler.z += THREE.MathUtils.degToRad(δ); changed = true; break;
-            case '5': if (selectedSpaceship) selectedSpaceship.thrusting = true; break;
+            case 'Enter':
+                if (selectedSpaceship) {
+                    selectedSpaceship.thrustDirection = 1;
+                    frontBtn.classList.add('thrust-active');
+                    backBtn.classList.remove('thrust-active');
+                }
+                break;
+            case '0':
+                if (selectedSpaceship) {
+                    selectedSpaceship.thrustDirection = -1;
+                    backBtn.classList.add('thrust-active');
+                    frontBtn.classList.remove('thrust-active');
+                }
+                break;
         }
         if (changed) {
             quat.setFromEuler(euler);
@@ -85,7 +156,18 @@ export function createSpaceshipWidgets(spaceshipPanel) {
     document.addEventListener('keyup', e => {
         if (!selectedSpaceship || document.activeElement?.tagName === 'INPUT') return;
         switch (e.key) {
-            case '5': if (selectedSpaceship) selectedSpaceship.thrusting = false; break;
+            case 'Enter':
+                if (selectedSpaceship) {
+                    selectedSpaceship.thrustDirection = 0;
+                    frontBtn.classList.remove('thrust-active');
+                }
+                break;
+            case '0':
+                if (selectedSpaceship) {
+                    selectedSpaceship.thrustDirection = 0;
+                    backBtn.classList.remove('thrust-active');
+                }
+                break;
         }
     });
 }
