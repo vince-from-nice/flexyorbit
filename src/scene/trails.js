@@ -7,7 +7,7 @@ import { scene } from './scene.js';
 import { cannonballMesh } from '../scene/cannon.js';
 
 export const TRAIL_STYLES = [
-    { value: 'TRAIL_STYLE_WITH_NOTHING', label: 'Nothing' },
+    //{ value: 'TRAIL_STYLE_WITH_NOTHING', label: 'Nothing' },
     { value: 'TRAIL_STYLE_WITH_SINGLE_LINES', label: 'Single thin lines' },
     { value: 'TRAIL_STYLE_WITH_THICK_LINES', label: 'Thick screen-space lines' },
     { value: 'TRAIL_STYLE_WITH_VERTICAL_BARS', label: '3D vertical bars' },

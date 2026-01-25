@@ -195,6 +195,7 @@ export function addCustomSelect(parentEl, labelBefore, labelAfter, options, init
     function setValue(value, trigger = true) {
         const opt = options.find(o => o.value === value);
         if (!opt) return;
+        if (value === currentValue) return;
         currentValue = value;
         selectedText.textContent = opt.label;
         if (trigger) onChange(value);
@@ -343,5 +344,48 @@ export function addEditableText(container, labelText, initialValue, onChange) {
     wrapper.appendChild(input);
     container.appendChild(wrapper);
 
+    return input;
+}
+
+export function addColorPicker(parent, label, initialValue, onChange) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.alignItems = 'center';
+    container.style.gap = '8px';
+    container.style.margin = '4px 0';
+
+    if (label) {
+        const lbl = document.createElement('label');
+        lbl.textContent = label;
+        lbl.style.minWidth = '120px';
+        container.appendChild(lbl);
+    }
+
+    const input = document.createElement('input');
+    input.type = 'color';
+    input.value = initialValue || '#ffffff';
+    input.style.width = '40px';
+    input.style.height = '24px';
+    input.style.padding = '0';
+    input.style.border = 'none';
+    input.style.cursor = 'pointer';
+
+    input.addEventListener('input', ev => {
+        if (onChange) onChange(ev.target.value);
+    });
+
+    container.appendChild(input);
+
+    // const hexSpan = document.createElement('span');
+    // hexSpan.textContent = input.value;
+    // hexSpan.style.fontFamily = 'monospace';
+    // hexSpan.style.minWidth = '70px';
+    // container.appendChild(hexSpan);
+
+    input.addEventListener('input', ev => {
+        hexSpan.textContent = ev.target.value;
+    });
+
+    parent.appendChild(container);
     return input;
 }

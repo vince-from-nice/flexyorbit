@@ -13,10 +13,10 @@ export async function createSpaceshipMesh() {
 
   // const objLoader = new OBJLoader();
   // const mtlLoader = new MTLLoader();
-  //const materials = await mtlLoader.loadAsync('assets/spaceships/LowPoly/SpaceShip.mtl');  
-  //const materials = await mtlLoader.loadAsync('assets/spaceships/Star/SpaceShip.mtl');  
+  //const materials = await mtlLoader.loadAsync('assets/spaceships/VeryLowPoly/SpaceShip.mtl');  
+  //const materials = await mtlLoader.loadAsync('assets/spaceships/StarSparrow/SpaceShip.mtl');  
   //objLoader.setMaterials(materials);
-  //const object = await objLoader.loadAsync('assets/spaceships/LowPoly/SpaceShip.obj');
+  //const object = await objLoader.loadAsync('assets/spaceships/VeryLowPoly/SpaceShip.obj');
   // const object = await objLoader.loadAsync('assets/spaceships/StarSparrow/StarSparrow01.obj');
 
   console.log("Spaceship mesh has been loaded");

@@ -71,7 +71,7 @@ export function createSpaceshipWidgets(spaceshipPanel) {
 
     thrustRow.appendChild(frontBtn);
     thrustRow.appendChild(backBtn);
-    spaceshipPanel.appendChild(thrustRow);
+    enginePanel.appendChild(thrustRow);
 
     frontBtn.addEventListener('mousedown', () => {
         if (selectedSpaceship) {
