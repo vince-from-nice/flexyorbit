@@ -48,26 +48,23 @@ export function createSpaceshipWidgets(spaceshipPanel) {
         if (selectedSpaceship) selectedSpaceship.thrustPower = v / 100;
     });
 
-    // Container flex qui prend toute la largeur
     const thrustRow = document.createElement('div');
     thrustRow.style.display = 'flex';
-    thrustRow.style.gap = '10px';               // espace visible et agréable entre les deux
+    thrustRow.style.gap = '10px';
     thrustRow.style.marginTop = '10px';
     thrustRow.style.alignItems = 'center';
     thrustRow.style.width = '100%';
 
-    // Bouton principal (Front) → prend plus de place
     const frontBtn = document.createElement('button');
     frontBtn.textContent = 'Front thrust';
-    frontBtn.style.flex = '1.4';                // plus large que le back
+    frontBtn.style.flex = '1.4';
     frontBtn.style.padding = '8px 12px';
     frontBtn.style.fontSize = '13px';
-    frontBtn.style.minWidth = '0';              // permet au flex de vraiment répartir
+    frontBtn.style.minWidth = '0';
 
-    // Bouton reverse (Back) → un peu plus petit
     const backBtn = document.createElement('button');
     backBtn.textContent = 'Back thrust';
-    backBtn.style.flex = '1';                   // plus petit que front
+    backBtn.style.flex = '1';
     backBtn.style.padding = '8px 10px';
     backBtn.style.fontSize = '12px';
     backBtn.style.minWidth = '0';

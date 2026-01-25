@@ -17,6 +17,7 @@ export function updateEntityOrientation(obj, deltaTime) {
     // For spaceships, it's primarily the user who directly chooses the orientation (in order to direct 
     // the thrust of the engines), but we still drift its orientation in the same direction as its velocity vector.
     else if (obj.type === ENTITY_TYPES.SPACESHIP) {
+        // Disable for now
         return;
         const velocity = obj.velocity;
         if (velocity.lengthSq() > 0) {

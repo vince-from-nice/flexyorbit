@@ -236,8 +236,9 @@ export function updateCameraToFollowTarget(delta) {
     if (isOrbital) {
         cameraCurrentControls.target.copy(targetPos);
         if (!isUserInteracting) {
-            const newDistance = camera.position.distanceTo(targetPos) + targetPos.distanceTo(earthCenter);
-            repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, newDistance, false);
+            // Disable respositionning for now
+            //const newDistance = camera.position.distanceTo(targetPos) + targetPos.distanceTo(earthCenter);
+            //repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, newDistance, false);
         }
     }
     // For non orbital modes : classic chase camera 

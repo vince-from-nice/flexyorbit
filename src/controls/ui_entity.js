@@ -85,16 +85,16 @@ export function rebuildEntityPanel() {
     zSlider = scalingPanel.querySelectorAll('input[type="range"]')[3];
 
     // ── Position panel ────────────────────────────────────────────
-    const positionPanel = addSubPanel(entityPanelContainer, 'Position', true);
+    const positionPanel = addSubPanel(entityPanelContainer, 'Position', false);
 
-    const polarGroup = addSubPanel(positionPanel, 'Earth coords', true);
+    const polarGroup = addSubPanel(positionPanel, 'Earth coords', false);
     const pos = entity.body.position;
     const polar = cartesianToPolar(pos);
     entityWidgets.lat = addSlider(polarGroup, 'Latitude (°)', -90, 90, polar.lat, 0.1, updateEntityLat);
     entityWidgets.lon = addSlider(polarGroup, 'Longitude (°)', -180, 180, polar.lon, 0.1, updateEntityLon);
     entityWidgets.alt = addSlider(polarGroup, 'Altitude (km)', 1, 500000, polar.alt, 1, updateEntityAlt, { logarithmic: true });
 
-    const worldGroup = addSubPanel(positionPanel, 'World coords', true);
+    const worldGroup = addSubPanel(positionPanel, 'World coords', false);
     entityWidgets.posX = addReadOnly(worldGroup, 'X (km)', scaleToKm(pos.x).toFixed(0));
     entityWidgets.posY = addReadOnly(worldGroup, 'Y (km)', scaleToKm(pos.y).toFixed(0));
     entityWidgets.posZ = addReadOnly(worldGroup, 'Z (km)', scaleToKm(pos.z).toFixed(0));
