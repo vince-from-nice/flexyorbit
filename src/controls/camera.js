@@ -58,16 +58,16 @@ export function initCameraControls() {
     refreshCameraTargets();
 
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'KeyC' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            cameraCurrentModeIndex = (cameraCurrentModeIndex + 1) % CAMERA_MODES.length;
-            const nextMode = CAMERA_MODES[cameraCurrentModeIndex].value;
-            cameraModeSelectRef.value = nextMode;
-        }
-    });
-
-    window.addEventListener('keydown', (e) => {
-        if (e.code === 'KeyE' && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            cameraTargetSelectRef.value = CAMERA_TARGETS[0].value;
+        if (!e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            if (e.key === 'c') {
+                cameraCurrentModeIndex = (cameraCurrentModeIndex + 1) % CAMERA_MODES.length;
+                const nextMode = CAMERA_MODES[cameraCurrentModeIndex].value;
+                cameraModeSelectRef.value = nextMode;
+            } else if (e.key === 'e') {
+                cameraTargetSelectRef.value = 'Earth';
+            } else if (e.key === 'm') {
+                cameraTargetSelectRef.value = 'Moon';
+            }
         }
     });
 }

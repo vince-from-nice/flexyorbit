@@ -12,31 +12,22 @@ const entityWidgets = {};
 const entitySelectOptions = [];
 
 export function createEntityWidgets(entityPanel) {
-    entitySelectRef = addCustomSelect(
-        entityPanel,
-        'Select an object or press \'t\' to switch',
-        null,
-        [],
-        null,
-        name => {
-            currentEntityName = name;
-            selectCameraTarget(name);
-            updateEntityWidgets();
-        }
-    );
-
-    window.addEventListener('keydown', e => {
-        if (e.code !== 'KeyT' || e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
-        const idx = entitySelectOptions.findIndex(opt => opt.value === currentEntityName);
-        const nextIdx = (idx + 1) % entitySelectOptions.length;
-        entitySelectRef.value = entitySelectOptions[nextIdx].value;
+    entitySelectRef = addCustomSelect(entityPanel, 'Select an object or press \'t\' to switch', null, [], null, name => {
+        currentEntityName = name;
+        selectCameraTarget(name);
+        updateEntityWidgets();
     });
 
     window.addEventListener('keydown', e => {
-        if (e.code !== 'KeyR' || e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+        if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
         const idx = entitySelectOptions.findIndex(opt => opt.value === currentEntityName);
-        const prevIdx = (idx - 1 + entitySelectOptions.length) % entitySelectOptions.length;
-        entitySelectRef.value = entitySelectOptions[prevIdx].value;
+        if (e.key === 't') {
+            const nextIdx = (idx + 1) % entitySelectOptions.length;
+            entitySelectRef.value = entitySelectOptions[nextIdx].value;
+        } else if (e.key === 'r') {
+            const prevIdx = (idx - 1 + entitySelectOptions.length) % entitySelectOptions.length;
+            entitySelectRef.value = entitySelectOptions[prevIdx].value;
+        }
     });
 
     entityPanelContainer = document.createElement('div');
@@ -56,12 +47,10 @@ function buildStaticEntityPanel() {
         const e = entityWidgets.current;
         if (e) e.description = ev.target.value;
     });
-
     entityWidgets.massPair = addSlider(infos, 'Mass (kg)', 1, 10000, 1, 1, v => {
         const e = entityWidgets.current;
         if (e) e.mass = v;
     }, { logarithmic: true });
-
     entityWidgets.dragPair = addSlider(infos, 'Drag coeff.', 0.0001, 0.01, 0.0001, 0.0001, v => {
         const e = entityWidgets.current;
         if (e) e.dragCoefficient = v;
@@ -69,7 +58,6 @@ function buildStaticEntityPanel() {
 
     // ── Scaling ─────────────────────────────────────────────────────────────
     const scaling = addSubPanel(entityPanelContainer, 'Scaling', false);
-
     entityWidgets.globalScalePair = addSlider(scaling, 'Global scale', 1, 100000, 1, 1, v => {
         const e = entityWidgets.current;
         if (!e) return;
@@ -78,17 +66,14 @@ function buildStaticEntityPanel() {
         entityWidgets.scaleYPairs[1].setValue(v);
         entityWidgets.scaleZPair[1].setValue(v);
     }, { logarithmic: true });
-
     entityWidgets.scaleXPair = addSlider(scaling, 'Scale X', 1, 100000, 1, 1, v => {
         const e = entityWidgets.current;
         if (e) e.body.scale.x = v;
     }, { logarithmic: true });
-
     entityWidgets.scaleYPairs = addSlider(scaling, 'Scale Y', 1, 100000, 1, 1, v => {
         const e = entityWidgets.current;
         if (e) e.body.scale.y = v;
     }, { logarithmic: true });
-
     entityWidgets.scaleZPair = addSlider(scaling, 'Scale Z', 1, 100000, 1, 1, v => {
         const e = entityWidgets.current;
         if (e) e.body.scale.z = v;
@@ -96,16 +81,14 @@ function buildStaticEntityPanel() {
 
     // ── Position ────────────────────────────────────────────────────────────
     const posPanel = addSubPanel(entityPanelContainer, 'Position', false);
-    const polarGrp = addSubPanel(posPanel, 'Earth coords', false);
-
-    entityWidgets.latPair = addSlider(polarGrp, 'Latitude (°)', -90, 90, 0, 0.1, v => updatePolar('lat', v));
-    entityWidgets.lonPair = addSlider(polarGrp, 'Longitude (°)', -180, 180, 0, 0.1, v => updatePolar('lon', v));
-    entityWidgets.altPair = addSlider(polarGrp, 'Altitude (km)', 1, 500000, 1, 1, v => updatePolar('alt', v), { logarithmic: true });
-
-    const worldGrp = addSubPanel(posPanel, 'World coords', false);
+    const worldGrp = addSubPanel(posPanel, 'World coords', true);
     entityWidgets.posX = addReadOnly(worldGrp, 'X (km)', '');
     entityWidgets.posY = addReadOnly(worldGrp, 'Y (km)', '');
     entityWidgets.posZ = addReadOnly(worldGrp, 'Z (km)', '');
+    const polarGrp = addSubPanel(posPanel, 'Earth coords', false);
+    entityWidgets.latPair = addSlider(polarGrp, 'Latitude (°)', -90, 90, 0, 0.1, v => updatePolarPosition('lat', v));
+    entityWidgets.lonPair = addSlider(polarGrp, 'Longitude (°)', -180, 180, 0, 0.1, v => updatePolarPosition('lon', v));
+    entityWidgets.altPair = addSlider(polarGrp, 'Altitude (km)', 1, 500000, 1, 1, v => updatePolarPosition('alt', v), { logarithmic: true });
 
     // ── Velocity ────────────────────────────────────────────────────────────
     const vel = addSubPanel(entityPanelContainer, 'Velocity', false);
@@ -121,39 +104,28 @@ function buildStaticEntityPanel() {
     // ── Acceleration ────────────────────────────────────────────────────────
     const acc = addSubPanel(entityPanelContainer, 'Acceleration', false);
     const accContainer = document.createElement('div');
-    Object.assign(accContainer.style, {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '2px',
-        margin: '2px 0',
-        width: '100%'
-    });
+    Object.assign(accContainer.style, { display: 'flex', flexDirection: 'column', gap: '2px', margin: '2px 0', width: '100%' });
     acc.appendChild(accContainer);
-
     entityWidgets.totalAcc = addReadOnly(accContainer, 'Total (km/s²)', '');
-
-    const gRow = makeAccRow(accContainer);
+    const gRow = makeAccelerationRow(accContainer);
     entityWidgets.gravAcc = addReadOnly(gRow, '→ Gravity (km/s²)', '');
     entityWidgets.showGrav = addCheckbox(gRow, null, null, false, v => {
         const e = entityWidgets.current;
         if (e) e.vectors.showAccelerationForGravity = v;
     });
-
-    const dRow = makeAccRow(accContainer);
+    const dRow = makeAccelerationRow(accContainer);
     entityWidgets.dragAcc = addReadOnly(dRow, '→ Drag (km/s²)', '');
     entityWidgets.showDrag = addCheckbox(dRow, null, null, false, v => {
         const e = entityWidgets.current;
         if (e) e.vectors.showAccelerationForDrag = v;
     });
-
-    const eRow = makeAccRow(accContainer);
+    const eRow = makeAccelerationRow(accContainer);
     entityWidgets.engineAcc = addReadOnly(eRow, '→ Engine (km/s²)', '');
     entityWidgets.showEngine = addCheckbox(eRow, null, null, false, v => {
         const e = entityWidgets.current;
         if (e) e.vectors.showAccelerationForEngine = v;
     });
-
-    const totalRow = makeAccRow(accContainer);
+    const totalRow = makeAccelerationRow(accContainer);
     totalRow.style.marginTop = '10px';
     const spacer = document.createElement('div');
     spacer.style.width = '200px';
@@ -170,38 +142,28 @@ function buildStaticEntityPanel() {
         const e = entityWidgets.current;
         if (e) e.trail.enabled = v;
     });
-
     entityWidgets.trailStyle = addCustomSelect(trail, 'Style', null, TRAIL_STYLES, TRAIL_STYLES[0].value, v => {
         const e = entityWidgets.current;
         if (e) e.trail.updateTrailStyle(v);
     });
-
     entityWidgets.trailColor = addColorPicker(trail, 'Color', '#ffffff', hex => {
         const e = entityWidgets.current;
         if (e) e.trail.updateTrailColor(hex);
     });
-
     entityWidgets.trailLifetimePair = addSlider(trail, 'Lifetime (s)', 1, 1000, 1, 1, v => {
         const e = entityWidgets.current;
         if (e) e.trail.lifetime = v;
     });
 }
 
-function makeAccRow(container) {
+function makeAccelerationRow(container) {
     const row = document.createElement('div');
-    Object.assign(row.style, {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        minWidth: '100%',
-        boxSizing: 'border-box'
-    });
+    Object.assign(row.style, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', minWidth: '100%', boxSizing: 'border-box' });
     container.appendChild(row);
     return row;
 }
 
-function updatePolar(key, value) {
+function updatePolarPosition(key, value) {
     const e = entityWidgets.current;
     if (!e) return;
     const p = cartesianToPolar(e.body.position);
@@ -240,9 +202,9 @@ export function updateEntityWidgets() {
     // Position
     const pos = entity.body.position;
     const polar = cartesianToPolar(pos);
-    entityWidgets.latPair[0].value = polar.lat.toFixed(2);
+    entityWidgets.latPair[0].value = polar.lat.toFixed(1);
     entityWidgets.latPair[1].setValue(polar.lat);
-    entityWidgets.lonPair[0].value = polar.lon.toFixed(2);
+    entityWidgets.lonPair[0].value = polar.lon.toFixed(1);
     entityWidgets.lonPair[1].setValue(polar.lon);
     entityWidgets.altPair[0].value = polar.alt.toFixed(0);
     entityWidgets.altPair[1].setValue(polar.alt);

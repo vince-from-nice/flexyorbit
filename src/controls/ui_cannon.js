@@ -51,26 +51,26 @@ export function updateCannonWidgets() {
     if (cannonLatDisplay && cannonLatSlider) {
         cannonLatDisplay.value = cannonParams.lat.toFixed(1);
         cannonLatSlider.value = cannonParams.lat.toFixed(1);
-        cannonLatSlider.dispatchEvent(new Event('input'));
+        //cannonLatSlider.dispatchEvent(new Event('input'));
     }
     if (cannonLonDisplay && cannonLonSlider) {
         cannonLonDisplay.value = cannonParams.lon.toFixed(1);
         cannonLonSlider.value = cannonParams.lon.toFixed(1);
-        cannonLonSlider.dispatchEvent(new Event('input'));
+        //cannonLonSlider.dispatchEvent(new Event('input'));
     }
     if (cannonAltDisplay && cannonAltSlider) {
         cannonAltDisplay.value = cannonParams.altitude.toFixed(0);
         cannonAltSlider.value = cannonParams.altitude.toFixed(0);
-        cannonAltSlider.dispatchEvent(new Event('input'));
+        //cannonAltSlider.dispatchEvent(new Event('input'));
     }
     if (cannonAzDisplay && cannonAzSlider) {
         cannonAzDisplay.value = cannonParams.azimuth.toFixed(0);
         cannonAzSlider.value = cannonParams.azimuth.toFixed(0);
-        cannonAzSlider.dispatchEvent(new Event('input'));
+        //cannonAzSlider.dispatchEvent(new Event('input'));
     }
     if (cannonElDisplay && cannonElSlider) {
         cannonElDisplay.value = cannonParams.elevation.toFixed(0);
         cannonElSlider.value = cannonParams.elevation.toFixed(0);
-        cannonElSlider.dispatchEvent(new Event('input'));
+        //cannonElSlider.dispatchEvent(new Event('input'));
     }
 }

@@ -195,7 +195,7 @@ export function addCustomSelect(parentEl, labelBefore, labelAfter, options, init
     function setValue(value, trigger = true) {
         const opt = options.find(o => o.value === value);
         if (!opt) return;
-        if (value === currentValue) return;
+        //if (value === currentValue) return;
         currentValue = value;
         selectedText.textContent = opt.label;
         if (trigger) onChange(value);

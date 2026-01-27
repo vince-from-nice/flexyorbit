@@ -35,7 +35,7 @@ class World {
     //this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithEarth', 'Earth', 6000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
 
     // Add spaceships
-    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', null, 'Earth', 5000, 0, 0, 70, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#173bbc', 50));
+    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', null, 'Earth', 5000, 0, 50, 70, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#173bbc', 50));
 
     // Reset camera target to the Earth once all entities has been loaded
     selectCameraTarget('Earth');
@@ -114,7 +114,7 @@ class World {
     const gm = isMoon ? GM_MOON : GM_EARTH;
     const radius = (isMoon ? MOON_RADIUS : EARTH_RADIUS) + scaleFromKm(altitudeKm);
     const latRad = THREE.MathUtils.degToRad(latitudeDeg);
-    const lonRad = THREE.MathUtils.degToRad(longitudeDeg);
+    const lonRad = - THREE.MathUtils.degToRad(longitudeDeg);
     const aziRad = THREE.MathUtils.degToRad(azimuthDeg);
     const pos = new THREE.Vector3(
       radius * Math.cos(latRad) * Math.cos(lonRad),
