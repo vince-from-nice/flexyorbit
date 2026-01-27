@@ -30,17 +30,25 @@ export async function createSpaceshipMesh() {
     }
   });
 
-  // Center
+  // Rescale
+  const currentSize = new THREE.Vector3();
+  new THREE.Box3().setFromObject(object).getSize(currentSize);
+  const currentMax = Math.max(currentSize.x, currentSize.y, currentSize.z);
+  const desiredSize = scaleFromMeter(15);
+  const scale = desiredSize / currentMax;
+  object.scale.setScalar(scale);
+
+  // Recenter
   // const box = new THREE.Box3().setFromObject(object);
   // const center = box.getCenter(new THREE.Vector3());
   // object.position.sub(center); 
 
-  // Rotate 
+  // Reorient 
   object.rotation.y = - Math.PI;
 
-  object.scale.setScalar(0.03);
-
   group.add(object);
+
+  group.scale.setScalar(10000);
 
   return group;
 }

@@ -128,8 +128,13 @@ export async function createISSMesh() {
   const gltf = await loader.loadAsync('assets/spaceships/ISS/scene.gltf');
   const object = gltf.scene;
 
-  object.updateMatrixWorld(true);
+  object.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+    }
+  });
 
+  // Rescale
   const currentSize = new THREE.Vector3();
   new THREE.Box3().setFromObject(object).getSize(currentSize);
   const ISS_REAL_WIDTH_IN_METERS = 109;
@@ -138,17 +143,19 @@ export async function createISSMesh() {
   const scale = desiredSize / currentMax;
   object.scale.setScalar(scale);
 
+  // Recenter
   const scaledBox = new THREE.Box3().setFromObject(object);
   const center = new THREE.Vector3();
   scaledBox.getCenter(center);
   object.position.sub(center);
 
+  // Reorient
   const staticSubGroup = new THREE.Group();
   staticSubGroup.add(object);
   staticSubGroup.rotation.y = Math.PI / 2;
   staticSubGroup.rotation.z = - Math.PI / 2;
   group.add(staticSubGroup);
-  
+
   group.scale.setScalar(5000);
 
   // const finalBox = new THREE.Box3().setFromObject(object);
