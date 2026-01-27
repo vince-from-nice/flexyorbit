@@ -138,7 +138,7 @@ function buildStaticEntityPanel() {
     });
 
     // ── Trail ───────────────────────────────────────────────────────────────
-    const trail = addSubPanel(entityPanelContainer, 'Trail', false);
+    const trail = addSubPanel(entityPanelContainer, 'Trail display', false);
     entityWidgets.trailEnabled = addCheckbox(trail, 'Enabled', null, false, v => {
         const e = entityWidgets.current;
         if (e) e.trail.enabled = v;

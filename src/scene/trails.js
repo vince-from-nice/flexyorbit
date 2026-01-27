@@ -18,7 +18,7 @@ const UPDATES_NBR_BETWEEN_BARS = 4;
 const VERTICAL_BAR_THICKNESS_KM = 50
 const VERTICAL_BAR_FIXED_HEIGHT_KM = 300
 const HISTORY_MAX_SIZE = 10000;
-const HISTORY_DEFAULT_LIFETIME = 20; 
+const HISTORY_DEFAULT_LIFETIME = 20;
 
 export class Trail {
     constructor(enabled, style, color, lifetime = HISTORY_DEFAULT_LIFETIME) {
@@ -229,12 +229,16 @@ export class Trail {
     }
 
     updateTrailStyle(newStyle) {
-        this.style = newStyle;
-        this.#resetModel();
+        if (newStyle !== this.style) {
+            this.style = newStyle;
+            this.#resetModel();
+        }
     }
 
     updateTrailColor(newColor) {
-        this.color = newColor;
-        this.#resetModel();
+        if (newColor < this.color) {
+            this.color = newColor;
+            this.#resetModel();
+        }
     }
 }
