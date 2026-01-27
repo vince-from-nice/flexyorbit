@@ -1,6 +1,6 @@
 import world from '../world.js';
 import { scaleToKm } from '../constants.js';
-import { printPos } from '../utils.js';
+import { printPosInKm } from '../utils.js';
 import { getGravitationalAcceleration } from './gravitation.js';
 import { getDragAcceleration } from './friction.js';
 import { checkCollisionAndHandle } from './collision.js';

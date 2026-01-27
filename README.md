@@ -34,9 +34,21 @@ You can tweak every parameter using the HTML interface widgets, **but you can al
   **R** / **F** → move up / down  
   **Q** / **E** (or **A** / **E** on AZERTY) → roll the camera
 
-## About Earth textures
+## Credits ##
 
-By default FlexyOrbit uses a beautiful **5K Blue Marble** texture from NASA's project.
+## 3D models
+
+Spaceship model is coming from : https://sketchfab.com/3d-models/spaceship-low-poly-8a3674c37d4c4afa9326f9c7ab0f90bf
+
+ISS model is coming from :
+https://sketchfab.com/3d-models/iss-international-space-station-33c72dd6671c40b3ae5bf90c917a6adb
+https://sketchfab.com/3d-models/iss-813f5b296e584c26bf386ca39de6c3d4
+
+Thanks a lot to these creators !
+
+## Textures
+
+By default FlexyOrbit uses a beautiful **5K Blue Marble** from NASA's project as the main Earth texture.
 
 For better quality, performance, and especially to avoid CORS issues, I strongly recommend **downloading and hosting the texture locally**. Here are some great options:
 

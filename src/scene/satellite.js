@@ -1,7 +1,9 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ENTITY_TYPES, Entity } from '../entity.js';
-import { EARTH_RADIUS, EARTH_RADIUS_KM, GLOBAL_SCALE, GM_EARTH, scaleFromKm, scaleFromMeter } from '../constants.js';
+import { EARTH_RADIUS, EARTH_RADIUS_KM, GLOBAL_SCALE, GM_EARTH, scaleFromKm, scaleFromMeter, scaleToMeter } from '../constants.js';
 import { scene } from './scene.js';
+import { printPosInKm, printPosInMeter } from '../utils.js';
 
 export function createSatelliteMesh() {
   const group = new THREE.Group();
@@ -41,8 +43,8 @@ export function createSatelliteMesh() {
   function addGridToPanel(panel) {
     const gFront = new THREE.Group();
     const gBack = new THREE.Group();
-    const cs = 1.0;  
-    const halfW = 5; 
+    const cs = 1.0;
+    const halfW = 5;
     const halfH = 2.5;
     for (let y = -halfH + cs / 2; y <= halfH - cs / 2; y += cs) {
       for (let x = -halfW + cs / 2; x <= halfW - cs / 2; x += cs) {
@@ -116,6 +118,44 @@ export function createSatelliteMesh() {
   const sideLightRight = sideLightLeft.clone();
   sideLightRight.position.set(scaleFromMeter(8), 0, 0);
   group.add(sideLightRight);
+
+  return group;
+}
+
+export async function createISSMesh() {
+  const group = new THREE.Group();
+  const loader = new GLTFLoader();
+  const gltf = await loader.loadAsync('assets/spaceships/ISS/scene.gltf');
+  const object = gltf.scene;
+
+  object.updateMatrixWorld(true);
+
+  const currentSize = new THREE.Vector3();
+  new THREE.Box3().setFromObject(object).getSize(currentSize);
+  const ISS_REAL_WIDTH_IN_METERS = 109;
+  const currentMax = Math.max(currentSize.x, currentSize.y, currentSize.z);
+  const desiredSize = scaleFromMeter(ISS_REAL_WIDTH_IN_METERS);
+  const scale = desiredSize / currentMax;
+  object.scale.setScalar(scale);
+
+  const scaledBox = new THREE.Box3().setFromObject(object);
+  const center = new THREE.Vector3();
+  scaledBox.getCenter(center);
+  object.position.sub(center);
+
+  const staticSubGroup = new THREE.Group();
+  staticSubGroup.add(object);
+  staticSubGroup.rotation.y = Math.PI / 2;
+  staticSubGroup.rotation.z = - Math.PI / 2;
+  group.add(staticSubGroup);
+  
+  group.scale.setScalar(5000);
+
+  // const finalBox = new THREE.Box3().setFromObject(object);
+  // const boxHelper = new THREE.Box3Helper(finalBox, 0xffff00);
+  // group.add(boxHelper);
+
+  console.log("ISS mesh has been loaded");
 
   return group;
 }

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLOBAL_SCALE, EARTH_RADIUS } from '../constants.js';
-import { printPos } from '../utils.js';
+import { printPosInKm } from '../utils.js';
 import { scene } from './scene.js';
 import { earth } from './earth.js';
 

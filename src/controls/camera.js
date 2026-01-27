@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import world from '../world.js';
-import { printPos, showTemporaryMessage } from '../utils.js';
+import { printPosInKm, showTemporaryMessage } from '../utils.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { EARTH_RADIUS, scaleFromKm, scaleToKm } from '../constants.js';
@@ -192,7 +192,7 @@ export function switchCameraTarget(newTarget) {
 
     showTemporaryMessage("Camera target has changed to " + target?.label);
 
-    console.log("Camera target has switched to " + newTarget + " with position " + printPos(newTargetPosition) + " and camera distance is " + scaleToKm(newCameraDistance).toFixed(0) + " km");
+    console.log("Camera target has switched to " + newTarget + " with position " + printPosInKm(newTargetPosition) + " and camera distance is " + scaleToKm(newCameraDistance).toFixed(0) + " km");
 }
 
 // Repositions camera so that Earth center, target and camera are on the same line

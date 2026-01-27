@@ -1,8 +1,12 @@
 import * as THREE from 'three';
-import { GLOBAL_SCALE, EARTH_RADIUS } from './constants.js';
+import { GLOBAL_SCALE, EARTH_RADIUS, scaleToKm, scaleToMeter } from './constants.js';
 
-export function printPos(pos) {
-    return "(" + pos?.x.toFixed(0) + " " + pos?.y.toFixed(0) + " " + pos?.z.toFixed(0) + ")";
+export function printPosInKm(pos) {
+    return "(" + scaleToKm(pos?.x).toFixed(0) + " " + scaleToKm(pos?.y).toFixed(0) + " " + scaleToKm(pos?.z).toFixed(0) + ")";
+}
+
+export function printPosInMeter(pos) {
+    return "(" + scaleToMeter(pos?.x).toFixed(0) + " " + scaleToMeter(pos?.y).toFixed(0) + " " + scaleToMeter(pos?.z).toFixed(0) + ")";
 }
 
 export function showTemporaryMessage(text) {
