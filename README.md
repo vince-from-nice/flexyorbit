@@ -11,46 +11,68 @@ The idea for this project came after discovering the beautiful interactive simul
 
 ## Controls
 
-You can tweak every parameter using the HTML interface widgets, **but you can also interact directly with the cannon**:
+### Camera
 
-### Mouse controls on the cannon
+#### Target switching
+
+You can select the camera target from the interface or use one of these keyboard shortcuts :
+
+- **T** → switch camera target to next object
+- **R** → switch camera target to previous object
+- **E** → switch camera target to the Earth (default)
+- **C** → switch camera target between cannon and cannonballs
+- **S** → switch camera target between satellites and spaceships
+- **M** → switch camera target to the Moon
+
+#### Camera modes
+
+You can select the camera target from the interface or use press the key **V** to switch camera mode. Currently there are **orbit controls** (default) and **fly controls** (BETA)
+
+OrbitControls :
+- Left click + drag to rotate around Earth
+- Mouse wheel to zoom
+
+FlyControls :
+- **WSAD** (or **QZSD** on AZERTY keyboards) → move the camera (move mouse to look around)
+- **R** / **F** → move up / down  
+  **Q** / **E** (or **A** / **E** on AZERTY keyboards) → roll the camera
+
+### Cannon
+
+You can tweak every parameter using the HTML interface widgets, but you can also interact directly with the cannon by clicking and dragging directly the cannon:
 - **Left click + drag** → move cannon position on Earth's surface (latitude/longitude)
 - **Right click + horizontal drag** → change cannon azimuth (horizontal orientation)
 - **Left click + Ctrl + vertical drag** → adjust cannon altitude
 - **Left click + Shift + vertical drag** → change cannon elevation (launch angle)
 
-### Keyboard shortcuts
 - **Space** → fire the cannonball
-- **T** → switch camera target to next object
-- **R** → switch camera target to previous object
-- **E** → reset camera target to the Earth
-- **C** → switch camera mode (orbit controls or fly controls)
 
-### Camera modes
-- **OrbitControls / MapControls**  
-  Left click + drag to rotate around Earth, mouse wheel to zoom
-- **FlyControls (FPS style)**  
-  QZSD (or WSAD on AZERTY) to move, mouse to look around  
-  **R** / **F** → move up / down  
-  **Q** / **E** (or **A** / **E** on AZERTY) → roll the camera
+### Spaceships
 
-## Credits ##
+You can tweak every parameter using the HTML interface widgets, or use keyboard shortcuts:
+- **4/6** → Rotate selected spaceship on the yaw axis
+- **5/8** → Rotate selected spaceship on the pitch axis
+- **7/9** → Rotate selected spaceship on the roll axis
+- **Enter** → Activate main engine (forward thrust)
+- **0** → Activate main engine (backward thrust)
 
-## 3D models
+## Credits
 
-Spaceship model is coming from : https://sketchfab.com/3d-models/spaceship-low-poly-8a3674c37d4c4afa9326f9c7ab0f90bf
+### 3D models
 
-ISS model is coming from :
+- Spaceship model is coming from : https://sketchfab.com/3d-models/spaceship-low-poly-8a3674c37d4c4afa9326f9c7ab0f90bf
+
+- ISS model is coming from :
 https://sketchfab.com/3d-models/iss-international-space-station-33c72dd6671c40b3ae5bf90c917a6adb
 https://sketchfab.com/3d-models/iss-813f5b296e584c26bf386ca39de6c3d4
 
 Thanks a lot to these creators !
 
-## Textures
+### Textures
 
 By default FlexyOrbit uses a beautiful **5K Blue Marble** from NASA's project as the main Earth texture.
 
-For better quality, performance, and especially to avoid CORS issues, I strongly recommend **downloading and hosting the texture locally**. Here are some great options:
+For better quality, performance, and especially to avoid CORS issues, I strongly recommend downloading and hosting the texture locally. Here are some great options:
 
 | Resolution | Link                                                                                  | Notes                                 |
 |------------|---------------------------------------------------------------------------------------|---------------------------------------|
@@ -58,10 +80,9 @@ For better quality, performance, and especially to avoid CORS issues, I strongly
 | 5K         | https://sbcode.net/topoearth/blue-marble-texture-5400x2700/                          | Nice balance quality/size             |
 | 8K         | https://www.solarsystemscope.com/textures/download/8k_earth_daymap.jpg               | Very detailed                         |
 | 16K        | https://sbcode.net/topoearth/blue-marble-texture-21600x10800/ (tiles to merge)       | Ultra-high detail                     |
-| 21K        | https://sgr_a.artstation.com/store/5oNl/solar-system-in-16k-texture-pack             | Ultra-high detail                     |
+| 16K        | https://sgr_a.artstation.com/store/5oNl/solar-system-in-16k-texture-pack             | Ultra-high detail                     |
 
-On my local setup I downloaded tiles from 21K BlueMarble from Sean Bradley website (https://sbcode.net/topoearth/blue-marble-texture-21600x10800/), merged them into an unique image and then reized it into a 16K image. 
-Why in 16K ? Because most of WebGL renderers fixe a size limit of 8K, or 16K in the better case for high end graphic cards.
+On my local setup I downloaded tiles from 21K BlueMarble from Sean Bradley website (https://sbcode.net/topoearth/blue-marble-texture-21600x10800/), merged them into an unique image and then reized it into a 16K image. Why in 16K ? Because most of WebGL renderers fixe a size limit of 8K, or 16K in the better case for high end graphic cards.
 
 ## Acknowledgments
 

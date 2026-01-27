@@ -4,6 +4,7 @@ import { cartesianToPolar, polarToCartesian } from '../utils.js';
 import { TRAIL_STYLES } from '../scene/trails.js';
 import { addSlider, addCheckbox, addCustomSelect, addSubPanel, addReadOnly, addEditableText, addColorPicker } from './widgets.js';
 import { selectCameraTarget } from './camera.js';
+import { ENTITY_TYPES } from '../entity.js';
 
 let currentEntityName = null;
 let entityPanelContainer = null;
@@ -20,14 +21,14 @@ export function createEntityWidgets(entityPanel) {
 
     window.addEventListener('keydown', e => {
         if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
-        const idx = entitySelectOptions.findIndex(opt => opt.value === currentEntityName);
+        const currentIdx = entitySelectOptions.findIndex(opt => opt.value === currentEntityName);
         if (e.key === 't') {
-            const nextIdx = (idx + 1) % entitySelectOptions.length;
+            const nextIdx = (currentIdx + 1) % entitySelectOptions.length;
             entitySelectRef.value = entitySelectOptions[nextIdx].value;
         } else if (e.key === 'r') {
-            const prevIdx = (idx - 1 + entitySelectOptions.length) % entitySelectOptions.length;
+            const prevIdx = (currentIdx - 1 + entitySelectOptions.length) % entitySelectOptions.length;
             entitySelectRef.value = entitySelectOptions[prevIdx].value;
-        }
+        } 
     });
 
     entityPanelContainer = document.createElement('div');
@@ -81,11 +82,11 @@ function buildStaticEntityPanel() {
 
     // ── Position ────────────────────────────────────────────────────────────
     const posPanel = addSubPanel(entityPanelContainer, 'Position', false);
-    const worldGrp = addSubPanel(posPanel, 'World coords', true);
+    const worldGrp = addSubPanel(posPanel, 'World coords', false);
     entityWidgets.posX = addReadOnly(worldGrp, 'X (km)', '');
     entityWidgets.posY = addReadOnly(worldGrp, 'Y (km)', '');
     entityWidgets.posZ = addReadOnly(worldGrp, 'Z (km)', '');
-    const polarGrp = addSubPanel(posPanel, 'Earth coords', false);
+    const polarGrp = addSubPanel(posPanel, 'Earth coords', true);
     entityWidgets.latPair = addSlider(polarGrp, 'Latitude (°)', -90, 90, 0, 0.1, v => updatePolarPosition('lat', v));
     entityWidgets.lonPair = addSlider(polarGrp, 'Longitude (°)', -180, 180, 0, 0.1, v => updatePolarPosition('lon', v));
     entityWidgets.altPair = addSlider(polarGrp, 'Altitude (km)', 1, 500000, 1, 1, v => updatePolarPosition('alt', v), { logarithmic: true });

@@ -8,6 +8,8 @@ import { camera, renderer } from '../scene/scene.js';
 import { earth } from '../scene/earth.js';
 import { MOON_RADIUS } from '../scene/moon.js';
 import { cannonGroup } from '../scene/cannon.js';
+import { ENTITY_TYPES } from '../entity.js';
+import { selectEntity } from './ui_entity.js';
 
 export const CAMERA_MODES = [
     { value: 'orbit', label: 'Orbit controls (default)' },
@@ -59,7 +61,7 @@ export function initCameraControls() {
 
     window.addEventListener('keydown', (e) => {
         if (!e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            if (e.key === 'c') {
+            if (e.key === 'v') {
                 cameraCurrentModeIndex = (cameraCurrentModeIndex + 1) % CAMERA_MODES.length;
                 const nextMode = CAMERA_MODES[cameraCurrentModeIndex].value;
                 cameraModeSelectRef.value = nextMode;
@@ -67,6 +69,31 @@ export function initCameraControls() {
                 cameraTargetSelectRef.value = 'Earth';
             } else if (e.key === 'm') {
                 cameraTargetSelectRef.value = 'Moon';
+                selectEntity('Moon');
+            } else {
+                const currentIdx = CAMERA_TARGETS.findIndex(opt => opt.value === cameraCurrentTarget);
+                let idx = currentIdx;
+                if (e.key === 'c') {
+                    while (true) {
+                        idx = (idx < CAMERA_TARGETS.length - 1 ? idx + 1 : 0)
+                        const o = CAMERA_TARGETS[idx].object;
+                        const t = CAMERA_TARGETS[idx].type;
+                        if (o === cannonGroup || t === ENTITY_TYPES.CANNONBALL) { break; }
+                    }
+                } else if (e.key === 's') {
+                    while (true) {
+                        idx = (idx < CAMERA_TARGETS.length - 1 ? idx + 1 : 0)
+                        const o = CAMERA_TARGETS[idx].object;
+                        const t = CAMERA_TARGETS[idx].type;
+                        if ([ENTITY_TYPES.SATELLITE, ENTITY_TYPES.SPACESHIP].includes(t)) { break; }
+                    }
+                }
+                if (idx != currentIdx) {
+                    cameraTargetSelectRef.value = CAMERA_TARGETS[idx].value;
+                    if (CAMERA_TARGETS[idx].object !== cannonGroup) {
+                        selectEntity(CAMERA_TARGETS[idx].value);
+                    }
+                }
             }
         }
     });
@@ -265,10 +292,10 @@ export function updateCamera(deltaTime) {
 
 export function refreshCameraTargets() {
     CAMERA_TARGETS = [];
-    CAMERA_TARGETS.push({ value: 'Earth', label: 'Earth', object: earth });
-    CAMERA_TARGETS.push({ value: 'Cannon', label: 'Cannon', object: cannonGroup });
+    CAMERA_TARGETS.push({ value: 'Earth', label: 'Earth', object: earth, type: null });
+    CAMERA_TARGETS.push({ value: 'Cannon', label: 'Cannon', object: cannonGroup, type: null });
     for (const entity of world.getPhysicalEntities()) {
-        CAMERA_TARGETS.push({ value: entity.name, label: entity.name, object: entity.body });
+        CAMERA_TARGETS.push({ value: entity.name, label: entity.name, object: entity.body, type: entity.type });
     }
     if (cameraTargetSelectRef) cameraTargetSelectRef.updateOptions(CAMERA_TARGETS);
 }
