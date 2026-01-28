@@ -109,7 +109,7 @@ body {
 /* ==========================================================================
    PANELS (CONTROL-GROUPS)
    ========================================================================== */
-
+   
 .control-group {
     margin: 0;
     background: rgba(30, 40, 60, 0.4);
@@ -127,20 +127,25 @@ body {
     cursor: pointer;
     position: relative;
     transition: background 0.2s ease;
+    user-select: none;
 }
 
 .control-group summary:hover {
     background: rgba(60, 90, 130, 0.6);
 }
 
-/* Custom chevron for sub-groups */
+.control-group summary::-webkit-details-marker,
+.control-group summary::marker {
+    display: none;
+}
+
 .control-group summary::after {
-    content: '▾';
+    content: '\25BC';
     position: absolute;
-    right: 16px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 12px;
+    font-size: 13px;
     color: #88ccffcc;
     transition: transform 0.3s ease;
 }
@@ -149,18 +154,11 @@ body {
     transform: translateY(-50%) rotate(180deg);
 }
 
-/* Hide native marker for sub-groups */
-.control-group summary::-webkit-details-marker,
-.control-group summary::marker {
-    display: none;
-}
-
 .group-content {
     padding: 10px 16px;
     background: rgba(20, 30, 50, 0.4);
 }
 
-/* Allow dropdowns to escape sections */
 .control-group,
 .group-content {
     overflow: visible;
@@ -178,13 +176,89 @@ body {
 
 .sub-control-group summary {
     cursor: pointer;
+    position: relative;
     font-weight: 600;
     color: #ccc;
-    padding: 4px 0;
+    padding: 4px 32px 4px 0;
+    user-select: none;
+}
+
+.sub-control-group summary::-webkit-details-marker,
+.sub-control-group summary::marker {
+    display: none;
+}
+
+.sub-control-group summary::after {
+    content: '▼'; 
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%) !important;
+    font-size: 11px ;
+    color: #77aaff;
+    transition: transform 0.3s ease;
+}
+
+.sub-control-group[open] summary::after {
+    transform: translateY(-50%) rotate(180deg) !important;
 }
 
 .sub-group-content {
     padding: 6px 0 10px 8px;
+}
+
+/* ==========================================================================
+   SPACING & TRANSITIONS
+   ========================================================================== */
+
+.main-content-wrapper {
+    padding: 0;
+    transition: max-height 0.4s ease-out;
+    overflow: hidden;
+}
+
+/* Intro text spacing */
+.main-content-wrapper> :first-child {
+    margin-top: 16px !important;
+    padding: 0 16px;
+}
+
+.main-content-wrapper h4 {
+    margin: 0 0 20px 0;
+    font-style: italic;
+    font-weight: normal;
+    color: #88ccffcc;
+    text-align: center;
+    opacity: 0.9;
+}
+
+/* ==========================================================================
+   LABELS & LINKS & TEXT
+   ========================================================================== */
+
+label {
+    display: block;
+    margin: 6px 0 4px;
+    font-size: 12px;
+    color: #aaccff;
+}
+
+a {
+    color: #eee;
+    text-decoration: underline;
+    text-decoration-color: rgba(200, 220, 255, 0.4);
+    text-decoration-thickness: 1px;
+}
+
+a:hover,
+a:focus {
+    color: #fff;
+    text-decoration-color: #88f;
+    text-decoration-thickness: 2px;
+}
+
+a:visited {
+    color: #eee;
 }
 
 .read-only-field {
@@ -217,60 +291,6 @@ body {
     border: 1px solid #444;
     color: #eee;
     border-radius: 4px;
-}
-
-/* ==========================================================================
-   SPACING & TRANSITIONS
-   ========================================================================== */
-
-.main-content-wrapper {
-    padding: 0;
-    transition: max-height 0.4s ease-out;
-    overflow: hidden;
-}
-
-/* Intro text spacing */
-.main-content-wrapper> :first-child {
-    margin-top: 16px !important;
-    padding: 0 16px;
-}
-
-.main-content-wrapper h4 {
-    margin: 0 0 20px 0;
-    font-style: italic;
-    font-weight: normal;
-    color: #88ccffcc;
-    text-align: center;
-    opacity: 0.9;
-}
-
-/* ==========================================================================
-   LABELS & LINKS
-   ========================================================================== */
-
-label {
-    display: block;
-    margin: 6px 0 4px;
-    font-size: 12px;
-    color: #aaccff;
-}
-
-a {
-    color: #eee;
-    text-decoration: underline;
-    text-decoration-color: rgba(200, 220, 255, 0.4);
-    text-decoration-thickness: 1px;
-}
-
-a:hover,
-a:focus {
-    color: #fff;
-    text-decoration-color: #88f;
-    text-decoration-thickness: 2px;
-}
-
-a:visited {
-    color: #eee;
 }
 
 
