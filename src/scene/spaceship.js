@@ -3,8 +3,9 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { scaleFromMeter } from '../constants.js';
+import { computeCorrectScale } from '../utils.js';
 
-export async function createSpaceshipMesh() {
+export async function loadLowPolySpaceshipMesh() {
   const group = new THREE.Group();
 
   const loader = new GLTFLoader();
@@ -31,12 +32,7 @@ export async function createSpaceshipMesh() {
   });
 
   // Rescale
-  const currentSize = new THREE.Vector3();
-  new THREE.Box3().setFromObject(object).getSize(currentSize);
-  const currentMax = Math.max(currentSize.x, currentSize.y, currentSize.z);
-  const desiredSize = scaleFromMeter(15);
-  const scale = desiredSize / currentMax;
-  object.scale.setScalar(scale);
+  object.scale.setScalar(computeCorrectScale(object, 15));
 
   // Recenter
   // const box = new THREE.Box3().setFromObject(object);

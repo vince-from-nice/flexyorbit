@@ -4,9 +4,9 @@ import { Entity, ENTITY_TYPES } from './entity.js';
 import { scene } from './scene/scene.js';
 import { Trail } from './scene/trails.js';
 import { createMoonMesh, MOON_RADIUS, MOON_RADIUS_KM, MOON_DISTANCE_KM } from './scene/moon.js';
-import { createISSMesh, createSatelliteMesh } from './scene/satellite.js';
+import { loadISSMesh, createSatelliteMesh, loadSimpleSatelliteMesh } from './scene/satellite.js';
 import { createAsteroidMesh } from './scene/asteroid.js';
-import { createSpaceshipMesh } from './scene/spaceship.js';
+import { loadLowPolySpaceshipMesh } from './scene/spaceship.js';
 import { refreshEntitySelect } from './controls/ui_entity.js';
 import { refreshCameraTargets, selectCameraTarget } from './controls/camera.js'
 import { refreshSpaceshipSelect } from './controls/ui_spaceship.js';
@@ -24,9 +24,9 @@ class World {
     this.createAndAddEntity(ENTITY_TYPES.MOON, 'Moon', null, 'Earth', MOON_DISTANCE_KM, 0, 0, 90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#74a9b2', 60));
 
     // Add satellites
-    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-ISS', await createISSMesh(), 'Earth', 450, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#62c1f0', 20));
-    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#1', null, 'Earth', 550, 0, 0, +45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20));
-    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#2', null, 'Earth', 550, 0, 0, -45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20));
+    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-ISS', await loadISSMesh(), 'Earth', 450, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#62c1f0', 20));
+    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#1', await loadSimpleSatelliteMesh(), 'Earth', 550, 0, 0, +45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20));
+    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#2', await loadSimpleSatelliteMesh(), 'Earth', 550, 0, 0, -45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20));
     this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#1', null, 'Earth', 35786, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50));
     this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#2', null, 'Earth', 35786, 0, 0, -90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50));
 
@@ -99,7 +99,7 @@ class World {
           mesh = createAsteroidMesh();
           break;
         case ENTITY_TYPES.SPACESHIP:
-          mesh = await createSpaceshipMesh();
+          mesh = await loadLowPolySpaceshipMesh();
           break;
         default:
           throw new Error(`Unsupported entity type: ${type}`);

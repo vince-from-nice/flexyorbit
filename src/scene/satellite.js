@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ENTITY_TYPES, Entity } from '../entity.js';
 import { EARTH_RADIUS, EARTH_RADIUS_KM, GLOBAL_SCALE, GM_EARTH, scaleFromKm, scaleFromMeter, scaleToMeter } from '../constants.js';
 import { scene } from './scene.js';
-import { printPosInKm, printPosInMeter } from '../utils.js';
+import { computeCorrectScale, printPosInKm, printPosInMeter } from '../utils.js';
 
 export function createSatelliteMesh() {
   const group = new THREE.Group();
@@ -122,10 +122,10 @@ export function createSatelliteMesh() {
   return group;
 }
 
-export async function createISSMesh() {
+export async function loadSimpleSatelliteMesh() {
   const group = new THREE.Group();
   const loader = new GLTFLoader();
-  const gltf = await loader.loadAsync('assets/spaceships/ISS/scene.gltf');
+  const gltf = await loader.loadAsync('assets/satellites/SimpleLowPoly/scene.gltf');
   const object = gltf.scene;
 
   object.traverse((child) => {
@@ -135,13 +135,41 @@ export async function createISSMesh() {
   });
 
   // Rescale
-  const currentSize = new THREE.Vector3();
-  new THREE.Box3().setFromObject(object).getSize(currentSize);
-  const ISS_REAL_WIDTH_IN_METERS = 109;
-  const currentMax = Math.max(currentSize.x, currentSize.y, currentSize.z);
-  const desiredSize = scaleFromMeter(ISS_REAL_WIDTH_IN_METERS);
-  const scale = desiredSize / currentMax;
-  object.scale.setScalar(scale);
+  object.scale.setScalar(computeCorrectScale(object, 20));
+
+  // Recenter
+  const scaledBox = new THREE.Box3().setFromObject(object);
+  const center = new THREE.Vector3();
+  scaledBox.getCenter(center);
+  object.position.sub(center);
+
+  // Reorient
+  const staticSubGroup = new THREE.Group();
+  staticSubGroup.add(object);
+  staticSubGroup.rotation.y = + Math.PI / 5;
+  group.add(staticSubGroup);
+
+  group.scale.setScalar(10000);
+
+  console.log("Simple satellite mesh has been loaded");
+
+  return group;
+}
+
+export async function loadISSMesh() {
+  const group = new THREE.Group();
+  const loader = new GLTFLoader();
+  const gltf = await loader.loadAsync('assets/satellites/ISS/scene.gltf');
+  const object = gltf.scene;
+
+  object.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+    }
+  });
+
+  // Rescale
+  object.scale.setScalar(computeCorrectScale(object, 109));
 
   // Recenter
   const scaledBox = new THREE.Box3().setFromObject(object);
@@ -156,7 +184,7 @@ export async function createISSMesh() {
   staticSubGroup.rotation.z = - Math.PI / 2;
   group.add(staticSubGroup);
 
-  group.scale.setScalar(5000);
+  group.scale.setScalar(10000);
 
   // const finalBox = new THREE.Box3().setFromObject(object);
   // const boxHelper = new THREE.Box3Helper(finalBox, 0xffff00);

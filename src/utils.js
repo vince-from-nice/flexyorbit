@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GLOBAL_SCALE, EARTH_RADIUS, scaleToKm, scaleToMeter } from './constants.js';
+import { GLOBAL_SCALE, EARTH_RADIUS, scaleToKm, scaleToMeter, scaleFromMeter } from './constants.js';
 
 export function printPosInKm(pos) {
     return "(" + scaleToKm(pos?.x).toFixed(0) + " " + scaleToKm(pos?.y).toFixed(0) + " " + scaleToKm(pos?.z).toFixed(0) + ")";
@@ -52,4 +52,13 @@ export function normalizeLongitude(lon) {
     if (lon > 180) lon -= 360;
     if (lon < -180) lon += 360;
     return lon;
+}
+
+export function computeCorrectScale(mesh, correctSizeInMeters) {
+      const currentSize = new THREE.Vector3();
+      new THREE.Box3().setFromObject(mesh).getSize(currentSize);
+      const currentMax = Math.max(currentSize.x, currentSize.y, currentSize.z);
+      const desiredSize = scaleFromMeter(correctSizeInMeters);
+      const scale = desiredSize / currentMax;
+      return scale;
 }

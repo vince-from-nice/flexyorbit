@@ -14,7 +14,7 @@ import { createEntityWidgets, selectEntity, updateEntityWidgets } from './ui_ent
 import { createSpaceshipWidgets, updateSpaceshiptWidgets } from './ui_spaceship.js';
 
 export let timePaused = false;
-export let timeAcceleration = 100;
+export let timeAcceleration = 50;
 
 export function initControls() {
 
