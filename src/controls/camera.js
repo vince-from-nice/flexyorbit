@@ -253,40 +253,37 @@ function repositionCameraInFrontOf(targetPos, targetType) {
     cameraCurrentControls?.update?.(0);
 }
 
-export function updateCameraToFollowTarget(delta) {
+export function updateCameraToFollowTarget(deltaTime) {
     if (!cameraCurrentControls) return;
     const targetPos = getCurrentCameraTargetPosition();
-    const isOrbital = ['orbit', 'map'].includes(cameraCurrentMode);
-    if (isOrbital) {
-        const entity = world.getEntityByName(cameraCurrentTarget);
-        const isSpaceship = entity && entity.type === ENTITY_TYPES.SPACESHIP;
-        if (isSpaceship) {
-            const delta = targetPos.clone().sub(cameraCurrentControls.target);
-            camera.position.add(delta);
-            cameraCurrentControls.target.copy(targetPos);
+    const isOrbitalMode = ['orbit', 'map'].includes(cameraCurrentMode);
+    const deltaPos = targetPos.clone().sub(cameraCurrentControls.target);
+    cameraCurrentControls.target.copy(targetPos);
+    const entity = world.getEntityByName(cameraCurrentTarget);
+    if (!entity) return;
+    if (isOrbitalMode) {
+        // When the target is a spaceships camera must follow it and the direction must stay behind (unless user interaction)
+        if (entity.type === ENTITY_TYPES.SPACESHIP) {
+            camera.position.add(deltaPos);
             if (!isUserInteracting) {
                 const currentDistance = camera.position.distanceTo(targetPos);
-
-                // Direction élevée de 15° (au-dessus de l'arrière)
-                const angle = THREE.MathUtils.degToRad(15);
+                const angle = THREE.MathUtils.degToRad(15); // Direction up by 15° to have a better view of the spaceship
                 const behindLocal = new THREE.Vector3(0, Math.sin(angle), -Math.cos(angle)).normalize();
-
                 const behindWorld = new THREE.Vector3();
                 behindWorld.copy(behindLocal).applyQuaternion(entity.body.quaternion);
-
                 const desiredPos = targetPos.clone().add(behindWorld.multiplyScalar(currentDistance));
                 camera.position.lerp(desiredPos, 0.10);
-
-                // Applique le roll du vaisseau à la caméra (tilt orientation)
-                const euler = new THREE.Euler().setFromQuaternion(entity.body.quaternion, 'YXZ');
-                const roll = euler.z;  // Extrait le roll (Z)
-                camera.lookAt(targetPos);  // Reset lookAt de base
-                const lookDir = targetPos.clone().sub(camera.position).normalize();
-                const deltaQuat = new THREE.Quaternion().setFromAxisAngle(lookDir, -roll);
-                camera.quaternion.multiply(deltaQuat);  // Applique roll autour de la ligne de vue
+                //  The roll axis need a special treatment ??
+                // const euler = new THREE.Euler().setFromQuaternion(entity.body.quaternion, 'YXZ');
+                // const roll = euler.z;  
+                // camera.lookAt(targetPos);
+                // const lookDir = targetPos.clone().sub(camera.position).normalize();
+                // const deltaQuat = new THREE.Quaternion().setFromAxisAngle(lookDir, -roll);
+                // camera.quaternion.multiply(deltaQuat);
             }
-        } else {
-            cameraCurrentControls.target.copy(targetPos);
+        } 
+        // When the target is a satellite the camera keep direction aligned with the Earth (unless user interaction)
+        else if (entity.type === ENTITY_TYPES.SATELLITE) {
             if (!isUserInteracting) {
                 const newDistance = camera.position.distanceTo(targetPos) + targetPos.distanceTo(earthCenter);
                 repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, newDistance, false);
