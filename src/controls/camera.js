@@ -3,7 +3,7 @@ import world from '../world.js';
 import { printPosInKm, showTemporaryMessage } from '../utils.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
-import { EARTH_RADIUS, scaleFromKm, scaleToKm } from '../constants.js';
+import { EARTH_RADIUS, scaleFromKm, scaleToKm, scaleToMeter } from '../constants.js';
 import { camera, renderer } from '../scene/scene.js';
 import { earth } from '../scene/earth.js';
 import { MOON_RADIUS } from '../scene/moon.js';
@@ -256,25 +256,42 @@ function repositionCameraInFrontOf(targetPos, targetType) {
 export function updateCameraToFollowTarget(delta) {
     if (!cameraCurrentControls) return;
     const targetPos = getCurrentCameraTargetPosition();
-    const isLargeTarget = ['Universe', 'Earth'].includes(cameraCurrentTarget);
     const isOrbital = ['orbit', 'map'].includes(cameraCurrentMode);
-
-    // For orbital mode : follow the target smoothly
     if (isOrbital) {
-        cameraCurrentControls.target.copy(targetPos);
-        if (!isUserInteracting) {
-            // Disable respositionning for now
-            //const newDistance = camera.position.distanceTo(targetPos) + targetPos.distanceTo(earthCenter);
-            //repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, newDistance, false);
+        const entity = world.getEntityByName(cameraCurrentTarget);
+        const isSpaceship = entity && entity.type === ENTITY_TYPES.SPACESHIP;
+        if (isSpaceship) {
+            const delta = targetPos.clone().sub(cameraCurrentControls.target);
+            camera.position.add(delta);
+            cameraCurrentControls.target.copy(targetPos);
+            if (!isUserInteracting) {
+                const currentDistance = camera.position.distanceTo(targetPos);
+
+                // Direction élevée de 15° (au-dessus de l'arrière)
+                const angle = THREE.MathUtils.degToRad(15);
+                const behindLocal = new THREE.Vector3(0, Math.sin(angle), -Math.cos(angle)).normalize();
+
+                const behindWorld = new THREE.Vector3();
+                behindWorld.copy(behindLocal).applyQuaternion(entity.body.quaternion);
+
+                const desiredPos = targetPos.clone().add(behindWorld.multiplyScalar(currentDistance));
+                camera.position.lerp(desiredPos, 0.10);
+
+                // Applique le roll du vaisseau à la caméra (tilt orientation)
+                const euler = new THREE.Euler().setFromQuaternion(entity.body.quaternion, 'YXZ');
+                const roll = euler.z;  // Extrait le roll (Z)
+                camera.lookAt(targetPos);  // Reset lookAt de base
+                const lookDir = targetPos.clone().sub(camera.position).normalize();
+                const deltaQuat = new THREE.Quaternion().setFromAxisAngle(lookDir, -roll);
+                camera.quaternion.multiply(deltaQuat);  // Applique roll autour de la ligne de vue
+            }
+        } else {
+            cameraCurrentControls.target.copy(targetPos);
+            if (!isUserInteracting) {
+                const newDistance = camera.position.distanceTo(targetPos) + targetPos.distanceTo(earthCenter);
+                repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, newDistance, false);
+            }
         }
-    }
-    // For non orbital modes : classic chase camera 
-    else {
-        // const desiredDistance = isLargeTarget ? scaleFromKm(800) : scaleFromKm(1.5);
-        // const currentDir = camera.position.clone().sub(targetPos).normalize();
-        // const desiredPos = targetPos.clone().add(currentDir.multiplyScalar(desiredDistance));
-        // camera.position.lerp(desiredPos, 0.10);
-        // camera.lookAt(targetPos);
     }
 }
 

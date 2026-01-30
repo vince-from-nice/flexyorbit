@@ -124,8 +124,8 @@ export function createSpaceshipWidgets(spaceshipPanel) {
         switch (e.key) {
             case '4': euler.y += THREE.MathUtils.degToRad(δ); changed = true; break;
             case '6': euler.y -= THREE.MathUtils.degToRad(δ); changed = true; break;
-            case '8': euler.x -= THREE.MathUtils.degToRad(δ); changed = true; break;
-            case '5': euler.x += THREE.MathUtils.degToRad(δ); changed = true; break;
+            case '8': euler.x += THREE.MathUtils.degToRad(δ); changed = true; break;
+            case '5': euler.x -= THREE.MathUtils.degToRad(δ); changed = true; break;
             case '7': euler.z -= THREE.MathUtils.degToRad(δ); changed = true; break;
             case '9': euler.z += THREE.MathUtils.degToRad(δ); changed = true; break;
             case 'Enter':

@@ -106,7 +106,7 @@ class World {
       }
     }
 
-    // Compute position (ECEF style)
+    // Compute initial position (ECEF style)
     const isMoon = referenceBody === 'Moon';
     const refEntity = isMoon ? this.getEntityByName('Moon') : null;
     const center = refEntity ? refEntity.body.position.clone() : new THREE.Vector3();
@@ -124,7 +124,7 @@ class World {
 
     mesh.position.copy(pos);
 
-    // Compute velocity
+    // Compute initial velocity
     const radiusKm = bodyRadiusKm + altitudeKm;
     const orbitalSpeed = scaleFromKm(Math.sqrt(gm / radiusKm));
     // Local tangent frame: North + East
@@ -140,7 +140,7 @@ class World {
       velocity.add(refEntity.velocity.clone());
     }
 
-    // Computre orientation (body faces velocity direction)
+    // Compute initial orientation (body faces velocity direction)
     if (velocity.lengthSq() > 0.0001) {
       const targetQuat = new THREE.Quaternion();
       targetQuat.setFromUnitVectors(
@@ -159,6 +159,10 @@ class World {
       trail,
       ...options
     });
+
+    if (type === ENTITY_TYPES.SPACESHIP) {
+      entity.vectors.showVelocity = true;
+    }
 
     scene.add(mesh);
     this.addEntity(entity);
