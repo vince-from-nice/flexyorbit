@@ -4,18 +4,20 @@ import { ENTITY_TYPES } from '../entity.js';
 import { addSubPanel, addCustomSelect, addSlider } from './widgets.js';
 import { timeAcceleration } from './interface.js';
 import { showTemporaryMessage } from '../utils.js';
+import { selectEntity } from './ui_entity.js';
 
 export let selectedSpaceship = null, spaceshipSelect = null;
 
 const spaceshipWidgets = {};
 
 export function createSpaceshipWidgets(spaceshipPanel) {
-    spaceshipSelect = addCustomSelect(spaceshipPanel, 'Select spaceship', null, [], null, name => {
+    spaceshipSelect = addCustomSelect(spaceshipPanel, null, null, [], null, name => {
         selectedSpaceship = world.getEntityByName(name);
+        selectEntity(name);
     });
 
     // Spaceship orientation sub panel
-    const orientationPanel = addSubPanel(spaceshipPanel, 'Orientation', true);
+    const orientationPanel = addSubPanel(spaceshipPanel, 'Orientation', false);
 
     const euler = new THREE.Euler(0, 0, 0, 'YXZ');
     const quat = new THREE.Quaternion();
@@ -56,7 +58,7 @@ export function createSpaceshipWidgets(spaceshipPanel) {
     thrustRow.style.width = '100%';
 
     const frontBtn = document.createElement('button');
-    frontBtn.textContent = 'Front thrust';
+    frontBtn.textContent = '\nFront thrust';
     frontBtn.style.flex = '1.4';
     frontBtn.style.padding = '8px 12px';
     frontBtn.style.fontSize = '13px';
@@ -188,5 +190,6 @@ export function refreshSpaceshipSelect() {
     if (!spaceshipSelect) return;
     const ships = world.getEntitiesByType(ENTITY_TYPES.SPACESHIP)
         .map(e => ({ value: e.name, label: e.name }));
+        ships.unshift({value:'', label:'Select a spaceship'})
     spaceshipSelect.updateOptions(ships, selectedSpaceship?.name);
 }

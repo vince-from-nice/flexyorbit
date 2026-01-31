@@ -31,11 +31,12 @@ class World {
     this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#2', null, 'Earth', 35786, 0, 0, -90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50));
 
     // Add asteroids
-    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithMoon', null, 'Moon', 2000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
+    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithMoon', null, 'Moon', 4000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
     //this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithEarth', 'Earth', 6000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
 
     // Add spaceships
     await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', null, 'Earth', 5000, 0, 50, 70, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 50));
+    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta2', null, 'Moon', 2000, 0, 50, 70, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 50));
 
     // Reset camera target to the Earth once all entities has been loaded
     selectCameraTarget('Earth');
