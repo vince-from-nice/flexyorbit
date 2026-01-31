@@ -200,11 +200,10 @@ export function switchCameraTarget(newTarget) {
     if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
         newCameraDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH;
     } else {
-        let targetAlt = newTargetPosition.distanceTo(earthCenter);
         if (['Moon'].includes(cameraCurrentTarget)) {
-            newCameraDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON;
+            newCameraDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON;
         } else {
-            newCameraDistance = targetAlt + CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS;
+            newCameraDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS;
         }
     }
 
@@ -223,20 +222,22 @@ export function switchCameraTarget(newTarget) {
 }
 
 // Repositions camera so that Earth center, target and camera are on the same line
-function repositionCameraAlignedWithEarthAndTarget(targetPos, newDistance, forceInstant = false) {
+function repositionCameraAlignedWithEarthAndTarget(targetPosition, targetDistance, forceInstant = false) {
     let newDirection;
     if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
         newDirection = camera.position.clone().sub(earthCenter).normalize();
     } else {
-        newDirection = targetPos.clone().sub(earthCenter).normalize();
+        const desiredDirFromTarget = targetPosition.clone().sub(earthCenter).normalize();
+        if (forceInstant) {
+            newDirection = desiredDirFromTarget;
+        } else {
+            const currentDirFromTarget = camera.position.clone().sub(targetPosition).normalize();
+            newDirection = currentDirFromTarget.lerp(desiredDirFromTarget, 0.1).normalize();
+        }
     }
-    const newPosition = newDirection.multiplyScalar(newDistance);
-    if (forceInstant) {
-        camera.position.copy(newPosition);
-    } else {
-        camera.position.lerp(newPosition, 0.1);
-    }
-    camera.lookAt(targetPos);
+    const newCameraPosition = targetPosition.clone().add(newDirection.multiplyScalar(targetDistance));
+    camera.position.copy(newCameraPosition);
+    camera.lookAt(targetPosition);
 }
 
 function repositionCameraInFrontOf(targetPos, targetType) {
@@ -267,26 +268,24 @@ export function updateCameraToFollowTarget(deltaTime) {
             camera.position.add(deltaPos);
             if (!isUserInteracting) {
                 const currentDistance = camera.position.distanceTo(targetPos);
-                const angle = THREE.MathUtils.degToRad(15); // Direction up by 15° to have a better view of the spaceship
+                const angle = THREE.MathUtils.degToRad(15);
                 const behindLocal = new THREE.Vector3(0, Math.sin(angle), -Math.cos(angle)).normalize();
-                const behindWorld = new THREE.Vector3();
-                behindWorld.copy(behindLocal).applyQuaternion(entity.body.quaternion);
-                const desiredPos = targetPos.clone().add(behindWorld.multiplyScalar(currentDistance));
-                camera.position.lerp(desiredPos, 0.10);
-                //  The roll axis need a special treatment ??
-                // const euler = new THREE.Euler().setFromQuaternion(entity.body.quaternion, 'YXZ');
-                // const roll = euler.z;  
-                // camera.lookAt(targetPos);
-                // const lookDir = targetPos.clone().sub(camera.position).normalize();
-                // const deltaQuat = new THREE.Quaternion().setFromAxisAngle(lookDir, -roll);
-                // camera.quaternion.multiply(deltaQuat);
+                const behindWorld = behindLocal.clone().applyQuaternion(entity.body.quaternion);
+                //  Does the roll axis need a special treatment ??
+                const desiredDirFromShip = behindWorld.normalize();
+                let finalDirFromShip;
+                const currentDirFromShip = camera.position.clone().sub(targetPos).normalize();
+                finalDirFromShip = currentDirFromShip.lerp(desiredDirFromShip, 0.10).normalize();
+                const finalPos = targetPos.clone().add(finalDirFromShip.multiplyScalar(currentDistance));
+                camera.position.copy(finalPos);
+                camera.lookAt(targetPos);
             }
-        } 
+        }
         // When the target is a satellite the camera keep direction aligned with the Earth (unless user interaction)
         else if (entity.type === ENTITY_TYPES.SATELLITE) {
             if (!isUserInteracting) {
-                const newDistance = camera.position.distanceTo(targetPos) + targetPos.distanceTo(earthCenter);
-                repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, newDistance, false);
+                const currentTargetDistance = camera.position.distanceTo(targetPos);
+                repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, currentTargetDistance, false);
             }
         }
     }

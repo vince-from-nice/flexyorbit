@@ -118,7 +118,7 @@ function createInterface() {
     const cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
         value => { switchCameraTarget(value); });
     registerCameraTargetSelect(cameraTargetSelect);
-    const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'c\' to switch mode)', CAMERA_MODES, 'orbit',
+    const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'v\' to switch mode)', CAMERA_MODES, 'orbit',
         value => { switchCameraMode(value); });
     registerCameraModeSelect(cameraModeSelect);
     //selectCameraTarget('Earth');
