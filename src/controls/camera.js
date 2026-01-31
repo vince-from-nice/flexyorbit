@@ -36,10 +36,6 @@ const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS + scaleFromKm(1000);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON = MOON_RADIUS + scaleFromKm(500);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromKm(0.01); // 10 meters
 
-const CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH = EARTH_RADIUS * 5;
-const CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON = MOON_RADIUS * 5;
-const CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS = scaleFromKm(3000);
-
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS * 5
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON = MOON_RADIUS * 5
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.1) // 100 meters
@@ -198,12 +194,16 @@ export function switchCameraTarget(newTarget) {
     const newTargetPosition = getCurrentCameraTargetPosition();
     let newCameraDistance;
     if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
-        newCameraDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_EARTH;
+        newCameraDistance = EARTH_RADIUS * 5;
     } else {
         if (['Moon'].includes(cameraCurrentTarget)) {
-            newCameraDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_MOON;
+            newCameraDistance = MOON_RADIUS * 5;
         } else {
-            newCameraDistance = CAMERA_ORBIT_INIT_DISTANCE_FOR_OBJECTS;
+            const targetSize = new THREE.Vector3();
+            const targetBox = new THREE.Box3().setFromObject(cameraCurrentTargetObject);
+            targetBox.getSize(targetSize);
+            const targetMaxSize = Math.max(targetSize.x, targetSize.y, targetSize.z);
+            newCameraDistance = targetMaxSize * 4;
         }
     }
 
@@ -256,35 +256,35 @@ function repositionCameraInFrontOf(targetPos, targetType) {
 
 export function updateCameraToFollowTarget(deltaTime) {
     if (!cameraCurrentControls) return;
-    const targetPos = getCurrentCameraTargetPosition();
-    const isOrbitalMode = ['orbit', 'map'].includes(cameraCurrentMode);
-    const deltaPos = targetPos.clone().sub(cameraCurrentControls.target);
-    cameraCurrentControls.target.copy(targetPos);
+    const currentTargetPosition = cameraCurrentControls.target;
+    const currentTargetDistance = camera.position.distanceTo(currentTargetPosition);
+    const newTargetPosition = getCurrentCameraTargetPosition();
+    const deltaPos = newTargetPosition.clone().sub(cameraCurrentControls.target);
+    cameraCurrentControls.target.copy(newTargetPosition);
     const entity = world.getEntityByName(cameraCurrentTarget);
     if (!entity) return;
-    if (isOrbitalMode) {
+    if (['orbit', 'map'].includes(cameraCurrentMode)) {
         // When the target is a spaceships camera must follow it and the direction must stay behind (unless user interaction)
         if (entity.type === ENTITY_TYPES.SPACESHIP) {
             camera.position.add(deltaPos);
             if (!isUserInteracting) {
-                const currentDistance = camera.position.distanceTo(targetPos);
+                const currentDistance = camera.position.distanceTo(newTargetPosition);
                 const angle = THREE.MathUtils.degToRad(15);
                 const behindLocal = new THREE.Vector3(0, Math.sin(angle), -Math.cos(angle)).normalize();
                 const behindWorld = behindLocal.clone().applyQuaternion(entity.body.quaternion);
                 //  Does the roll axis need a special treatment ??
                 const desiredDirFromShip = behindWorld.normalize();
                 let finalDirFromShip;
-                const currentDirFromShip = camera.position.clone().sub(targetPos).normalize();
+                const currentDirFromShip = camera.position.clone().sub(newTargetPosition).normalize();
                 finalDirFromShip = currentDirFromShip.lerp(desiredDirFromShip, 0.10).normalize();
-                const finalPos = targetPos.clone().add(finalDirFromShip.multiplyScalar(currentDistance));
+                const finalPos = newTargetPosition.clone().add(finalDirFromShip.multiplyScalar(currentDistance));
                 camera.position.copy(finalPos);
-                camera.lookAt(targetPos);
+                camera.lookAt(newTargetPosition);
             }
         }
         // When the target is a satellite the camera keep direction aligned with the Earth (unless user interaction)
         else if (entity.type === ENTITY_TYPES.SATELLITE) {
             if (!isUserInteracting) {
-                const currentTargetDistance = camera.position.distanceTo(targetPos);
                 repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, currentTargetDistance, false);
             }
         }

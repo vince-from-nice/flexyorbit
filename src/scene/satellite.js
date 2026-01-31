@@ -184,7 +184,7 @@ export async function loadISSMesh() {
   staticSubGroup.rotation.z = - Math.PI / 2;
   group.add(staticSubGroup);
 
-  group.scale.setScalar(10000);
+  group.scale.setScalar(2000);
 
   // const finalBox = new THREE.Box3().setFromObject(object);
   // const boxHelper = new THREE.Box3Helper(finalBox, 0xffff00);

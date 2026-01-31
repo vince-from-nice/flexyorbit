@@ -53,6 +53,12 @@ export class Entity {
     return box;
   }
 
+  getBoundingBoxSize() {
+    const size = new THREE.Vector3();
+    this.getBoundingBox().getSize(size);
+    return Math.max(size.x, size.y, size.z);
+  }
+
   reset() {
     this.body.position.copy(this.initialPosition);
     this.velocity.copy(this.initialVelocity);
