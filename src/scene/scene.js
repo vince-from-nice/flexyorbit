@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EARTH_RADIUS, scaleFromKm } from '../constants.js';
+import { EARTH_RADIUS, scaleFromKm, scaleFromMeter } from '../constants.js';
 import { SUN_DISTANCE, createSun } from './sun.js';
 import { createEarth, earth, earthRotationDisabled, EARTH_ANGULAR_VELOCITY } from './earth.js';
 import { createAtmosphere } from './atmosphere.js';
@@ -32,8 +32,8 @@ export function createScene(container) {
 }
 
 function createCamera() {
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(10), SUN_DISTANCE * 2);
-  camera.position.set(EARTH_RADIUS * 2, EARTH_RADIUS * 0, EARTH_RADIUS * 0);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(0.1), scaleFromKm(10000000));
+  camera.position.set(EARTH_RADIUS * 5, EARTH_RADIUS * 0, EARTH_RADIUS * 0);
 }
 
 function createRenderer(container) {

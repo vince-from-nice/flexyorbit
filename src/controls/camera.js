@@ -3,7 +3,7 @@ import world from '../world.js';
 import { printPosInKm, showTemporaryMessage } from '../utils.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
-import { EARTH_RADIUS, scaleFromKm, scaleToKm, scaleToMeter } from '../constants.js';
+import { EARTH_RADIUS, scaleFromKm, scaleFromMeter, scaleToKm, scaleToMeter } from '../constants.js';
 import { camera, renderer } from '../scene/scene.js';
 import { earth } from '../scene/earth.js';
 import { MOON_RADIUS } from '../scene/moon.js';
@@ -34,11 +34,11 @@ const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX = 3.0;
 
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS + scaleFromKm(1000);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON = MOON_RADIUS + scaleFromKm(500);
-const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromKm(0.01); // 10 meters
+const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromMeter(10);
 
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS * 5
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON = MOON_RADIUS * 5
-const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.1) // 100 meters
+const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.1)
 
 let orbitControls = null;
 let flyControls = null;
@@ -195,16 +195,16 @@ export function switchCameraTarget(newTarget) {
     let newCameraDistance;
     if (['Universe', 'Earth'].includes(cameraCurrentTarget)) {
         newCameraDistance = EARTH_RADIUS * 5;
+    } else if (target.type === ENTITY_TYPES.MOON) {
+        newCameraDistance = MOON_RADIUS * 5;
+    } else if (target.type === ENTITY_TYPES.CANNONBALL || cameraCurrentTarget === 'Cannon') {
+        newCameraDistance = scaleFromKm(4000);
     } else {
-        if (['Moon'].includes(cameraCurrentTarget)) {
-            newCameraDistance = MOON_RADIUS * 5;
-        } else {
-            const targetSize = new THREE.Vector3();
-            const targetBox = new THREE.Box3().setFromObject(cameraCurrentTargetObject);
-            targetBox.getSize(targetSize);
-            const targetMaxSize = Math.max(targetSize.x, targetSize.y, targetSize.z);
-            newCameraDistance = targetMaxSize * 4;
-        }
+        const targetSize = new THREE.Vector3();
+        const targetBox = new THREE.Box3().setFromObject(cameraCurrentTargetObject);
+        targetBox.getSize(targetSize);
+        const targetMaxSize = Math.max(targetSize.x, targetSize.y, targetSize.z);
+        newCameraDistance = targetMaxSize * 4;
     }
 
     if (['orbit', 'map'].includes(cameraCurrentMode) && cameraCurrentControls) {

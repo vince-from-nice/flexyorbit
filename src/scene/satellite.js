@@ -5,9 +5,11 @@ import { EARTH_RADIUS, EARTH_RADIUS_KM, GLOBAL_SCALE, GM_EARTH, scaleFromKm, sca
 import { scene } from './scene.js';
 import { computeCorrectScale, printPosInKm, printPosInMeter } from '../utils.js';
 
+const SATELLITE_SCALE = 8000;
+
 export function createSatelliteMesh() {
   const group = new THREE.Group();
-  group.scale.setScalar(10000); // Need to be seen from the space
+  group.scale.setScalar(SATELLITE_SCALE); // Need to be seen from the space
 
   // Central cylindrical body
   const bodyGeometry = new THREE.CylinderGeometry(scaleFromMeter(1), scaleFromMeter(1), scaleFromMeter(6), 32);
@@ -149,7 +151,7 @@ export async function loadSimpleSatelliteMesh() {
   staticSubGroup.rotation.y = + Math.PI / 5;
   group.add(staticSubGroup);
 
-  group.scale.setScalar(10000);
+  group.scale.setScalar(SATELLITE_SCALE);
 
   console.log("Simple satellite mesh has been loaded");
 
@@ -184,7 +186,7 @@ export async function loadISSMesh() {
   staticSubGroup.rotation.z = - Math.PI / 2;
   group.add(staticSubGroup);
 
-  group.scale.setScalar(2000);
+  group.scale.setScalar(SATELLITE_SCALE);
 
   // const finalBox = new THREE.Box3().setFromObject(object);
   // const boxHelper = new THREE.Box3Helper(finalBox, 0xffff00);
