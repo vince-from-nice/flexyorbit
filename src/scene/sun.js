@@ -54,7 +54,7 @@ function createSunLight() {
         sunLight.shadow.mapSize.width = 4096;
         sunLight.shadow.mapSize.height = 4096;
         sunLight.shadow.bias = -0.0001;
-        sunLight.shadow.normalBias = 0.5;
+        sunLight.shadow.normalBias = 0.01;
         const shadowRadius = EARTH_RADIUS * 3;
         sunLight.shadow.camera.left = -shadowRadius;
         sunLight.shadow.camera.right = shadowRadius;

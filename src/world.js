@@ -24,7 +24,7 @@ class World {
     this.createAndAddEntity(ENTITY_TYPES.MOON, 'Moon', null, 'Earth', MOON_DISTANCE_KM, 0, 0, 90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#74a9b2', 60));
 
     // Add satellites
-    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-ISS', await loadISSMesh(), 'Earth', 540, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#62c1f0', 20));
+    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-ISS', await loadISSMesh(), 'Earth', 420, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#62c1f0', 20));
     this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#1', await loadSimpleSatelliteMesh(), 'Earth', 550, 0, 0, +45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20));
     this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#2', await loadSimpleSatelliteMesh(), 'Earth', 550, 0, 0, -45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20));
     this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#1', null, 'Earth', 35786, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50));

@@ -32,7 +32,7 @@ export function createScene(container) {
 }
 
 function createCamera() {
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(0.1), scaleFromKm(10000000));
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(0.1), SUN_DISTANCE * 1.1);
   camera.position.set(EARTH_RADIUS * 5, EARTH_RADIUS * 0, EARTH_RADIUS * 0);
 }
 
