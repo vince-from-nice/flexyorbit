@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import { EARTH_RADIUS, scaleFromKm, scaleFromMeter } from '../constants.js';
 import { SUN_DISTANCE, createSun } from './sun.js';
 import { createEarth, earth, earthRotationDisabled, EARTH_ANGULAR_VELOCITY } from './earth.js';
-import { createAtmosphere } from './atmosphere.js';
+import { createAtmosphere, updateAtmosphereVisibility } from './atmosphere.js';
 import { moonMesh, moonRotationDisabled, MOON_ANGULAR_VELOCITY } from './moon.js';
 import { createCannon } from './cannon.js';
+import { CAMERA_ORBIT_MAX_DISTANCE } from '../controls/camera.js';
 
 export let scene, camera, renderer, axesGroup, gridMesh;
 
@@ -32,7 +33,9 @@ export function createScene(container) {
 }
 
 function createCamera() {
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, scaleFromKm(0.1), SUN_DISTANCE * 1.1);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight,
+      scaleFromKm(0.1),
+      CAMERA_ORBIT_MAX_DISTANCE * 2);
   camera.position.set(EARTH_RADIUS * 5, EARTH_RADIUS * 0, EARTH_RADIUS * 0);
 }
 
@@ -177,4 +180,5 @@ export function animateEarthAndMonth(deltaTime) {
   if (!moonRotationDisabled) {
     moonMesh.rotation.y += MOON_ANGULAR_VELOCITY * deltaTime;
   }
+  updateAtmosphereVisibility(); // should be temporary
 }

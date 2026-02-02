@@ -36,6 +36,8 @@ const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS + scaleFromKm(1000);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON = MOON_RADIUS + scaleFromKm(500);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromMeter(10);
 
+export const CAMERA_ORBIT_MAX_DISTANCE = scaleFromKm(1000000);
+
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_EARTH = EARTH_RADIUS * 5
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_MOON = MOON_RADIUS * 5
 const CAMERA_ORBIT_ZOOM_RATIO_DISTANCE_OBJECTS = scaleFromKm(0.1)
@@ -102,7 +104,7 @@ function initOrbitControls() {
     orbitControls.rotateSpeed = CAMERA_ORBIT_ROTATE_SPEED_BASE;
     orbitControls.panSpeed = 1.0;
     orbitControls.minDistance = CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH;
-    orbitControls.maxDistance = scaleFromKm(2000000);
+    orbitControls.maxDistance = CAMERA_ORBIT_MAX_DISTANCE;
     orbitControls.enablePan = false;
 
     orbitControls.addEventListener('change', adjustOrbitControlsSpeed);

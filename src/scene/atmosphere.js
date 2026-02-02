@@ -1,20 +1,21 @@
 import * as THREE from 'three';
 import { EARTH_RADIUS, scaleFromKm } from '../constants.js';
-import { scene } from './scene.js';
+import { camera, scene } from './scene.js';  // plus besoin de camera ici
 
-export const ATMOSPHERE_REGULAR_HEIGHT_KM = 200; // where is the limit of the atmosphere ? :)
-export const ATMOSPHERE_REGULAR_DENSITY_SURFACE = 1.225; // 1.225 kg/m³ is the real density at sea level
+export const ATMOSPHERE_REGULAR_HEIGHT_KM = 200;
+export const ATMOSPHERE_REGULAR_DENSITY_SURFACE = 1.225;
 export let atmosphereHeightKm = ATMOSPHERE_REGULAR_HEIGHT_KM;
 export let atmosphereDensitySurface = ATMOSPHERE_REGULAR_DENSITY_SURFACE;
 export let atmosphereOpacity, atmosphereParam1, atmosphereParam2;
 
 export let atmosphereMesh = null;
 
-// Shaders from https://franky-arkon-digital.medium.com/make-your-own-earth-in-three-js-8b875e281b1e
-
 const vertexShader = `
   varying vec3 vNormal;
   varying vec3 eyeVector;
+
+  #include <common>
+  #include <logdepthbuf_pars_vertex>
 
   void main() {
       // modelMatrix transforms the coordinates local to the model into world space
@@ -27,16 +28,20 @@ const vertexShader = `
       eyeVector = normalize(mvPos.xyz);
 
       gl_Position = projectionMatrix * mvPos;
+
+      #include <logdepthbuf_vertex>
   }
 `;
 
 const fragmentShader = `
-  // reference from https://youtu.be/vM8M4QloVL0?si=CKD5ELVrRm3GjDnN
   varying vec3 vNormal;
   varying vec3 eyeVector;
   uniform float atmOpacity;
   uniform float atmPowFactor;
   uniform float atmMultiplier;
+
+  #include <common>
+  #include <logdepthbuf_pars_fragment>
 
   void main() {
       // Starting from the rim to the center at the back, dotP would increase from 0 to 1
@@ -47,6 +52,8 @@ const fragmentShader = `
       vec3 atmColor = vec3(0.05 + dotP/4.5, 0.35 + dotP/2.5, 1.0);
       // use atmOpacity to control the overall intensity of the atmospheric color
       gl_FragColor = vec4(atmColor, atmOpacity) * factor;
+
+      #include <logdepthbuf_fragment>
   }
 `;
 
@@ -101,6 +108,26 @@ export function setAtmosphereDensity(newDensity) {
     atmosphereMesh.material.uniforms.atmMultiplier.value = computeMultiplierFromDensity(newDensity);
     atmosphereMesh.material.needsUpdate = true;
   }
+}
+
+// With the low "near" value for camera (100m) there are some bugs when the the distance with the Earth is big, no better solution than that
+export function updateAtmosphereVisibility() {
+  if (!atmosphereMesh || !camera) return;
+  const camDist = camera.position.distanceTo(new THREE.Vector3());
+  const fadeStartDist = EARTH_RADIUS + scaleFromKm(70000);
+  const fadeEndDist = EARTH_RADIUS + scaleFromKm(80000);
+  let opacity = 0.5;
+  if (camDist > fadeEndDist) {
+    atmosphereMesh.visible = false;
+  } else {
+    atmosphereMesh.visible = true;
+    if (camDist > fadeStartDist) {
+      const fadeFactor = (fadeEndDist - camDist) / (fadeEndDist - fadeStartDist);
+      opacity *= fadeFactor;
+    }
+  }
+  atmosphereMesh.material.uniforms.atmOpacity.value = opacity;
+  atmosphereMesh.material.needsUpdate = true;
 }
 
 // To tests values from GUI 

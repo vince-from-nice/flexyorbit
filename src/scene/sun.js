@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GLOBAL_SCALE, EARTH_RADIUS } from '../constants.js';
+import { GLOBAL_SCALE, EARTH_RADIUS, scaleFromKm } from '../constants.js';
 import { printPosInKm } from '../utils.js';
 import { scene } from './scene.js';
 import { earth } from './earth.js';
@@ -38,7 +38,7 @@ export function createSun() {
         sun = new THREE.Mesh(sunGeometry, sunMaterial);
 
         sun.position.set(SUN_DISTANCE * Math.cos(EARTH_OBLIQUITY), SUN_DISTANCE * Math.sin(EARTH_OBLIQUITY), 0);
-        //sun.position.set(200000, 0, 0);
+        //sun.position.set(scaleFromKm(900000), 0, 0);
 
         scene.add(sun);
 
