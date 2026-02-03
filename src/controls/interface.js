@@ -97,16 +97,6 @@ function createInterface() {
     // Settings panel 
     const settingsPanel = addPanel(contentWrapper, 'Settings');
 
-    // Camera sub panel    
-    const cameraPanel = addSubPanel(settingsPanel, 'Camera', false);
-    const cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
-        value => { switchCameraTarget(value); });
-    registerCameraTargetSelect(cameraTargetSelect);
-    const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'v\' to switch mode)', CAMERA_MODES, 'orbit',
-        value => { switchCameraMode(value); });
-    registerCameraModeSelect(cameraModeSelect);
-    //selectCameraTarget('Earth');
-
     // Atmosphere sub panel
     const atmoshperePanel = addSubPanel(settingsPanel, 'Atmosphere', false);
     addSlider(atmoshperePanel, 'Height (km)', 0, 600, ATMOSPHERE_REGULAR_HEIGHT_KM, 5, value => {
@@ -124,6 +114,16 @@ function createInterface() {
     // addSlider(atmoshpereGroupDiv, 'Multiplier', 0.0, 10.0, 5.0, value => {
     //     setAtmosphereParam2(value);
     // }, 0.1);
+
+    // Camera sub panel    
+    const cameraPanel = addSubPanel(settingsPanel, 'Camera', false);
+    const cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
+        value => { switchCameraTarget(value); });
+    registerCameraTargetSelect(cameraTargetSelect);
+    const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'v\' to switch mode)', CAMERA_MODES, 'orbit',
+        value => { switchCameraMode(value); });
+    registerCameraModeSelect(cameraModeSelect);
+    //selectCameraTarget('Earth');
 
     // Universe sub panel
     const universePanel = addSubPanel(settingsPanel, 'Universe', false);
