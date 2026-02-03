@@ -96,22 +96,6 @@ function createInterface() {
 
     // Settings panel 
     const settingsPanel = addPanel(contentWrapper, 'Settings');
-    let defaultEarthMainTexture = 'assets/earth/bluemarble-5k.jpg';
-    let defaultEarthNightTexture = 'assets/earth/night-4k.jpg';
-    let defaultEarthRoughnessTexture = 'assets/earth/ocean-4k.png';
-    let defaultEarthBumpTexture = 'assets/earth/bump-4k.jpg';
-    let defaultMoonMainTexture = 'assets/moon/nasa-4k.jpg';
-    let defaultMoonBumpTexture = 'assets/moon/bump-5k.jpg';
-    let defaultMilkyWayTexture = 'assets/milkyway/solarsystemscope-8k.jpg';
-    if (isMobile) {
-        defaultEarthMainTexture = 'assets/earth/bluemarble-5k.jpg';
-        defaultEarthNightTexture = 'assets/earth/night-4k.jpg';
-        defaultEarthRoughnessTexture = 'none';
-        defaultEarthBumpTexture = 'none';
-        defaultMoonMainTexture = 'assets/moon/nasa-2k.jpg';
-        defaultMoonBumpTexture = 'none';
-        defaultMilkyWayTexture = 'assets/milkyway/solarsystemscope-4k.jpg';
-    }
 
     // Camera sub panel    
     const cameraPanel = addSubPanel(settingsPanel, 'Camera', false);
@@ -141,47 +125,8 @@ function createInterface() {
     //     setAtmosphereParam2(value);
     // }, 0.1);
 
-    // Earth sub panel
-    const earthPanel = addSubPanel(settingsPanel, 'Earth textures', false);
-    addCustomSelect(earthPanel, 'Main texture', null, EARTH_MAIN_TEXTURES, defaultEarthMainTexture,
-        value => { updateEarthMainTexture(value); });
-    updateEarthMainTexture(defaultEarthMainTexture);
-    addCustomSelect(earthPanel, 'Night texture', null, EARTH_NIGHT_TEXTURES, defaultEarthNightTexture,
-        value => { updateEarthNightTexture(value); });
-    updateEarthNightTexture(defaultEarthNightTexture);
-    addCustomSelect(earthPanel, 'Roughness texture', null, EARTH_ROUGHNESS_TEXTURES, defaultEarthRoughnessTexture,
-        value => { updateEarthRoughnessTexture(value); });
-    updateEarthRoughnessTexture(defaultEarthRoughnessTexture);
-    const earthHeightTextureSelect = addCustomSelect(earthPanel, 'Height texture', null, EARTH_BUMP_TEXTURES, defaultEarthBumpTexture,
-        value => { updateEarthHeightTexture(value); });
-    updateEarthHeightTexture(defaultEarthBumpTexture);
-    addCheckbox(earthPanel, 'Use as displacement (BETA!!)', '', false, value => {
-        earthSettings.useDisplacement = value;
-        updateEarthHeightTexture(earthHeightTextureSelect.value);
-    });
-    addSlider(earthPanel, 'Height scale', 0.1, 100, earthSettings.heightScale, 1, value => {
-        earthSettings.heightScale = value;
-        updateEarthHeightTexture(earthHeightTextureSelect.value);
-    });
-    const earthSegmentsSlider = addSlider(earthPanel, 'Sphere segments (width)', 32, 2048, earthSettings.segments.width, 32, val => {
-        updateEarthSegments(val, Math.round(val / 2));
-    });
-    earthSegmentsSlider.value = earthSettings.segments.width;
-
-    // Moon sub panel
-    const moonPanel = addSubPanel(settingsPanel, 'Moon textures', false);
-    addCustomSelect(moonPanel, 'Main texture', null, MOON_MAIN_TEXTURES, defaultMoonMainTexture,
-        value => { updateMoonMainTexture(value); });
-    updateMoonMainTexture(defaultMoonMainTexture);
-    addCustomSelect(moonPanel, 'Bump texture', null, MOON_BUMP_TEXTURES, defaultMoonBumpTexture,
-        value => { updateMoonBumpTexture(value); });
-    updateMoonBumpTexture(defaultMoonBumpTexture);
-
     // Universe sub panel
     const universePanel = addSubPanel(settingsPanel, 'Universe', false);
-    addCustomSelect(universePanel, 'Milky Way background', null, MILKYWAY_TEXTURES, defaultMilkyWayTexture,
-        value => { updateMilkyWayTexture(value); });
-    updateMilkyWayTexture(defaultMilkyWayTexture);
     addCheckbox(universePanel, 'Display referential axes', '', false, value => {
         displayAxis(value);
     });
@@ -204,6 +149,110 @@ function createInterface() {
             updateGrid(true, parseFloat(gridSizeDisplay.value), value);
         }
     }, { logarithmic: false });
+
+    // Textures panel
+    const texturesPanel = addSubPanel(settingsPanel, 'Textures', false);
+    const texturesSettings = {
+        low: {
+            earthMainTexture: 'assets/earth/bluemarble-5k.jpg',
+            earthNightTexture: 'assets/earth/night-4k.jpg',
+            earthRoughnessTexture: 'none',
+            earthBumpTexture: 'assets/earth/bump-4k.jpg',
+            moonMainTexture: 'assets/moon/nasa-2k.jpg',
+            moonBumpTexture: 'none',
+            milkyWayTexture: 'assets/milkyway/solarsystemscope-4k.jpg',
+        },
+        medium: {
+            earthMainTexture: 'assets/earth/bluemarble-5k.jpg',
+            earthNightTexture: 'assets/earth/night-4k.jpg',
+            earthRoughnessTexture: 'assets/earth/ocean-4k.png',
+            earthBumpTexture: 'assets/earth/bump-4k.jpg',
+            moonMainTexture: 'assets/moon/nasa-4k.jpg',
+            moonBumpTexture: 'assets/moon/bump-5k.jpg',
+            milkyWayTexture: 'assets/milkyway/solarsystemscope-8k.jpg',
+        },
+        high: {
+            earthMainTexture: 'assets/earth/bluemarble-16k.jpg',
+            earthNightTexture: 'assets/earth/night-13k.jpg',
+            earthRoughnessTexture: 'assets/earth/ocean-4k.png',
+            earthBumpTexture: 'assets/earth/bump-10k.jpg',
+            moonMainTexture: 'assets/moon/nasa-4k.jpg',
+            moonBumpTexture: 'assets/moon/bump-5k.jpg',
+            milkyWayTexture: 'assets/milkyway/solarsystemscope-8k.jpg',
+        }
+    };
+
+    const texturesSettingsOptions = [
+        { value: 'high', label: 'High Definition (10k-16k textures – modern GPU needed)' },
+        { value: 'medium', label: 'Standard Definition (4k-8k – good compromise)' },
+        { value: 'low', label: 'Low Definition (2k–4k – mobile & old computers)' },
+    ];
+
+    let defaultTexturesSettings = 'medium';
+    if (isMobile) {
+        defaultTexturesSettings = 'low';
+    }
+
+    let earthMainTextureSelect, earthNightTextureSelect, earthRoughnessTextureSelect, earthHeightTextureSelect,
+        moonMainTextureSelect, moonBumpTextureSelect, milkyWayTextureSelect;
+
+    const textureSettingsSelect = addCustomSelect(texturesPanel, 'You can load a set of textures',
+        'Or you can select textures separatly below', texturesSettingsOptions, defaultTexturesSettings, (value) => {
+            const selected = texturesSettings[value];
+            if (!selected) return;
+            updateEarthMainTexture(selected.earthMainTexture);
+            updateEarthNightTexture(selected.earthNightTexture);
+            updateEarthRoughnessTexture(selected.earthRoughnessTexture);
+            updateEarthHeightTexture(selected.earthBumpTexture);
+            updateMoonMainTexture(selected.moonMainTexture);
+            updateMoonBumpTexture(selected.moonBumpTexture);
+            updateMilkyWayTexture(selected.milkyWayTexture);
+            earthMainTextureSelect.value = selected.earthMainTexture;
+            earthNightTextureSelect.value = selected.earthNightTexture;
+            earthRoughnessTextureSelect.value = selected.earthRoughnessTexture;
+            earthHeightTextureSelect.value = selected.earthBumpTexture;
+            moonMainTextureSelect.value = selected.moonMainTexture;
+            moonBumpTextureSelect.value = selected.moonBumpTexture;
+            milkyWayTextureSelect.value = selected.milkyWayTexture;
+        });
+
+    // Earth sub panel
+    const earthPanel = addSubPanel(texturesPanel, 'Earth', false);
+    earthMainTextureSelect = addCustomSelect(earthPanel, 'Main texture', null, EARTH_MAIN_TEXTURES, null,
+        value => { updateEarthMainTexture(value); });
+    earthNightTextureSelect = addCustomSelect(earthPanel, 'Night texture', null, EARTH_NIGHT_TEXTURES, null,
+        value => { updateEarthNightTexture(value); });
+    earthRoughnessTextureSelect = addCustomSelect(earthPanel, 'Roughness texture', null, EARTH_ROUGHNESS_TEXTURES, null,
+        value => { updateEarthRoughnessTexture(value); });
+    earthHeightTextureSelect = addCustomSelect(earthPanel, 'Height texture', null, EARTH_BUMP_TEXTURES, null,
+        value => { updateEarthHeightTexture(value); });
+    addCheckbox(earthPanel, 'Use as displacement (BETA!!)', '', false, value => {
+        earthSettings.useDisplacement = value;
+        updateEarthHeightTexture(earthHeightTextureSelect.value);
+    });
+    addSlider(earthPanel, 'Height scale', 0.1, 100, earthSettings.heightScale, 1, value => {
+        earthSettings.heightScale = value;
+        updateEarthHeightTexture(earthHeightTextureSelect.value);
+    });
+    const earthSegmentsSlider = addSlider(earthPanel, 'Sphere segments (width)', 32, 2048, earthSettings.segments.width, 32, val => {
+        updateEarthSegments(val, Math.round(val / 2));
+    });
+    earthSegmentsSlider.value = earthSettings.segments.width;
+
+    // Moon sub panel
+    const moonPanel = addSubPanel(texturesPanel, 'Moon', false);
+    moonMainTextureSelect = addCustomSelect(moonPanel, 'Main texture', null, MOON_MAIN_TEXTURES, null,
+        value => { updateMoonMainTexture(value); });
+    moonBumpTextureSelect = addCustomSelect(moonPanel, 'Bump texture', null, MOON_BUMP_TEXTURES, null,
+        value => { updateMoonBumpTexture(value); });
+
+    // Milkyway sub panel
+    const milkywayPanel = addSubPanel(texturesPanel, 'Milkyway', false);
+    milkyWayTextureSelect = addCustomSelect(milkywayPanel, 'Milky Way background', null, MILKYWAY_TEXTURES, null,
+        value => { updateMilkyWayTexture(value); });
+
+    // Load default settings once all select widgets has been created
+    textureSettingsSelect.value = defaultTexturesSettings;
 }
 
 export function updateInterface(deltaTime) {
