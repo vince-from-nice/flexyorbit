@@ -4,7 +4,7 @@
 FlexyOrbit is a small educational project to play with Earth's gravity and orbital mechanics.
 
 <p align="center">
-  <img src="assets/screenshots/20260105.jpg" alt="FlexyOrbit screenshot" width="720"/>
+  <img src="assets/screenshots/20260204.jpg" alt="FlexyOrbit screenshot" width="720"/>
 </p>
 
 The idea for this project came after discovering the beautiful interactive simulations by **[ScienceÉtonnante](https://www.youtube.com/@ScienceEtonnante)**, especially [the famous Newton's Cannon one](https://explorables.scienceetonnante.com/newton-cannon/).
@@ -60,13 +60,13 @@ You can tweak every parameter using the HTML interface widgets, or use keyboard 
 
 ### 3D models
 
+- Satellite model is coming from : https://sketchfab.com/3d-models/simple-satellite-low-poly-free-f23b484cda664f1cb91b4f62ea5ef8bf 
+
 - Spaceship model is coming from : https://sketchfab.com/3d-models/spaceship-low-poly-8a3674c37d4c4afa9326f9c7ab0f90bf
 
-- ISS model is coming from :
-https://sketchfab.com/3d-models/iss-international-space-station-33c72dd6671c40b3ae5bf90c917a6adb
-https://sketchfab.com/3d-models/iss-813f5b296e584c26bf386ca39de6c3d4
+- ISS model is coming from : https://sketchfab.com/3d-models/iss-813f5b296e584c26bf386ca39de6c3d4
 
-Thanks a lot to these creators !
+Thanks a lot to these creators for these beautiful contributions !
 
 ### Textures
 
