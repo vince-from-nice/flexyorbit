@@ -21,22 +21,22 @@ class World {
 
   async init() {
     // Add the Moon
-    this.createAndAddEntity(ENTITY_TYPES.MOON, 'Moon', null, 'Earth', MOON_DISTANCE_KM, 0, 0, 90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#74a9b2', 60));
+    this.createAndAddEntity(ENTITY_TYPES.MOON, 'Moon', null, 'Earth', MOON_DISTANCE_KM, 0, 0, 90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#74a9b2', 120));
 
     // Add satellites
-    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-ISS', await loadISSMesh(), 'Earth', 420, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#62c1f0', 20));
-    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#1', await loadSimpleSatelliteMesh(), 'Earth', 550, 0, 0, +45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20));
-    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#2', await loadSimpleSatelliteMesh(), 'Earth', 550, 0, 0, -45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 20));
-    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#1', await loadSimpleSatelliteMesh(), 'Earth', 35786, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50));
-    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#2', null, 'Earth', 35786, 0, 0, -90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 50));
+    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-ISS', await loadISSMesh(), 'Earth', 420, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#62c1f0', 40));
+    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#1', await loadSimpleSatelliteMesh(), 'Earth', 550, 0, 0, +45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 40));
+    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-LEO#2', await loadSimpleSatelliteMesh(), 'Earth', 550, 0, 0, -45, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#f062e9', 40));
+    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#1', await loadSimpleSatelliteMesh(), 'Earth', 35786, 0, 0, +90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 100));
+    this.createAndAddEntity(ENTITY_TYPES.SATELLITE, 'Satellite-GeoStat#2', null, 'Earth', 35786, 0, 0, -90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#39ac49', 100));
 
     // Add asteroids
-    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithMoon', null, 'Moon', 4000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
-    //this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithEarth', 'Earth', 6000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 50));
+    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithMoon', null, 'Moon', 4000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 120));
+    //this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithEarth', 'Earth', 6000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 120));
 
     // Add spaceships
-    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', null, 'Earth', 5000, 0, 50, 70, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 50));
-    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta2', null, 'Moon', 2000, 0, 0, 50, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 50));
+    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', null, 'Earth', 5000, 0, 50, 70, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 120));
+    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta2', null, 'Moon', 2000, 0, 0, 50, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 120));
 
     // Reset camera target to the Earth once all entities has been loaded
     selectCameraTarget('Earth');

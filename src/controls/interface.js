@@ -61,7 +61,7 @@ function createInterface() {
         timeButton.textContent = timePaused ? 'Resume' : 'Stop';
     });
     timePanel.appendChild(timeButton);
-    addSlider(timePanel, 'Time acceleration', 1, 100000, timeAcceleration, 1.0, value => {
+    addSlider(timePanel, 'Time acceleration', 1, 1500, timeAcceleration, 1.0, value => {
         timeAcceleration = value;
     }, { logarithmic: true });
     addCheckbox(timePanel, 'Disable Earth & Moon rotation', '', earthRotationDisabled, value => {
