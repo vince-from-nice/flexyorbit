@@ -110,7 +110,7 @@ export function setAtmosphereDensity(newDensity) {
   }
 }
 
-// With the low "near" value for camera (100m) there are some bugs when the the distance with the Earth is big, no better solution than that
+// With low "near" values for camera (eg. 100 meters) there are some bugs when the the distance with the Earth is big, no better solution than to shade it smoothly
 export function updateAtmosphereVisibility() {
   if (!atmosphereMesh || !camera) return;
   const camDist = camera.position.distanceTo(new THREE.Vector3());
