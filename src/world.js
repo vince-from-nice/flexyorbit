@@ -36,7 +36,7 @@ class World {
 
     // Add spaceships
     await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', null, 'Earth', 5000, 0, 50, 70, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 50));
-    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta2', null, 'Moon', 2000, 0, 50, 70, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 50));
+    await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta2', null, 'Moon', 2000, 0, 0, 70, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 50));
 
     // Reset camera target to the Earth once all entities has been loaded
     selectCameraTarget('Earth');

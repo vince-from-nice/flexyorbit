@@ -286,6 +286,7 @@ export function updateCameraToFollowTarget(deltaTime) {
         }
         // When the target is a satellite the camera keep direction aligned with the Earth (unless user interaction)
         else if (entity.type === ENTITY_TYPES.SATELLITE) {
+            camera.position.add(deltaPos);
             if (!isUserInteracting) {
                 repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, currentTargetDistance, false);
             }

@@ -5,7 +5,7 @@ import { EARTH_RADIUS, EARTH_RADIUS_KM, GLOBAL_SCALE, GM_EARTH, scaleFromKm, sca
 import { scene } from './scene.js';
 import { computeCorrectScale, printPosInKm, printPosInMeter } from '../utils.js';
 
-const SATELLITE_SCALE = 8000;
+const SATELLITE_SCALE = 5000;
 
 export function createSatelliteMesh() {
   const group = new THREE.Group();
