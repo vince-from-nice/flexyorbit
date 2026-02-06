@@ -266,9 +266,9 @@ export function updateCameraToFollowTarget(deltaTime) {
     const entity = world.getEntityByName(cameraCurrentTarget);
     if (!entity) return;
     if (['orbit', 'map'].includes(cameraCurrentMode)) {
-        // When the target is a spaceships camera must follow it and the direction must stay behind (unless user interaction)
+        camera.position.add(deltaPos);
+        // When the target is a spaceships camera must stay behind (unless user interaction)
         if (entity.type === ENTITY_TYPES.SPACESHIP) {
-            camera.position.add(deltaPos);
             if (!isUserInteracting) {
                 const currentDistance = camera.position.distanceTo(newTargetPosition);
                 const angle = THREE.MathUtils.degToRad(15);
@@ -286,7 +286,6 @@ export function updateCameraToFollowTarget(deltaTime) {
         }
         // When the target is a satellite the camera keep direction aligned with the Earth (unless user interaction)
         else if (entity.type === ENTITY_TYPES.SATELLITE) {
-            camera.position.add(deltaPos);
             if (!isUserInteracting) {
                 repositionCameraAlignedWithEarthAndTarget(cameraCurrentControls.target, currentTargetDistance, false);
             }

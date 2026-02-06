@@ -114,8 +114,8 @@ export function setAtmosphereDensity(newDensity) {
 export function updateAtmosphereVisibility() {
   if (!atmosphereMesh || !camera) return;
   const camDist = camera.position.distanceTo(new THREE.Vector3());
-  const fadeStartDist = EARTH_RADIUS + scaleFromKm(70000);
-  const fadeEndDist = EARTH_RADIUS + scaleFromKm(80000);
+  const fadeStartDist = EARTH_RADIUS + scaleFromKm(200000);
+  const fadeEndDist = EARTH_RADIUS + scaleFromKm(220000);
   let opacity = 0.5;
   if (camDist > fadeEndDist) {
     atmosphereMesh.visible = false;

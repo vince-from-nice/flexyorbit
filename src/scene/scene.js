@@ -35,7 +35,8 @@ export function createScene(container) {
 function createCamera() {
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight,
       scaleFromKm(1),
-      CAMERA_ORBIT_MAX_DISTANCE * 2);
+      //CAMERA_ORBIT_MAX_DISTANCE * 2);
+      SUN_DISTANCE * 1.1);
   camera.position.set(EARTH_RADIUS * 5, EARTH_RADIUS * 0, EARTH_RADIUS * 0);
 }
 
@@ -180,5 +181,5 @@ export function animateEarthAndMonth(deltaTime) {
   if (!moonRotationDisabled) {
     moonMesh.rotation.y += MOON_ANGULAR_VELOCITY * deltaTime;
   }
-  //updateAtmosphereVisibility(); // should be temporary
+  updateAtmosphereVisibility(); // should be temporary
 }
