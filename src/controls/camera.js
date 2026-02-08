@@ -55,7 +55,9 @@ export function initCameraControls() {
 
     cameraCurrentControls = orbitControls;
 
-    refreshCameraTargets();
+    //refreshCameraTargets();
+
+    selectCameraTarget('Earth');
 
     window.addEventListener('keydown', (e) => {
         if (!e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {

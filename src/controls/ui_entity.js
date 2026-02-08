@@ -248,17 +248,10 @@ export function refreshEntitySelect() {
     });
 
     entitySelectRef.updateOptions(entitySelectOptions, currentEntityName);
-
-    if (!currentEntityName && entitySelectOptions.length > 0) {
-        currentEntityName = entitySelectOptions[0].value;
-        entitySelectRef.value = currentEntityName;
-        updateEntityWidgets();
-    }
 }
 
 export function selectEntity(name) {
     if (entitySelectRef && entitySelectOptions.some(opt => opt.value === name)) {
         entitySelectRef.value = name;
-        updateEntityWidgets();
     }
 }

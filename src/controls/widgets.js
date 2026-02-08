@@ -261,10 +261,10 @@ export function addCustomSelect(parentEl, labelBefore, labelAfter, options, init
             else if (currentValue && newOptions.some(o => o.value === currentValue)) {
                 valueToSet = currentValue;
             }
-            // 3. Sinon on prend la première (fallback)
-            else if (newOptions.length > 0) {
-                valueToSet = newOptions[0].value;
-            }
+            // // 3. Sinon on prend la première (fallback)
+            // else if (newOptions.length > 0) {
+            //     valueToSet = newOptions[0].value;
+            // }
             if (valueToSet !== null) {
                 const shouldTriggerChange = (valueToSet !== currentValue);
                 setValue(valueToSet, shouldTriggerChange);
