@@ -299,7 +299,7 @@ function createStatusBar() {
     );
     registerCameraTargetSelect(statusBarElements.targetSelect);
     statusBarElements.targetAltitude = addNonEditableText(tgtDiv, 'Altitude:', '0', '#0ff', 'km');
-    statusBarElements.targetVelocity = addNonEditableText(tgtDiv, 'Velocity:', '0.000', '#0ff', 'km');
+    statusBarElements.targetVelocity = addNonEditableText(tgtDiv, 'Velocity:', '0.000', '#0ff', 'km/s');
     statusBarElements.targetAcceleration = addNonEditableText(tgtDiv, 'Acceleration:', '0.00000', '#0ff', 'm/s²');
 }
 

@@ -13,7 +13,7 @@ const entityWidgets = {};
 const entitySelectOptions = [];
 
 export function createEntityWidgets(entityPanel) {
-    entitySelectRef = addCustomSelect(entityPanel, 'Select an object or press \'t\' to switch', null, [], null, name => {
+    entitySelectRef = addCustomSelect(entityPanel, null, null, [], null, name => {
         currentEntityName = name;
         selectCameraTarget(name);
         updateEntityWidgets();
@@ -241,13 +241,15 @@ export function updateEntityWidgets() {
 
 export function refreshEntitySelect() {
     if (!entitySelectRef) return;
-
     entitySelectOptions.length = 0;
     world.getPhysicalEntities().forEach(ent => {
         entitySelectOptions.push({ value: ent.name, label: ent.name });
     });
-
+    entitySelectOptions.unshift({ value: '', label: 'Select an object' })
     entitySelectRef.updateOptions(entitySelectOptions, currentEntityName);
+    if (!entitySelectRef.value) {
+        entitySelectOptions.value = '';
+    }
 }
 
 export function selectEntity(name) {

@@ -190,6 +190,9 @@ export function refreshSpaceshipSelect() {
     if (!spaceshipSelect) return;
     const ships = world.getEntitiesByType(ENTITY_TYPES.SPACESHIP)
         .map(e => ({ value: e.name, label: e.name }));
-        ships.unshift({value:'', label:'Select a spaceship'})
+    ships.unshift({ value: '', label: 'Select a spaceship' })
     spaceshipSelect.updateOptions(ships, selectedSpaceship?.name);
+    if (!spaceshipSelect.value) {
+        spaceshipSelect.value = '';
+    }
 }

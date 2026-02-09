@@ -593,6 +593,10 @@ button.thrust-active {
     margin-right: 2px;
 }
 
+.unit {
+    margin-top: 4px;
+}
+
 .status-section .custom-select-box {
     margin-top: 20px;
 }
