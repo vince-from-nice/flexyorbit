@@ -12,20 +12,20 @@ import { ENTITY_TYPES } from '../entity.js';
 import { selectEntity } from './ui_entity.js';
 
 export const CAMERA_MODES = [
-    { value: 'orbit', label: 'Orbit controls (default)' },
+    { value: 'orbit', label: 'Orbit controls' },
     // { value: 'map', label: 'Map controls (orbit style)' },
-    { value: 'fly', label: 'Fly controls (FPS style)' },
+    // { value: 'fly', label: 'Fly controls (FPS style)' },
     // { value: 'fps', label: 'First Person Shooter' },
     // { value: 'pointerLock', label: 'Pointer Lock (not clear)' }
 ];
-let cameraCurrentMode = 'orbit';
+export let cameraCurrentMode = 'orbit';
 export let cameraCurrentControls = null;
 let cameraCurrentModeIndex = 0;
 let cameraModeSelectRef = null;
 
 export let CAMERA_TARGETS = [];
-let cameraCurrentTarget = 'Earth';
-let cameraCurrentTargetObject = null;
+export let cameraCurrentTarget = 'Earth';
+export let cameraCurrentTargetObject = null;
 let cameraTargetSelectRef = null;
 
 const CAMERA_ORBIT_ROTATE_SPEED_BASE = 1.0;
@@ -260,14 +260,14 @@ function repositionCameraInFrontOf(targetPos, targetType) {
 
 export function updateCameraToFollowTarget(deltaTime) {
     if (!cameraCurrentControls) return;
-    const currentTargetPosition = cameraCurrentControls.target;
-    const currentTargetDistance = camera.position.distanceTo(currentTargetPosition);
-    const newTargetPosition = getCurrentCameraTargetPosition();
-    const deltaPos = newTargetPosition.clone().sub(cameraCurrentControls.target);
-    cameraCurrentControls.target.copy(newTargetPosition);
-    const entity = world.getEntityByName(cameraCurrentTarget);
-    if (!entity) return;
     if (['orbit', 'map'].includes(cameraCurrentMode)) {
+        const currentTargetPosition = cameraCurrentControls.target;
+        const currentTargetDistance = camera.position.distanceTo(currentTargetPosition);
+        const newTargetPosition = getCurrentCameraTargetPosition();
+        const deltaPos = newTargetPosition.clone().sub(cameraCurrentControls.target);
+        cameraCurrentControls.target.copy(newTargetPosition);
+        const entity = world.getEntityByName(cameraCurrentTarget);
+        if (!entity) return;
         camera.position.add(deltaPos);
         // When the target is a spaceships camera must stay behind (unless user interaction)
         if (entity.type === ENTITY_TYPES.SPACESHIP) {

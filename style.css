@@ -109,7 +109,7 @@ body {
 /* ==========================================================================
    PANELS (CONTROL-GROUPS)
    ========================================================================== */
-   
+
 .control-group {
     margin: 0;
     background: rgba(30, 40, 60, 0.4);
@@ -189,12 +189,12 @@ body {
 }
 
 .sub-control-group summary::after {
-    content: '▼'; 
+    content: '▼';
     position: absolute;
     right: 8px;
     top: 50%;
     transform: translateY(-50%) !important;
-    font-size: 11px ;
+    font-size: 11px;
     color: #77aaff;
     transition: transform 0.3s ease;
 }
@@ -293,6 +293,16 @@ a:visited {
     border-radius: 4px;
 }
 
+.unit {
+    color: #88ccff;
+    opacity: 0.85;
+    font-size: 11px; 
+    font-weight: 400;
+    margin-left: 3px;
+    margin-right: 14px;
+    vertical-align: baseline;
+    letter-spacing: 0.3px;
+}
 
 /* ==========================================================================
    SLIDERS & INPUTS
@@ -505,10 +515,10 @@ button.thrust-active {
     color: #000 !important;
     font-weight: bold;
     box-shadow: 0 0 8px rgba(255, 235, 59, 0.7);
-  }
+}
 
 /* ==========================================================================
-   MESSAGES
+   TEMPORARY MESSAGES
    ========================================================================== */
 
 #temporary-message {
@@ -530,6 +540,87 @@ button.thrust-active {
 #temporary-message.hidden {
     opacity: 0;
 }
+
+/* ==========================================================================
+   STATUS BAR
+   ========================================================================== */
+
+#status-bar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    min-width: 300px;
+    max-width: 95%;
+    height: 50px;
+    background: rgba(20, 30, 60, 0.82);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(100, 150, 255, 0.35);
+    border-radius: 12px;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    gap: 30px;
+    font-size: 13.2px;
+    color: #aaddff;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+}
+
+.status-section {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.status-label {
+    font-weight: 600;
+    opacity: 0.8;
+    white-space: nowrap;
+    margin-right: 4px;
+}
+
+.status-value {
+    font-family: monospace;
+    color: #0ff;
+    min-width: 20px;
+    text-align: right;
+    display: inline-block;
+    margin-right: 2px;
+}
+
+.status-section .custom-select-box {
+    margin-top: 20px;
+}
+
+#status-bar .custom-select-selected {
+    min-width: 200px;
+    padding: 4px 12px;
+}
+
+#status-bar .custom-select-selected-text {
+    white-space: nowrap;
+}
+
+#status-bar .custom-select-list {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 4px;
+    /* espace entre le select et le haut de la liste */
+    border-radius: 8px 8px 0 0;
+    /* arrondi uniquement en haut */
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+    /* ombre vers le haut pour effet "pop-up" */
+}
+
+#status-bar .custom-select-wrapper {
+    margin-right: 12px;
+}
+
 
 /* ==========================================================================
    RESPONSIVE - Mobile & small screens (≤ 768px)
@@ -583,5 +674,13 @@ button.thrust-active {
     /* Sliders & number inputs - smaller */
     .slider-top-row {
         margin-bottom: 8px;
+    }
+
+    /* More space on mobile */
+    #status-bar {
+        width: 92%;
+        padding: 0 18px;
+        gap: 30px;
+        font-size: 12.8px;
     }
 }

@@ -5,16 +5,28 @@ import {
 } from '../scene/earth.js';
 import { MOON_MAIN_TEXTURES, MOON_BUMP_TEXTURES, updateMoonMainTexture, updateMoonBumpTexture, disableMoonRotation } from '../scene/moon.js';
 import { ATMOSPHERE_REGULAR_HEIGHT_KM, ATMOSPHERE_REGULAR_DENSITY_SURFACE, setAtmosphereHeight, setAtmosphereDensity } from '../scene/atmosphere.js';
-import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis, updateGrid } from '../scene/scene.js';
-import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect, selectCameraTarget, updateCamera } from './camera.js'
+import { MILKYWAY_TEXTURES, updateMilkyWayTexture, displayAxis, updateGrid, camera } from '../scene/scene.js';
+import { CAMERA_MODES, CAMERA_TARGETS, initCameraControls, switchCameraMode, switchCameraTarget, registerCameraModeSelect, registerCameraTargetSelect, selectCameraTarget, updateCamera, cameraCurrentTargetObject, cameraCurrentTarget, cameraCurrentMode } from './camera.js'
 import { initDraggings } from './dragging.js'
-import { addSlider, addCheckbox, addCustomSelect, addPanel, addSubPanel } from './widgets.js'
+import { addSlider, addCheckbox, addCustomSelect, addPanel, addSubPanel, addNonEditableText } from './widgets.js'
 import { createCannonWidgets } from './ui_cannon.js';
 import { createEntityWidgets, selectEntity, updateEntityWidgets } from './ui_entity.js';
 import { createSpaceshipWidgets, updateSpaceshiptWidgets } from './ui_spaceship.js';
+import { EARTH_RADIUS, GLOBAL_SCALE, scaleToKm } from '../constants.js';
+import { printPosInKm } from '../utils.js';
+import world from '../world.js';
 
 export let timePaused = false;
 export let timeAcceleration = 50;
+
+export let statusBarElements = {
+    cameraMode: null,
+    cameraAlt: null,
+    targetSelect: null,
+    targetAltitude: null,
+    targetVelocity: null,
+    targetAcceleration: null
+};
 
 export function initControls() {
 
@@ -116,14 +128,14 @@ function createInterface() {
     // }, 0.1);
 
     // Camera sub panel    
-    const cameraPanel = addSubPanel(settingsPanel, 'Camera', false);
-    const cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
-        value => { switchCameraTarget(value); });
-    registerCameraTargetSelect(cameraTargetSelect);
-    const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'v\' to switch mode)', CAMERA_MODES, 'orbit',
-        value => { switchCameraMode(value); });
-    registerCameraModeSelect(cameraModeSelect);
-    //selectCameraTarget('Earth');
+    // const cameraPanel = addSubPanel(settingsPanel, 'Camera', false);
+    // const cameraTargetSelect = addCustomSelect(cameraPanel, 'Camera target', '(or press \'t\' to switch target)', CAMERA_TARGETS, 'universe',
+    //     value => { switchCameraTarget(value); });
+    // registerCameraTargetSelect(cameraTargetSelect);
+    // const cameraModeSelect = addCustomSelect(cameraPanel, 'Camera mode', '(or press \'v\' to switch mode)', CAMERA_MODES, 'orbit',
+    //     value => { switchCameraMode(value); });
+    // registerCameraModeSelect(cameraModeSelect);
+    // //selectCameraTarget('Earth');
 
     // Universe sub panel
     const universePanel = addSubPanel(settingsPanel, 'Universe', false);
@@ -253,11 +265,85 @@ function createInterface() {
 
     // Load default settings once all select widgets has been created
     textureSettingsSelect.value = defaultTexturesSettings;
+
+    // Create the status bar
+    createStatusBar();
+}
+
+function createStatusBar() {
+    const bar = document.createElement('div');
+    bar.id = 'status-bar';
+    document.body.appendChild(bar);
+
+    // Camera section
+    const camDiv = document.createElement('div');
+    camDiv.className = 'status-section';
+    bar.appendChild(camDiv);
+    camDiv.appendChild(createStatusBarLabel('Camera'));
+    camDiv.appendChild(createStatusBarLabel('Mode:'));
+    statusBarElements.cameraModeSelect = addCustomSelect(
+        camDiv, '', '', CAMERA_MODES, cameraCurrentMode,
+        value => switchCameraMode(value)
+    );
+    registerCameraModeSelect(statusBarElements.cameraModeSelect);
+    statusBarElements.cameraAlt = addNonEditableText(camDiv, 'Altitude:', '0', '#0ff', 'km');
+
+    // Target section
+    const tgtDiv = document.createElement('div');
+    tgtDiv.className = 'status-section';
+    bar.appendChild(tgtDiv);
+    tgtDiv.appendChild(createStatusBarLabel('Target:'));
+    statusBarElements.targetSelect = addCustomSelect(
+        tgtDiv, '', '', CAMERA_TARGETS, cameraCurrentTarget,
+        val => switchCameraTarget(val)
+    );
+    registerCameraTargetSelect(statusBarElements.targetSelect);
+    statusBarElements.targetAltitude = addNonEditableText(tgtDiv, 'Altitude:', '0', '#0ff', 'km');
+    statusBarElements.targetVelocity = addNonEditableText(tgtDiv, 'Velocity:', '0.000', '#0ff', 'km');
+    statusBarElements.targetAcceleration = addNonEditableText(tgtDiv, 'Acceleration:', '0.00000', '#0ff', 'm/s²');
+}
+
+function createStatusBarLabel(text) {
+    const span = document.createElement('span');
+    span.className = 'status-label';
+    span.textContent = text;
+    return span;
+}
+
+function updateStatusBar() {
+    const els = statusBarElements;
+
+    els.cameraAlt.textContent = scaleToKm(camera.position.length() - EARTH_RADIUS).toFixed(0);
+
+    const targetName = cameraCurrentTarget;
+
+    if (targetName === 'Earth') {
+        els.targetAltitude.textContent = '—';
+        els.targetVelocity.textContent = '—';
+        els.targetAcceleration.textContent = '—';
+    } else {
+        const targetObj = cameraCurrentTargetObject;
+        let targetAlt = 0;
+        if (targetObj) {
+            targetAlt = scaleToKm(targetObj.position.length() - EARTH_RADIUS);
+        }
+        els.targetAltitude.textContent = targetAlt.toFixed(0);
+
+        const entity = world.getEntityByName?.(targetName) ?? null;
+        if (entity?.velocity) {
+            els.targetVelocity.textContent = (entity.velocity.length() * GLOBAL_SCALE).toFixed(3);
+            els.targetAcceleration.textContent = (entity.accelerations.total.length() * GLOBAL_SCALE * 1000).toFixed(3);
+        } else {
+            els.targetVelocity.textContent = '—';
+            els.targetAcceleration.textContent = '—';
+        }
+    }
 }
 
 export function updateInterface(deltaTime) {
     updateEntityWidgets();
     updateSpaceshiptWidgets();
     updateCamera(deltaTime);
+    updateStatusBar();
 }
 

@@ -308,7 +308,7 @@ export function addSubPanel(parentContainer, title, openByDefault = false) {
     return content;
 }
 
-export function addReadOnly(container, labelText, initialValue, color = '#0f9') {
+export function addNonEditableText(container, labelText, initialValue, color = '#0f9', unit = '') {
     const wrapper = document.createElement('div');
     wrapper.classList.add('read-only-field');
 
@@ -323,6 +323,13 @@ export function addReadOnly(container, labelText, initialValue, color = '#0f9') 
     wrapper.appendChild(label);
     wrapper.appendChild(valueSpan);
     container.appendChild(wrapper);
+
+    if (unit) {
+        const unitSpan = document.createElement('span');
+        unitSpan.className = 'unit';
+        unitSpan.textContent = unit;
+        wrapper.appendChild(unitSpan);
+    }
 
     return valueSpan;
 }
