@@ -28,11 +28,14 @@ export let cameraCurrentTarget = 'Earth';
 export let cameraCurrentTargetObject = null;
 let cameraTargetSelectRef = null;
 
+const CAMERA_MIN_ALTITUDE_KM = 1000;
+const MIN_CAMERA_DISTANCE_FROM_EARTH = EARTH_RADIUS + scaleFromKm(CAMERA_MIN_ALTITUDE_KM);
+
 const CAMERA_ORBIT_ROTATE_SPEED_BASE = 1.0;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MIN = 0.1;
 const CAMERA_ORBIT_ROTATE_SPEED_RATIO_MAX = 3.0;
 
-const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = EARTH_RADIUS + scaleFromKm(1000);
+const CAMERA_ORBIT_MIN_DISTANCE_FOR_EARTH = MIN_CAMERA_DISTANCE_FROM_EARTH;
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_MOON = MOON_RADIUS + scaleFromKm(500);
 const CAMERA_ORBIT_MIN_DISTANCE_FOR_OBJECTS = scaleFromMeter(10);
 
@@ -295,6 +298,14 @@ export function updateCameraToFollowTarget(deltaTime) {
     }
 }
 
+function enforceMinAltitude() {
+    const d = camera.position.length();
+    if (d < MIN_CAMERA_DISTANCE_FROM_EARTH) {
+        camera.position.normalize().multiplyScalar(MIN_CAMERA_DISTANCE_FROM_EARTH);
+        if (cameraCurrentControls?.target) camera.lookAt(cameraCurrentControls.target);
+    }
+}
+
 function getCurrentCameraTargetPosition() {
     if (!cameraCurrentTargetObject) return new THREE.Vector3(0, 0, 0);
     const worldPos = new THREE.Vector3();
@@ -305,6 +316,7 @@ function getCurrentCameraTargetPosition() {
 export function updateCamera(deltaTime) {
     cameraCurrentControls.update(deltaTime);
     updateCameraToFollowTarget(deltaTime);
+    enforceMinAltitude();
 }
 
 export function refreshCameraTargets() {
