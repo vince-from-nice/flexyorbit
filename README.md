@@ -9,13 +9,17 @@ FlexyOrbit is a small educational project to play with Earth's gravity and orbit
 
 The idea for this project came after discovering the beautiful interactive simulations by **[ScienceÉtonnante](https://www.youtube.com/@ScienceEtonnante)**, especially [the famous Newton's Cannon one](https://explorables.scienceetonnante.com/newton-cannon/).
 
+## Live demo
+
+The project has been deployed on GitHub Pages so you test here : https://vince-from-nice.github.io/flexyorbit/
+
 ## Controls
 
 ### Camera
 
 #### Target switching
 
-You can select the camera target from the interface or use one of these keyboard shortcuts :
+You can select the camera target from the interface (now in the status bar) or use one of these keyboard shortcuts :
 
 - **T** → switch camera target to next object
 - **R** → switch camera target to previous object
@@ -26,13 +30,13 @@ You can select the camera target from the interface or use one of these keyboard
 
 #### Camera modes
 
-You can select the camera target from the interface or use press the key **V** to switch camera mode. Currently there are **orbit controls** (default) and **fly controls** (BETA)
+You can select the camera target from the interface (now in the status bar) or use press the key **V** to switch camera mode. Currently there are **orbit controls** (default) and **fly controls** (BETA)
 
 OrbitControls :
 - Left click + drag to rotate around Earth
 - Mouse wheel to zoom
 
-FlyControls :
+FlyControls (disabled for now) :
 - **WSAD** (or **QZSD** on AZERTY keyboards) → move the camera (move mouse to look around)
 - **R** / **F** → move up / down  
   **Q** / **E** (or **A** / **E** on AZERTY keyboards) → roll the camera
