@@ -267,41 +267,61 @@ function createInterface() {
     textureSettingsSelect.value = defaultTexturesSettings;
 
     // Create the status bar
-    createStatusBar();
+    createStatusBar(isMobile);
 }
 
-function createStatusBar() {
+function createStatusBar(isMobile) {
     const statusBar = document.createElement('div');
     statusBar.id = 'status-bar';
     statusBar.classList.add('status-bar');
     document.body.appendChild(statusBar);
 
-    // Camera section
-    const camDiv = document.createElement('div');
-    camDiv.className = 'status-section';
-    statusBar.appendChild(camDiv);
-    camDiv.appendChild(createStatusBarLabel('Camera'));
-    camDiv.appendChild(createStatusBarLabel('Mode:'));
-    statusBarElements.cameraModeSelect = addCustomSelect(
-        camDiv, '', '', CAMERA_MODES, cameraCurrentMode,
-        value => switchCameraMode(value)
-    );
-    registerCameraModeSelect(statusBarElements.cameraModeSelect);
-    statusBarElements.cameraAlt = addNonEditableText(camDiv, 'Altitude:', '0', '#0ff', 'km');
+    if (!isMobile) {
+        // Camera section
+        const camDiv = document.createElement('div');
+        camDiv.className = 'status-section';
+        statusBar.appendChild(camDiv);
+        camDiv.appendChild(createStatusBarLabel('Camera'));
+        camDiv.appendChild(createStatusBarLabel('Mode:'));
+        statusBarElements.cameraModeSelect = addCustomSelect(
+            camDiv, '', '', CAMERA_MODES, cameraCurrentMode,
+            value => switchCameraMode(value)
+        );
+        registerCameraModeSelect(statusBarElements.cameraModeSelect);
+        statusBarElements.cameraAlt = addNonEditableText(camDiv, 'Altitude:', '0', '#0ff', 'km');
 
-    // Target section
-    const targetDiv = document.createElement('div');
-    targetDiv.className = 'status-section';
-    statusBar.appendChild(targetDiv);
-    targetDiv.appendChild(createStatusBarLabel('Target:'));
-    statusBarElements.targetSelect = addCustomSelect(
-        targetDiv, '', '', CAMERA_TARGETS, cameraCurrentTarget,
-        val => switchCameraTarget(val)
-    );
-    registerCameraTargetSelect(statusBarElements.targetSelect);
-    statusBarElements.targetAltitude = addNonEditableText(targetDiv, 'Altitude:', '0', '#0ff', 'km');
-    statusBarElements.targetVelocity = addNonEditableText(targetDiv, 'Velocity:', '0.000', '#0ff', 'km/s');
-    statusBarElements.targetAcceleration = addNonEditableText(targetDiv, 'Acceleration:', '0.000', '#0ff', 'm/s²');
+        // Target section
+        const targetDiv = document.createElement('div');
+        targetDiv.className = 'status-section';
+        statusBar.appendChild(targetDiv);
+        targetDiv.appendChild(createStatusBarLabel('Target:'));
+        statusBarElements.targetSelect = addCustomSelect(
+            targetDiv, '', '', CAMERA_TARGETS, cameraCurrentTarget,
+            val => switchCameraTarget(val)
+        );
+        registerCameraTargetSelect(statusBarElements.targetSelect);
+        statusBarElements.targetAltitude = addNonEditableText(targetDiv, 'Altitude:', '0', '#0ff', 'km');
+        statusBarElements.targetVelocity = addNonEditableText(targetDiv, 'Velocity:', '0.000', '#0ff', 'km/s');
+        statusBarElements.targetAcceleration = addNonEditableText(targetDiv, 'Acceleration:', '0.000', '#0ff', 'm/s²');
+    } else {
+        const line1 = document.createElement('div');
+        line1.className = 'status-line';
+        statusBar.appendChild(line1);
+        line1.appendChild(createStatusBarLabel('Camera'));
+        statusBarElements.cameraAlt = addNonEditableText(line1, 'Alt:', '0', '#0ff', 'km');
+        line1.appendChild(createStatusBarLabel('Target:'));
+        statusBarElements.targetSelect = addCustomSelect(
+            line1, '', '', CAMERA_TARGETS, cameraCurrentTarget,
+            val => switchCameraTarget(val)
+        );
+        registerCameraTargetSelect(statusBarElements.targetSelect);
+        const line2 = document.createElement('div');
+        line2.className = 'status-line';
+        statusBar.appendChild(line2);        
+        statusBarElements.targetAltitude = addNonEditableText(line2, 'Alt:', '0', '#0ff', 'km');
+        statusBarElements.targetVelocity = addNonEditableText(line2, 'Speed:', '0.000', '#0ff', 'km/s');
+        statusBarElements.targetAcceleration = addNonEditableText(line2, 'Accel:', '0.000', '#0ff', 'm/s²');
+    }
 }
 
 function createStatusBarLabel(text) {
@@ -314,7 +334,9 @@ function createStatusBarLabel(text) {
 function updateStatusBar() {
     const els = statusBarElements;
 
-    els.cameraAlt.textContent = scaleToKm(camera.position.length() - EARTH_RADIUS).toFixed(0);
+    if (els.cameraAlt) {
+        els.cameraAlt.textContent = scaleToKm(camera.position.length() - EARTH_RADIUS).toFixed(0);
+    }
 
     const targetName = cameraCurrentTarget;
 
