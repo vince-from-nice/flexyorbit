@@ -271,14 +271,15 @@ function createInterface() {
 }
 
 function createStatusBar() {
-    const bar = document.createElement('div');
-    bar.id = 'status-bar';
-    document.body.appendChild(bar);
+    const statusBar = document.createElement('div');
+    statusBar.id = 'status-bar';
+    statusBar.classList.add('status-bar');
+    document.body.appendChild(statusBar);
 
     // Camera section
     const camDiv = document.createElement('div');
     camDiv.className = 'status-section';
-    bar.appendChild(camDiv);
+    statusBar.appendChild(camDiv);
     camDiv.appendChild(createStatusBarLabel('Camera'));
     camDiv.appendChild(createStatusBarLabel('Mode:'));
     statusBarElements.cameraModeSelect = addCustomSelect(
@@ -289,18 +290,18 @@ function createStatusBar() {
     statusBarElements.cameraAlt = addNonEditableText(camDiv, 'Altitude:', '0', '#0ff', 'km');
 
     // Target section
-    const tgtDiv = document.createElement('div');
-    tgtDiv.className = 'status-section';
-    bar.appendChild(tgtDiv);
-    tgtDiv.appendChild(createStatusBarLabel('Target:'));
+    const targetDiv = document.createElement('div');
+    targetDiv.className = 'status-section';
+    statusBar.appendChild(targetDiv);
+    targetDiv.appendChild(createStatusBarLabel('Target:'));
     statusBarElements.targetSelect = addCustomSelect(
-        tgtDiv, '', '', CAMERA_TARGETS, cameraCurrentTarget,
+        targetDiv, '', '', CAMERA_TARGETS, cameraCurrentTarget,
         val => switchCameraTarget(val)
     );
     registerCameraTargetSelect(statusBarElements.targetSelect);
-    statusBarElements.targetAltitude = addNonEditableText(tgtDiv, 'Altitude:', '0', '#0ff', 'km');
-    statusBarElements.targetVelocity = addNonEditableText(tgtDiv, 'Velocity:', '0.000', '#0ff', 'km/s');
-    statusBarElements.targetAcceleration = addNonEditableText(tgtDiv, 'Acceleration:', '0.00000', '#0ff', 'm/s²');
+    statusBarElements.targetAltitude = addNonEditableText(targetDiv, 'Altitude:', '0', '#0ff', 'km');
+    statusBarElements.targetVelocity = addNonEditableText(targetDiv, 'Velocity:', '0.000', '#0ff', 'km/s');
+    statusBarElements.targetAcceleration = addNonEditableText(targetDiv, 'Acceleration:', '0.000', '#0ff', 'm/s²');
 }
 
 function createStatusBarLabel(text) {
