@@ -33,20 +33,8 @@ export class Trail {
         this.#resetModel();
     }
 
-    #removeMesh(mesh) {
-        scene.remove(mesh);
-        mesh.geometry.dispose();
-        mesh.material.dispose();
-    }
-
     #resetModel() {
-        if (this.model) {
-            if (Array.isArray(this.model)) {
-                this.model.forEach(model => { if (model.mesh) this.#removeMesh(model.mesh) });
-            } else {
-                this.#removeMesh(this.model);
-            }
-        }
+        this.#removeMesh();
         if (this.style === 'TRAIL_STYLE_WITH_SINGLE_LINES') {
             const geometry = new THREE.BufferGeometry();
             geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(HISTORY_MAX_SIZE * 3), 3));
@@ -71,6 +59,22 @@ export class Trail {
         } else {
             this.model = null;
         }
+    }
+
+    #removeMesh() {
+        if (this.model) {
+            if (Array.isArray(this.model)) {
+                this.model.forEach(model => { if (model.mesh) this.#removeAndDisposeMesh(model.mesh) });
+            } else {
+                this.#removeAndDisposeMesh(this.model);
+            }
+        }
+    }
+
+    #removeAndDisposeMesh(mesh) {
+        scene.remove(mesh);
+        mesh.geometry.dispose();
+        mesh.material.dispose();
     }
 
     update(obj) {
@@ -236,9 +240,19 @@ export class Trail {
     }
 
     updateTrailColor(newColor) {
-        if (newColor < this.color) {
+        if (newColor !== this.color) {
             this.color = newColor;
             this.#resetModel();
+        }
+    }
+
+    enable(enabled) {
+        this.enabled = enabled;
+        if (enabled) {
+            this.#resetModel();
+        } else {
+            this.history = [];
+            this.#removeMesh();
         }
     }
 }
