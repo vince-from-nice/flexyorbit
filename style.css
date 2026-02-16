@@ -632,9 +632,9 @@ button.thrust-active {
 
 #fps {
     position: fixed !important;
-    bottom: 74px !important; 
+    bottom: 8px !important; 
     left: auto !important; 
-    right: 12px !important;
+    right: 8px !important;
     transform: none !important;
     z-index: 1190 !important; 
     color: #0ff !important;
