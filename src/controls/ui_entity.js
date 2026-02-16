@@ -101,6 +101,19 @@ function buildStaticEntityPanel() {
         const e = entityWidgets.current;
         if (e) e.vectors.showVelocity = v;
     });
+    // Tangential thrust (pro/retro for orbital speed fun)
+    const thrustRow = document.createElement('div');
+    thrustRow.style.display = 'flex'; thrustRow.style.gap = '10px'; thrustRow.style.marginTop = '10px'; thrustRow.style.alignItems = 'center'; thrustRow.style.width = '100%';
+    entityWidgets.thrustRow = thrustRow;
+    const proBtn = document.createElement('button'); proBtn.textContent = 'Prograde'; proBtn.style.flex = '1';
+    const retroBtn = document.createElement('button'); retroBtn.textContent = 'Retrograde'; retroBtn.style.flex = '1';
+    thrustRow.appendChild(proBtn); thrustRow.appendChild(retroBtn); vel.appendChild(thrustRow);
+    proBtn.addEventListener('mousedown', () => { const e = entityWidgets.current; if (e) { e.thrustDirection = 1; proBtn.classList.add('thrust-active'); retroBtn.classList.remove('thrust-active'); } });
+    proBtn.addEventListener('mouseup', () => { const e = entityWidgets.current; if (e) { e.thrustDirection = 0; proBtn.classList.remove('thrust-active'); } });
+    proBtn.addEventListener('mouseleave', () => { const e = entityWidgets.current; if (e && e.thrustDirection === 1) { e.thrustDirection = 0; proBtn.classList.remove('thrust-active'); } });
+    retroBtn.addEventListener('mousedown', () => { const e = entityWidgets.current; if (e) { e.thrustDirection = -1; retroBtn.classList.add('thrust-active'); proBtn.classList.remove('thrust-active'); } });
+    retroBtn.addEventListener('mouseup', () => { const e = entityWidgets.current; if (e) { e.thrustDirection = 0; retroBtn.classList.remove('thrust-active'); } });
+    retroBtn.addEventListener('mouseleave', () => { const e = entityWidgets.current; if (e && e.thrustDirection === -1) { e.thrustDirection = 0; retroBtn.classList.remove('thrust-active'); } });
 
     // ── Acceleration ────────────────────────────────────────────────────────
     const acc = addSubPanel(entityPanelContainer, 'Acceleration', false);
@@ -141,7 +154,8 @@ function buildStaticEntityPanel() {
     const trail = addSubPanel(entityPanelContainer, 'Trail display', false);
     entityWidgets.trailEnabled = addCheckbox(trail, 'Enabled', null, false, v => {
         const e = entityWidgets.current;
-        if (e) e.trail.enabled = v;
+        //if (e) e.trail.enabled = v;
+        if (e) e.trail.enable(v);
     });
     entityWidgets.trailStyle = addCustomSelect(trail, 'Style', null, TRAIL_STYLES, TRAIL_STYLES[0].value, v => {
         const e = entityWidgets.current;
@@ -154,7 +168,7 @@ function buildStaticEntityPanel() {
     entityWidgets.trailLifetimePair = addSlider(trail, 'Lifetime (s)', 1, 1000, 1, 1, v => {
         const e = entityWidgets.current;
         if (e) e.trail.lifetime = v;
-    });
+    }, {logarithmic: true});
 }
 
 function makeAccelerationRow(container) {
@@ -219,6 +233,7 @@ export function updateEntityWidgets() {
     entityWidgets.vz.textContent = scaleToKm(entity.velocity.z).toFixed(3);
     entityWidgets.speed.textContent = scaleToKm(entity.velocity.length()).toFixed(3);
     entityWidgets.showVel.checked = entity.vectors.showVelocity;
+    entityWidgets.thrustRow.style.display = entity.type !== ENTITY_TYPES.SPACESHIP ? 'flex' : 'none';
 
     // Acceleration
     const fmt = v => scaleToKm(v).toExponential(2);
