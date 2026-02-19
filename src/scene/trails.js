@@ -13,8 +13,8 @@ export const TRAIL_STYLES = [
     { value: 'TRAIL_STYLE_WITH_VERTICAL_BARS', label: '3D vertical bars' },
 ];
 
-const FRAMES_NBR_BETWEEN_UPDATES = 3;
-const UPDATES_NBR_BETWEEN_BARS = 4;
+const FRAMES_NBR_BETWEEN_UPDATES = 1;
+const UPDATES_NBR_BETWEEN_BARS = 8;
 const VERTICAL_BAR_THICKNESS_KM = 50
 const VERTICAL_BAR_FIXED_HEIGHT_KM = 300
 const HISTORY_MAX_SIZE = 10000;
@@ -80,21 +80,18 @@ export class Trail {
     update(obj) {
         //if (!this.enabled) return;
 
-        // No need to update trail on every frame
-        if (this.updateCounter < FRAMES_NBR_BETWEEN_UPDATES) {
-            this.updateCounter++;
-            return
-        } else {
-            this.updateCounter = 0;
-        }
-
         const now = Date.now() / 1000;
 
+        // No need to update trail on every frame
+        // if (this.updateCounter < FRAMES_NBR_BETWEEN_UPDATES) {
+        //     this.updateCounter++;
+        //     return
+        // } else {
+        //     this.updateCounter = 0;
+        // }
+
         if (this.enabled && obj.isFreeFalling) {
-            this.history.push({
-                position: obj.body.position.clone(),
-                time: now
-            });
+            this.history.push({ position: obj.body.position.clone(), time: now });
         }
 
         while (this.history.length > 0 && now - this.history[0].time > this.lifetime) {
@@ -107,39 +104,51 @@ export class Trail {
         if (this.style === 'TRAIL_STYLE_WITH_SINGLE_LINES' || this.style === 'TRAIL_STYLE_WITH_THICK_LINES') {
             this.#updateTrailLineGeometry();
         } else if (this.style === 'TRAIL_STYLE_WITH_VERTICAL_BARS') {
-            const newModel = []
-            this.model.forEach(model => {
-                if (now - model.time > this.lifetime) {
-                    this.#removeMesh(model.mesh)
-                } else {
-                    if (newModel.length <= HISTORY_MAX_SIZE) {
-                        newModel.push({ mesh: model.mesh, time: model.time })
-                    }
-                }
-            });
-            this.model = newModel;
-            if (obj.isFreeFalling && this.stanceCounter >= UPDATES_NBR_BETWEEN_BARS) {
-                if (this.history.length > 1) {
-                    this.stanceCounter = 0;
-                    const newBar = this.#createNewTrailBar(
-                        this.history[this.history.length - 1].position,
-                        this.history[this.history.length - 2].position,
-                        scaleFromKm(VERTICAL_BAR_THICKNESS_KM), scaleFromKm(VERTICAL_BAR_FIXED_HEIGHT_KM), true);
-                    scene.add(newBar);
-                    this.model.push({ mesh: newBar, time: now });
-                }
-            }
-            this.stanceCounter++;
+            this.#recreateVerticalBars();
         }
         //console.log("Trail of " + obj.name + " has been updated with " + this.history.length + " points");
+    }
+
+    #recreateVerticalBars() {
+        const newModel = []
+        const now = Date.now() / 1000;
+        this.model.forEach(model => {
+            if (now - model.time > this.lifetime) {
+                this.#removeAndDisposeMesh(model.mesh)
+            } else {
+                if (newModel.length <= HISTORY_MAX_SIZE) {
+                    newModel.push({ mesh: model.mesh, time: model.time })
+                }
+            }
+        });
+        this.model = newModel;
+        if (this.stanceCounter >= UPDATES_NBR_BETWEEN_BARS) {
+            if (this.history.length > 1) {
+                this.stanceCounter = 0;
+                const newBar = this.#createNewTrailBar(
+                    this.history[this.history.length - 1].position,
+                    this.history[this.history.length - 2].position,
+                    scaleFromKm(VERTICAL_BAR_THICKNESS_KM), scaleFromKm(VERTICAL_BAR_FIXED_HEIGHT_KM), true);
+                scene.add(newBar);
+                this.model.push({ mesh: newBar, time: now });
+            }
+        }
+        this.stanceCounter++;
     }
 
     #createNewTrailBar(top1, top2, thickness, height, useProjection = false) {
         const v = top2.clone().sub(top1);
 
-        let perp = v.clone().cross(new THREE.Vector3(0, 1, 0));
-        if (perp.lengthSq() < 0.0001) {
-            perp = v.clone().cross(new THREE.Vector3(1, 0, 0));
+        const midPos = top1.clone().lerp(top2, 0.5);
+        const radial = midPos.normalize();
+        let perp = v.clone().cross(radial);
+        let lenSq = perp.lengthSq();
+        if (lenSq < 0.0001) {
+            perp = radial.clone().cross(new THREE.Vector3(0, 1, 0));
+            lenSq = perp.lengthSq();
+            if (lenSq < 0.0001) {
+                perp = radial.clone().cross(new THREE.Vector3(0, 0, 1));
+            }
         }
         perp.normalize().multiplyScalar(thickness);
 
