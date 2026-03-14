@@ -63,8 +63,5 @@ export class Entity {
     this.body.position.copy(this.initialPosition);
     this.velocity.copy(this.initialVelocity);
     this.isFreeFalling = false;
-    if (this.trail) {
-      // Logic to reset or remove trail
-    }
   }
 }

@@ -1,5 +1,7 @@
 import { addSlider, addSubPanel } from './widgets.js'
 import { updateCannonWithParams, fireCannonball, cannonParams } from '../scene/cannon.js';
+import world from '../world.js';
+import { ENTITY_TYPES } from '../entity.js';
 
 let cannonLatDisplay, cannonLonDisplay, cannonAltDisplay, cannonAzDisplay, cannonElDisplay;
 let cannonLatSlider, cannonLonSlider, cannonAltSlider, cannonAzSlider, cannonElSlider;
@@ -34,7 +36,7 @@ export function createCannonWidgets(cannonPanel) {
         cannonParams.speed = value;
     });
     const fireButton = document.createElement('button');
-    fireButton.textContent = 'Fire the cannonball !';
+    fireButton.textContent = 'Fire cannonball !';
     fireButton.classList.add('fire-button');
     fireButton.addEventListener('click', () => {
         fireCannonball();
@@ -45,6 +47,16 @@ export function createCannonWidgets(cannonPanel) {
         }
     });
     cannonFirePanel.appendChild(fireButton);
+    const clearButton = document.createElement('button');
+    clearButton.textContent = 'Clear all cannonballs';
+    clearButton.classList.add('clear-cannonballs-btn');
+    clearButton.addEventListener('click', () => {
+        const cannonballs = world.getEntitiesByType(ENTITY_TYPES.CANNONBALL);
+        cannonballs.forEach(entity => {
+            world.removeEntity(entity);
+        });
+    });
+    cannonFirePanel.appendChild(clearButton);    
 }
 
 export function updateCannonWidgets() {

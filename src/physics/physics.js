@@ -8,7 +8,7 @@ import { updateEntityOrientation } from './orientation.js';
 import { getEngineAcceleration } from './engine.js';
 
 export function animatePhysicalEntities(deltaTime) {
-  for (const obj of world.getPhysicalEntities()) {
+  for (const obj of world.getAllEntities()) {
     if (obj?.isFreeFalling) {
 
       obj.accelerations.gravity = getGravitationalAcceleration(obj);

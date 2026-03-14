@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    Trail.updateAllThickLineResolutions(world.getPhysicalEntities());
+    Trail.updateAllThickLineResolutions(world.getAllEntities());
   });
 });
 

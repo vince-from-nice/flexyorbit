@@ -58,12 +58,46 @@ class World {
     return true;
   }
 
-  getEntityByName(name) {
-    return this.entitiesByName.get(name);
+  removeEntity(entity) {
+    if (!this.physicalEntities.has(entity)) return false;
+
+    this.physicalEntities.delete(entity);
+    this.entitiesByName.delete(entity.name);
+
+    if (entity.trail) {
+      entity.trail.enable(false);
+      entity.trail = null;
+    }
+
+    if (entity.vectors) {
+      entity.vectors.remove();
+      entity.vectors = null;
+    }
+
+    if (entity.body) {
+      entity.body.removeFromParent();
+      entity.body.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose?.());
+          else obj.material.dispose?.();
+        }
+      });
+    }
+
+    refreshEntitySelect();
+    refreshCameraTargets();
+    refreshSpaceshipSelect();
+
+    return true;
   }
 
-  getPhysicalEntities() {
+  getAllEntities() {
     return this.physicalEntities;
+  }
+
+  getEntityByName(name) {
+    return this.entitiesByName.get(name);
   }
 
   getEntitiesByType(type) {
@@ -74,7 +108,7 @@ class World {
     return result;
   }
 
-  resetAllPhysicalEntities() {
+  resetAllEntities() {
     for (const entity of this.physicalEntities) {
       entity.reset();
     }

@@ -19,7 +19,7 @@ export class Vectors {
     }
 
     update(entity) {
-        const worldPos = entity.body.getWorldPosition(new THREE.Vector3());
+        const worldPos = entity?.body.getWorldPosition(new THREE.Vector3());
 
         if (this.showVelocity) {
             if (!this.velocityArrow) {
@@ -90,5 +90,14 @@ export class Vectors {
             scene.remove(this.accelerationForEngineArrow);
             this.accelerationForEngineArrow = null;
         }
+    }
+
+    remove() {
+        this.showVelocity = false;
+        this.showAcceleration = false;
+        this.showAccelerationForGravity = false;
+        this.showAccelerationForDrag = false;
+        this.showAccelerationForEngine = false;
+        this.update();
     }
 }

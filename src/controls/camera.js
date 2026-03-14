@@ -323,7 +323,7 @@ export function refreshCameraTargets() {
     CAMERA_TARGETS = [];
     CAMERA_TARGETS.push({ value: 'Earth', label: 'Earth', object: earth, type: null });
     CAMERA_TARGETS.push({ value: 'Cannon', label: 'Cannon', object: cannonGroup, type: null });
-    for (const entity of world.getPhysicalEntities()) {
+    for (const entity of world.getAllEntities()) {
         CAMERA_TARGETS.push({ value: entity.name, label: entity.name, object: entity.body, type: entity.type });
     }
     if (cameraTargetSelectRef) cameraTargetSelectRef.updateOptions(CAMERA_TARGETS);

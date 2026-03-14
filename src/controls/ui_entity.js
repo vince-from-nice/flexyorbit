@@ -257,7 +257,7 @@ export function updateEntityWidgets() {
 export function refreshEntitySelect() {
     if (!entitySelectRef) return;
     entitySelectOptions.length = 0;
-    world.getPhysicalEntities().forEach(ent => {
+    world.getAllEntities().forEach(ent => {
         entitySelectOptions.push({ value: ent.name, label: ent.name });
     });
     entitySelectOptions.unshift({ value: '', label: 'Select an object' })
