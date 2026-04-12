@@ -20,6 +20,8 @@ const VERTICAL_BAR_FIXED_HEIGHT_KM = 300
 const HISTORY_MAX_SIZE = 10000;
 const HISTORY_DEFAULT_LIFETIME = 20;
 
+const FADE_COLOR_BASE = new THREE.Color();
+
 export class Trail {
     constructor(enabled, style, color, lifetime = HISTORY_DEFAULT_LIFETIME) {
         this.enabled = enabled || false
@@ -38,17 +40,23 @@ export class Trail {
         if (this.style === 'TRAIL_STYLE_WITH_SINGLE_LINES') {
             const geometry = new THREE.BufferGeometry();
             geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(HISTORY_MAX_SIZE * 3), 3));
-            const material = new THREE.LineBasicMaterial({ color: this.color, transparent: true, opacity: 0.75 });
+            geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(HISTORY_MAX_SIZE * 3), 3));
+            const material = new THREE.LineBasicMaterial({
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.9
+            });
             this.model = new THREE.Line(geometry, material);
             scene.add(this.model);
         } else if (this.style === 'TRAIL_STYLE_WITH_THICK_LINES') {
-            scene.remove(this.model);
             const geometry = new LineGeometry();
+            geometry.setPositions(new Float32Array(HISTORY_MAX_SIZE * 3));
+            geometry.setColors(new Float32Array(HISTORY_MAX_SIZE * 3));
             const material = new LineMaterial({
-                color: this.color,
+                vertexColors: true,
                 linewidth: 4.0,
                 transparent: true,
-                opacity: 0.8,
+                opacity: 0.9,
                 resolution: new THREE.Vector2(window.innerWidth, window.innerHeight)
             });
             this.model = new Line2(geometry, material);
@@ -205,31 +213,36 @@ export class Trail {
 
     #updateTrailLineGeometry() {
         const count = this.history.length;
+        if (count < 2) return;
 
-        if (this.history.length < 2) return;
-
-        const flat = new Float32Array(count * 3);
+        const flatPos = new Float32Array(count * 3);
+        const flatCol = new Float32Array(count * 3);
+        FADE_COLOR_BASE.set(this.color);
         this.history.forEach((entry, i) => {
-            flat[i * 3] = entry.position.x;
-            flat[i * 3 + 1] = entry.position.y;
-            flat[i * 3 + 2] = entry.position.z;
+            const idx = i * 3;
+            const fade = i / (count - 1);
+            flatPos[idx] = entry.position.x;
+            flatPos[idx + 1] = entry.position.y;
+            flatPos[idx + 2] = entry.position.z;
+            flatCol[idx] = FADE_COLOR_BASE.r * fade;
+            flatCol[idx + 1] = FADE_COLOR_BASE.g * fade;
+            flatCol[idx + 2] = FADE_COLOR_BASE.b * fade;
         });
-        let geometry = this.model.geometry;
+
+        const geometry = this.model.geometry;
         if (this.style === 'TRAIL_STYLE_WITH_SINGLE_LINES') {
-            geometry.attributes.position.array.set(flat);
-            geometry.setDrawRange(0, this.history.length);
+            geometry.attributes.position.array.set(flatPos);
+            geometry.attributes.color.array.set(flatCol);
+            geometry.setDrawRange(0, count);
             geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.color.needsUpdate = true;
         } else if (this.style === 'TRAIL_STYLE_WITH_THICK_LINES') {
-            geometry.setPositions(flat);
-            geometry._maxInstanceCount = undefined;
-            geometry.instanceCount = this.history.length - 1;
+            geometry.setPositions(flatPos);
+            geometry.setColors(flatCol);
+            geometry.instanceCount = count - 1;
             this.model.computeLineDistances();
             geometry.attributes.position.needsUpdate = true;
-            ['instanceStart', 'instanceEnd', 'instanceDistanceStart', 'instanceDistanceEnd'].forEach(attr => {
-                if (geometry.attributes[attr]) {
-                    geometry.attributes[attr].needsUpdate = true;
-                }
-            });
+            //geometry.attributes.color.needsUpdate = true;
         }
     }
 
