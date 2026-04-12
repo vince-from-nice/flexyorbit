@@ -33,6 +33,10 @@ class World {
     // Add asteroids
     this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithMoon', null, 'Moon', 4000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 120));
     //this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-InLoveWithEarth', 'Earth', 6000, 0, 0, 30, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#5c5aad', 120));
+    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-LagrangeL4', null, 'Earth', MOON_DISTANCE_KM, 0, 60, 90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#f517a0', 120));
+    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-Moon+30', null, 'Earth', MOON_DISTANCE_KM, 0, 30, 90, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#ea8644', 120));
+    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-LagrangeL5', null, 'Earth', MOON_DISTANCE_KM, 0, -60, 90, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#91f445', 120));
+    this.createAndAddEntity(ENTITY_TYPES.ASTEROID, 'Asteroid-Moon-30', null, 'Earth', MOON_DISTANCE_KM, 0, -30, 90, new Trail(true, 'TRAIL_STYLE_WITH_SINGLE_LINES', '#39bee3', 120));
 
     // Add spaceships
     await this.createAndAddEntity(ENTITY_TYPES.SPACESHIP, 'Spaceship-Delta1', null, 'Earth', 5000, 0, 50, 70, new Trail(true, 'TRAIL_STYLE_WITH_THICK_LINES', '#173bbc', 120));
